@@ -5,14 +5,22 @@ import os
 
 namelist_defaults = {}
 
-def register_config_option(name, default_value, description):
+
+class InvalidFileError(Exception):
+    pass
+
+
+def default_config_dict():
     pass
 
 
 class RunConfig(object):
 
     def __init__(self, input_data=None, forcing_data=None, config=None):
-        self._config = config or ConfigDict()
+        if config is None:
+            self._config = default_config_dict()
+        else:
+            self._config = config
         self._input_data = input_data or StateData.from_config(self._config)
         self._forcing_data = forcing_data or ForcingData.from_config(self._config)
         self._namelist_file = NamelistFile(self._config)
@@ -31,6 +39,13 @@ class RunConfig(object):
         # must be property so it can't be replaced, so that the instance we have is the
         # same instance as held by self._namelist_file.
         return self._config
+
+    @config.setter
+    def config(self, config):
+        # must be property so it can't be replaced, so that the instance we have is the
+        # same instance as held by self._namelist_file.
+        self._config.clear()
+        return self._config.update(config)
 
     @property
     def input_data(self):
@@ -65,30 +80,16 @@ class StateData(object):
         pass
 
 
-class ConfigDict(object):
+def config_dict_to_namelist(config_dict, namelist_filename):
+    pass
 
-    def __init__(self):
-        self._dict = {}
 
-    @classmethod
-    def from_directory(cls, dirname):
-        cls.from_namelist(os.path.join(dirname, 'input.nml'))
+def config_dict_from_namelist(namelist_filename):
+    pass
 
-    @classmethod
-    def from_namelist(cls, filename):
-        pass
 
-    def __setitem__(self, key, value):
-        self._dict[key] = value
-
-    def __getitem__(self, key):
-        if key not in self._dict and key in namelist_defaults:
-            return namelist_defaults[key]
-        else:
-            return self._dict[key]
-
-    def to_namelist(self, namelist_filename):
-        pass
+def config_dict_from_directory(dirname):
+    return config_dict_from_namelist(os.path.join(dirname, 'input.nml'))
 
 
 class ForcingData(object):
