@@ -1,0 +1,72 @@
+
+
+Making directories
+modifying directories
+loading config from yaml
+overturning restart folders
+
+With restart data we need to:
+- save the data to a run directory
+    - ensure that the IO layout is consistent with the saved restart data 
+- the input restart data may come with multiple files per tile, the output may require one file per tile or some different number of files per tile
+
+Create a run directory from scratch
+- optional source of restart data
+- optional namelist parameters
+- forcing data source
+
+Move restart data to input directory
+
+A way to access configuration from python
+
+DiagTable specifies what diagnostic outputs you want
+- has an experiment name, used as "title" value in netcdf output
+- start date of model run
+    Always use the start date in the namelist, there's a parameter for this
+Want to specify DiagTable to use through an option name (we decide and make the options) or filename
+DiagTable name would be a ConfigOption
+
+StateData
+    Input data/restart data
+RunDirectory
+    FieldTable depends on microphysics option
+    DiagTable depends on what option name or file name is selected
+    DataTable is an empty file which... I guess needs to exist?
+Config
+    - When a value is set, check if that value is a NamelistOption and if it is, update that NamelistOption
+    owns a NamelistFile
+    - dump to and load from a yaml file
+ConfigOption
+    subclass NamelistOption
+    subclass DiagTableOption
+
+
+NamelistFile
+    - load and save configuration options
+Namelist
+    - load and save configuration options
+    - Has a set of NamelistOption
+NamelistOption
+    - name
+    - default
+    - description
+    - internal=False
+
+ForcingData
+    We want to symlink these
+    Includes grb files which are placed in a location defined in namelist
+        we'll set default values that just point to run directory
+    Includes files in root run directory
+    Includes *one* file for ozone forcing that goes in INPUT/
+
+
+Create a RunDirectory given a RestartData (optional), ForcingData, and Config.
+Create a RunDirectory from an existing folder.
+Modify Config of a RunDirectory
+All operations lazy, then have Apply method
+Apply RestartData to a folder on disk given a Config containing IO configuration
+Apply Config to NamelistFiles on disk.
+
+Central NamelistFile list that says what the defaults are and what namelists exist.
+Other packages need to be able to add configuration options
+Other packages need to be able to convert NamelistOption's to `internal`.
