@@ -29,7 +29,7 @@ class RunConfig(object):
     def from_directory(cls, dirname):
         return cls(
             target_directory=dirname,
-            input_data=StateData.from_directory(dirname),
+            input_data=StateData.from_directory(os.path.join(dirname, 'INPUT')),
             forcing_data=ForcingData.from_directory(dirname),
             config=ConfigDict.from_directory(dirname)
         )
@@ -94,8 +94,15 @@ def config_dict_from_directory(dirname):
 
 class ForcingData(object):
 
+    def __init__(self):
+        raise NotImplementedError()
+
     @classmethod
     def from_directory(cls, dirname):
+        pass
+
+    @classmethod
+    def from_config(cls, config):
         pass
 
     def link(self, target_directory):
