@@ -3,14 +3,16 @@ from fv3config import config_dict_to_namelist, config_dict_from_namelist, config
 import os
 import shutil
 import f90nml
+from copy import deepcopy
 
 
 test_directory = os.path.dirname(os.path.realpath(__file__))
 
 
 one_item_namelist = """&fms_io_nml
-   checksum_required   = .false.
-/"""
+    checksum_required = .false.
+/
+"""
 one_item_dict = {
     'fms_io_nml': {
         'checksum_required': False
@@ -20,10 +22,11 @@ one_item_dict = {
 all_types_namelist = """&my_nml
     integer_option = 1
     float_option = 2.0
-    string_option = "three"
+    string_option = 'three'
     true_option = .true.
     false_option = .false.
-/"""
+/
+"""
 all_types_dict = {
     'my_nml': {
         'integer_option': 1,
@@ -66,14 +69,6 @@ class ConfigDictTests(unittest.TestCase):
         config = config_dict_from_namelist(namelist_filename)
         self.assertIsInstance(config, dict)
 
-    def test_init_from_corrupted_namelist(self):
-        rundir = self.make_run_directory('test_rundir')
-        namelist_filename = os.path.join(rundir, 'input.nml')
-        with open(namelist_filename, 'w') as f:
-            f.write('This is not a namelist.')
-        with self.assertRaises(InvalidFileError):
-            config_dict_from_namelist(namelist_filename)
-
     def test_init_from_missing_namelist(self):
         rundir = self.make_run_directory('test_rundir')
         namelist_filename = os.path.join(rundir, 'input.nml')
@@ -102,14 +97,6 @@ class ConfigDictTests(unittest.TestCase):
         with self.assertRaises(InvalidFileError):
             config_dict_from_directory(rundir)
 
-    def test_init_from_directory_with_corrupted_namelist(self):
-        rundir = self.make_run_directory('test_rundir')
-        namelist_filename = os.path.join(rundir, 'input.nml')
-        with open(namelist_filename, 'w') as f:
-            f.write('This is not a namelist.')
-        with self.assertRaises(InvalidFileError):
-            config_dict_from_directory(rundir)
-
     def test_init_from_directory_with_namelist(self):
         rundir = self.make_run_directory('test_rundir')
         namelist_filename = os.path.join(rundir, 'input.nml')
@@ -119,31 +106,53 @@ class ConfigDictTests(unittest.TestCase):
         self.assertEqual(config, all_types_dict)
 
     def test_empty_write_to_namelist(self):
-        pass
+        rundir = self.make_run_directory('test_rundir')
+        namelist_filename = os.path.join(rundir, 'input.nml')
+        config = {}
+        config_dict_to_namelist(config, namelist_filename)
+        self.assertTrue(os.path.isfile(namelist_filename))
+        with open(namelist_filename, 'r') as namelist_file:
+            written_namelist = namelist_file.read()
+        self.assertEqual(written_namelist, '')
 
     def test_one_item_write_to_namelist(self):
-        pass
+        rundir = self.make_run_directory('test_rundir')
+        namelist_filename = os.path.join(rundir, 'input.nml')
+        config = deepcopy(one_item_dict)
+        config_dict_to_namelist(config, namelist_filename)
+        self.assertTrue(os.path.isfile(namelist_filename))
+        with open(namelist_filename, 'r') as namelist_file:
+            written_namelist = namelist_file.read()
+        self.assertEqual(written_namelist, one_item_namelist)
 
     def test_many_items_write_to_namelist(self):
-        pass
+        rundir = self.make_run_directory('test_rundir')
+        namelist_filename = os.path.join(rundir, 'input.nml')
+        config = deepcopy(all_types_dict)
+        config_dict_to_namelist(config, namelist_filename)
+        self.assertTrue(os.path.isfile(namelist_filename))
+        with open(namelist_filename, 'r') as namelist_file:
+            written_lines = namelist_file.readlines()
+        target_lines = [line + '\n' for line in all_types_namelist.split('\n') if line]
+        self.assertEqual(len(written_lines), len(target_lines))
+        self.assertEqual(written_lines[0], target_lines[0])
+        self.assertEqual(set(written_lines[1:6]), set(target_lines[1:6]))  # order doesn't matter
+        self.assertEqual(written_lines[6:], target_lines[6:])
 
     def test_write_to_existing_namelist(self):
-        pass
-
-    def test_write_namelist_int(self):
-        pass
-
-    def test_write_namelist_float(self):
-        pass
-
-    def test_write_namelist_true(self):
-        pass
-
-    def test_write_namelist_false(self):
-        pass
-
-    def test_write_namelist_str(self):
-        pass
+        rundir = self.make_run_directory('test_rundir')
+        namelist_filename = os.path.join(rundir, 'input.nml')
+        with open(namelist_filename, 'w') as f:
+            f.write(one_item_namelist)
+        config = deepcopy(all_types_dict)
+        config_dict_to_namelist(config, namelist_filename)
+        with open(namelist_filename, 'r') as namelist_file:
+            written_lines = namelist_file.readlines()
+        target_lines = [line + '\n' for line in all_types_namelist.split('\n') if line]
+        self.assertEqual(len(written_lines), len(target_lines))
+        self.assertEqual(written_lines[0], target_lines[0])
+        self.assertEqual(set(written_lines[1:6]), set(target_lines[1:6]))  # order doesn't matter
+        self.assertEqual(written_lines[6:], target_lines[6:])
 
 
 if __name__ == '__main__':

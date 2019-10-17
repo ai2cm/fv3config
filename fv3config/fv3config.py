@@ -2,16 +2,14 @@
 
 """Main module."""
 import os
-
-namelist_defaults = {}
-
+import f90nml
 
 class InvalidFileError(Exception):
     pass
 
 
 def default_config_dict():
-    pass
+    return {}
 
 
 class RunConfig(object):
@@ -81,11 +79,15 @@ class StateData(object):
 
 
 def config_dict_to_namelist(config_dict, namelist_filename):
-    pass
+    f90nml.write(config_dict, namelist_filename)
 
 
 def config_dict_from_namelist(namelist_filename):
-    pass
+    try:
+        return_dict = f90nml.read(namelist_filename)
+    except FileNotFoundError:
+        raise InvalidFileError(f'namelist {namelist_filename} does not exist')
+    return return_dict
 
 
 def config_dict_from_directory(dirname):
