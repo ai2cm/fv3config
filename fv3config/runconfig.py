@@ -1,5 +1,5 @@
 from .config import default_config_dict, ConfigDict, config_dict_to_namelist
-from .forcing import get_forcing_directory_for_config, link_directory, GFSData, RestartData
+from .forcing import ForcingData
 
 class RunConfig(object):
 
@@ -8,8 +8,8 @@ class RunConfig(object):
             self._config = default_config_dict()
         else:
             self._config = config
-        self._input_data = input_data or GFSData.from_config(self._config)
-        self._forcing_directory = forcing_dir or get_forcing_directory_for_config(self._config)
+        self._input_data = input_data or StateData.from_config(self._config)
+        self._forcing_data = forcing_data or ForcingData.from_config(self._config)
 
     @property
     def config(self):
