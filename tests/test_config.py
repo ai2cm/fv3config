@@ -154,6 +154,13 @@ class ConfigDictTests(unittest.TestCase):
         self.assertEqual(set(written_lines[1:6]), set(target_lines[1:6]))  # order doesn't matter
         self.assertEqual(written_lines[6:], target_lines[6:])
 
+    def test_default_config_has_entries(self):
+        config = default_config_dict()
+        self.assertTrue(len(config) > 0)
+        self.assertIn('fv_core_nml', config)
+        self.assertIsInstance(config['fv_core_nml'], dict)
+        for name, value in config.items():
+            self.assertIsInstance(name, str, f'key {name} is not a string')
 
 if __name__ == '__main__':
     unittest.main()

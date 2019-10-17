@@ -4,12 +4,15 @@
 import os
 import f90nml
 
+
+package_directory = os.path.dirname(os.path.realpath(__file__))
+
 class InvalidFileError(Exception):
     pass
 
 
 def default_config_dict():
-    return {}
+    return f90nml.read(os.path.join(package_directory, 'data/default.nml'))
 
 
 class RunConfig(object):
@@ -79,6 +82,8 @@ class StateData(object):
 
 
 def config_dict_to_namelist(config_dict, namelist_filename):
+    if os.path.isfile(namelist_filename):
+        os.remove(namelist_filename)
     f90nml.write(config_dict, namelist_filename)
 
 
