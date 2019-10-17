@@ -1,7 +1,8 @@
 import unittest
+from fv3config import RestartData
 
 
-class StateDataTests(unittest.TestCase):
+class RestartDataTests(unittest.TestCase):
 
     def setUp(self):
         pass

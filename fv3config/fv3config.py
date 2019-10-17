@@ -31,7 +31,7 @@ class RunConfig(object):
         return cls(
             target_directory=dirname,
             input_data=StateData.from_directory(os.path.join(dirname, 'INPUT')),
-            forcing_data=ForcingData.from_directory(dirname),
+            forcing_data=ForcingData(dirname),
             config=ConfigDict.from_directory(dirname)
         )
 
@@ -62,7 +62,26 @@ class RunConfig(object):
         self._namelist_file.save(os.path.join(target_directory, 'input.nml'))
 
 
-class StateData(object):
+class RestartData(object):
+
+    def __init__(self, data_directory):
+        self._data_directory = data_directory
+
+    @classmethod
+    def from_directory(cls, dirname):
+        pass
+
+    @classmethod
+    def from_config(cls, config):
+        pass
+
+    def write(self, target_directory, config):
+        # special case when data_directory is target_directory, just check if config is compatible
+        # with what's on disk.
+        pass
+
+
+class InitializationData(object):
 
     def __init__(self, data_directory):
         self._data_directory = data_directory
@@ -101,16 +120,26 @@ def config_dict_from_directory(dirname):
 
 class ForcingData(object):
 
-    def __init__(self):
-        raise NotImplementedError()
+    # files in the data directory to ignore if present, linked otherwise
+    exclude_root_filenames = []
+    # files in subdirectories to link if present, ignored otherwise
+    include_subdirectory_filenames = []
 
-    @classmethod
-    def from_directory(cls, dirname):
-        pass
+    def __init__(self, data_directory):
+        self.data_directory = data_directory
+
+    # @classmethod
+    # def from_directory(cls, dirname):
+    #     pass
 
     @classmethod
     def from_config(cls, config):
-        pass
+        raise NotImplementedError()
 
     def link(self, target_directory):
-        pass
+        for filename in os.listdir(self.data_directory):
+            source_path = os.path.join(self.data_directory, filename)
+            target_path = os.path.join(target_directory, filename)
+            if os.path.isfile(target_path):
+                os.remove(target_path)
+            os.symlink(source_path, target_path)
