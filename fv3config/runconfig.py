@@ -1,24 +1,16 @@
 from .config import default_config_dict, ConfigDict, config_dict_to_namelist
-from .forcing import ForcingData
+from .forcing import get_forcing_directory_for_config, link_directory
 
 class RunConfig(object):
 
-    def __init__(self, input_data=None, forcing_data=None, config=None):
+    def __init__(self, input_data=None, forcing_dir=None, config=None):
         if config is None:
             self._config = default_config_dict()
         else:
             self._config = config
         self._input_data = input_data or StateData.from_config(self._config)
+        self._forcing_directory = forcing_dir or get_forcing_directory_for_config(self._config)
         self._forcing_data = forcing_data or ForcingData.from_config(self._config)
-
-    @classmethod
-    def from_directory(cls, dirname):
-        return cls(
-            target_directory=dirname,
-            input_data=StateData.from_directory(os.path.join(dirname, 'INPUT')),
-            forcing_data=ForcingData(dirname),
-            config=ConfigDict.from_directory(dirname)
-        )
 
     @property
     def config(self):

@@ -1,28 +1,17 @@
 import os
 import datastore
 
-class ForcingData(object):
-
-    # files in the data directory to ignore if present, linked otherwise
-    exclude_root_filenames = []
-    # files in subdirectories to link if present, ignored otherwise
-    include_subdirectory_filenames = []
-
-    def __init__(self):
-        return ForcingData.from_directory(datastore.default_forcing_directory)
-
-    @classmethod
-    def from_directory(cls, dirname):
-        self.data_directory = data_directory
-
-    @classmethod
-    def from_config(cls, config):
-        raise NotImplementedError()
-
-    def link(self, target_directory):
-        for filename in os.listdir(self.data_directory):
-            source_path = os.path.join(self.data_directory, filename)
-            target_path = os.path.join(target_directory, filename)
+def link_directory(source_path, target_path):
+    for filename in os.listdir(source_path):
+        source_item = os.path.join(source_path, filename)
+        target_item = os.path.join(target_path, filename)
+        if os.path.isfile(source_item):
             if os.path.isfile(target_path):
                 os.remove(target_path)
             os.symlink(source_path, target_path)
+        elif os.path.isdir(source_item):
+            link_directory(source_item, target_item)
+
+
+def get_forcing_directory_for_config(config):
+    pass
