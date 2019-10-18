@@ -120,8 +120,17 @@ def link_file(source_path, target_path):
     os.symlink(source_path, target_path)
 
 
-def data_is_downloaded():
-    pass
+def ensure_data_is_downloaded():
+    if not os.path.isfile(local_archive_filename):
+        download_data_archive()
+    if not os.path.isdir(app_data_dir):
+        extract_data()
+
+
+def refresh_downloaded_data():
+    os.remove(local_archive_filename)
+    shutil.rmtree(app_data_dir)
+    ensure_data_is_downloaded()
 
 
 def download_data_archive():
@@ -144,23 +153,7 @@ def extract_data():
         f.extractall(app_data_dir)
 
 
-def sort_files():
-    """
-    Re-organizes files in the newly extracted fv3gfs-data-dir to be more useful for this package.
-    """
-    shutil.move(os.path.join(app_data_dir, 'fv3gfs-data-docker'), inputdata_dir)
-    dirname = inputdata_dir
-    os.mkdir(os.path.join(dirname, 'gfs_initial_conditions'))
-    gfs_filenames = glob(os.path.join(dirname, 'rundir/INPUT/gfs_*.nc')) + glob(os.path.join(dirname, 'rundir/INPUT/sfc_*.nc'))
-    for filename in gfs_filenames:
-        shutil.move(filename, os.path.join(dirname, 'gfs_initial_conditions', os.path.basename(filename)))
-    shutil.move(os.path.join(dirname, 'rundir'), os.path.join(dirname, 'forcing_base'))
-    os.rmdir(os.path.join(dirname, 'forcing_base/RESTART'))
-
+ensure_data_is_downloaded()
 
 if __name__ == '__main__':
-    if not os.path.isfile(local_archive_filename):
-        download_data_archive()
-    shutil.rmtree(inputdata_dir)
-    extract_data()
-    sort_files()
+    pass
