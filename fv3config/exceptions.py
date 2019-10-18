@@ -2,5 +2,5 @@
 class InvalidFileError(Exception):
     pass
 
-class FileExistsError(Exception):
+class ConfigError(Exception):
     pass

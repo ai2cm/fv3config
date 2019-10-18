@@ -1,6 +1,6 @@
 import os
 import appdirs
-#from .exceptions import FileExistsError
+from .exceptions import ConfigError
 try:
     import wget
 except ImportError:
@@ -9,9 +9,6 @@ except ImportError:
 import tarfile
 import shutil
 from glob import glob
-
-class FileExistsError(Exception):
-    pass
 
 app_name = 'fv3gfs'
 app_author = 'vulcan'
@@ -25,13 +22,46 @@ url = f'http://storage.googleapis.com/vcm-ml-public/{dirname}/{filename}'
 
 local_archive_filename = os.path.join(app_data_dir, filename)
 
+forcing_directory_dict = {
+    'default': os.path.join(inputdata_dir, 'forcing_base')
+}
 
-def get_orographic_forcing_directory():
-    pass
+def get_orographic_forcing_directory(config):
+    npx = config['fv_core_nml']['npx']
+    npy = config['fv_core_nml']['npy']
+    if npx != npy:
+        raise ConfigError(f'npx and npy in fv_core_nml must be equal, but are {npx} and {npy}')
+    resolution = f'C{npx-1}'
+    dirname = os.path.join(inputdata_dir, f'orographic_data/{resolution}')
+    if not os.path.isdir(dirname):
+        valid_options = os.listdir(os.path.join(inputdata_dir, 'orographic_data'))
+        raise ConfigError(f'resolution {resolution} is unsupported; valid options are {valid_options}')
+    return dirname
 
 
-def get_base_forcing_directory():
-    pass
+def get_base_forcing_directory(option='default'):
+    if option not in forcing_directory_dict.keys():
+        raise ConfigError(
+            f'Forcing option {option} is not one of the valid options: {list(forcing_directory_dict.keys())}'
+        )
+    if option == 'default':
+        return os.path.join(inputdata_dir, 'forcing_base')
+    else:
+        raise NotImplementedError()
+
+
+def link_directory(source_path, target_path):
+    for base_filename in os.listdir(source_path):
+        source_item = os.path.join(source_path, base_filename)
+        target_item = os.path.join(target_path, base_filename)
+        if os.path.isfile(source_item):
+            if os.path.exists(target_item):
+                os.remove(target_item)
+            os.symlink(source_item, target_item)
+        elif os.path.isdir(source_item):
+            if not os.path.isdir(target_item):
+                os.mkdir(target_item)
+            link_directory(source_item, target_item)
 
 
 def data_is_downloaded():

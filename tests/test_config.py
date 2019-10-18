@@ -155,7 +155,7 @@ class ConfigDictTests(unittest.TestCase):
         self.assertEqual(written_lines[6:], target_lines[6:])
 
     def test_default_config_has_entries(self):
-        config = default_config_dict()
+        config = get_default_config_dict()
         self.assertTrue(len(config) > 0)
         self.assertIn('fv_core_nml', config)
         self.assertIsInstance(config['fv_core_nml'], dict)

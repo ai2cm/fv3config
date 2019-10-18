@@ -1,12 +1,15 @@
 import unittest
-from fv3config import ForcingData
+from fv3config import (
+    get_base_forcing_directory, get_orographic_forcing_directory, link_directory,
+    get_default_config_dict, ConfigError
+)
 import os
 import shutil
 
 test_directory = os.path.dirname(os.path.realpath(__file__))
 
-required_forcing_filenames = [
-    f'co2historicaldata_{year}' for year in range(2010, 2017)
+required_base_forcing_filenames = [
+    f'co2historicaldata_{year}.txt' for year in range(2010, 2017)
 ] + [
     'sfc_emissivity_idx.txt',
     'solarconstant_noaa_an.txt',
@@ -14,9 +17,6 @@ required_forcing_filenames = [
     'data_table',
     'INPUT/global_o3prdlos.f77'
 ] + [
-    f'INPUT/oro_data.tile{n}.nc' for n in range(1, 7)
-] + [
-    'grb/CFSR_SEAICE.1982.2012.monthly.clim.grb',
     'grb/CFSR.SEAICE.1982.2012.monthly.clim.grb', 'grb/global_snoclim.1.875.grb',
     'grb/RTGSST.1982.2012.monthly.clim.grb', 'grb/global_snowfree_albedo.bosu.t1534.3072.1536.rg.grb',
     'grb/global_albedo4.1x1.grb', 'grb/global_soilmgldas.t1534.3072.1536.grb',
@@ -26,6 +26,10 @@ required_forcing_filenames = [
     'grb/global_shdmax.0.144x0.144.grb', 'grb/global_vegtype.igbp.t1534.3072.1536.rg.grb',
     'grb/global_shdmin.0.144x0.144.grb', 'grb/seaice_newland.grb',
     'grb/global_slope.1x1.grb',
+]
+
+required_orographic_forcing_filenames = [
+    f'oro_data.tile{tile}.nc' for tile in range(1, 7)
 ]
 
 class RunDirectory(object):
@@ -52,40 +56,48 @@ class ForcingTests(unittest.TestCase):
         self._run_directory_list.append(RunDirectory(full_path))
         return full_path
 
-    def test_init_from_empty_directory(self):
+    def test_link_default_base_forcing_directory(self):
         rundir = self.make_run_directory('test_rundir')
-        forcing = ForcingData(rundir)
-        self.assertEqual(forcing.data_directory, rundir)
-
-    def test_get_forcing_directory_for_empty_config(self):
-        rundir = self.make_run_directory('test_rundir')
-        forcing = ForcingData.from_config({})
-        forcing.link(rundir)
-        for filename in required_forcing_filenames:
+        forcing_dir = get_base_forcing_directory()
+        self.assertTrue(os.path.isdir(forcing_dir))
+        link_directory(forcing_dir, rundir)
+        for filename in required_base_forcing_filenames:
             full_filename = os.path.join(rundir, filename)
             self.assertTrue(os.path.isfile(full_filename), msg=full_filename)
 
+    def test_invalid_base_forcing_option(self):
+        with self.assertRaises(ConfigError):
+            get_base_forcing_directory('invalid_option')
 
-    def test_init_from_one_file_in_subdirectory(self):
-        pass
+    def test_link_default_orographic_forcing_directory(self):
+        rundir = self.make_run_directory('test_rundir')
+        config = get_default_config_dict()
+        orographic_forcing_dir = get_orographic_forcing_directory(config)
+        self.assertTrue(os.path.isdir(orographic_forcing_dir))
+        link_directory(orographic_forcing_dir, rundir)
+        for filename in required_orographic_forcing_filenames:
+            full_filename = os.path.join(rundir, filename)
+            self.assertTrue(os.path.isfile(full_filename), msg=full_filename)
 
-    def test_init_from_realistic_directory(self):
-        pass
+    def test_zero_resolution_orographic_forcing_directory(self):
+        config = {
+            'fv_core_nml': {
+                'npx': 0,
+                'npy': 0,
+            }
+        }
+        with self.assertRaises(ConfigError):
+            get_orographic_forcing_directory(config)
 
-    def test_link_from_one_file_in_directory(self):
-        pass
-
-    def test_link_from_one_file_in_subdirectory(self):
-        pass
-
-    def test_link_from_realistic_directory(self):
-        pass
-
-    def test_init_from_default_config(self):
-        pass
-
-    def test_link_from_default_config(self):
-        pass
+    def test_negative_resolution_orographic_forcing_directory(self):
+        config = {
+            'fv_core_nml': {
+                'npx': -1,
+                'npy': -1,
+            }
+        }
+        with self.assertRaises(ConfigError):
+            get_orographic_forcing_directory(config)
 
 
 if __name__ == '__main__':

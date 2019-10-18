@@ -3,17 +3,17 @@
 """Top-level package for FV3Config."""
 
 from .config import (
-    config_dict_to_namelist, config_dict_from_namelist, config_dict_from_directory, default_config_dict,
+    config_dict_to_namelist, config_dict_from_namelist, config_dict_from_directory, get_default_config_dict,
 )
-from .exceptions import InvalidFileError
+from .exceptions import InvalidFileError, ConfigError
 from .initial_conditions import GFSData, RestartData
-from .forcing import ForcingData
+from .datastore import get_base_forcing_directory, get_orographic_forcing_directory, link_directory
 
 __all__ = [
-    config_dict_to_namelist, config_dict_from_namelist, config_dict_from_directory, default_config_dict,
-    InvalidFileError,
+    config_dict_to_namelist, config_dict_from_namelist, config_dict_from_directory, get_default_config_dict,
+    InvalidFileError, ConfigError,
     GFSData, RestartData,
-    ForcingData,
+    get_base_forcing_directory, get_orographic_forcing_directory, link_directory
 ]
 
 __author__ = """Vulcan Technologies, LLC"""

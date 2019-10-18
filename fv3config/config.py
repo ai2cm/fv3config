@@ -5,7 +5,7 @@ from .exceptions import InvalidFileError
 
 package_directory = os.path.dirname(os.path.realpath(__file__))
 
-def default_config_dict():
+def get_default_config_dict():
     return f90nml.read(os.path.join(package_directory, 'data/default.nml'))
 
 

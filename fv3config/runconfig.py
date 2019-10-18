@@ -1,15 +1,16 @@
-from .config import default_config_dict, ConfigDict, config_dict_to_namelist
-from .forcing import ForcingData
+from .config import get_default_config_dict, ConfigDict, config_dict_to_namelist
+from .datastore import get_base_forcing_directory, link_directory
 
 class RunConfig(object):
 
     def __init__(self, input_data=None, forcing_dir=None, config=None):
         if config is None:
-            self._config = default_config_dict()
+            self._config = get_default_config_dict()
         else:
             self._config = config
         self._input_data = input_data or StateData.from_config(self._config)
-        self._forcing_data = forcing_data or ForcingData.from_config(self._config)
+        self._base_forcing_dir = get_base_forcing_directory()
+        self._orographic_forcing_dir = get_orographic_forcing_directory(self._config)
 
     @property
     def config(self):
@@ -33,6 +34,6 @@ class RunConfig(object):
         self._input_data = input_data
 
     def write(self, target_directory):
-        self._forcing_data.link(target_directory)
+        link_directory(self._base_forcing_dir, target_directory)
         self._input_data.write(target_directory)
         config_dict_to_namelist(self._config, os.path.join(target_directory, 'input.nml'))
