@@ -1,5 +1,5 @@
 import os
-import datastore
+from . import datastore
 
 class ForcingData(object):
 

@@ -7,11 +7,13 @@ from .config import (
 )
 from .exceptions import InvalidFileError
 from .initial_conditions import GFSData, RestartData
+from .forcing import ForcingData
 
 __all__ = [
     config_dict_to_namelist, config_dict_from_namelist, config_dict_from_directory, default_config_dict,
     InvalidFileError,
     GFSData, RestartData,
+    ForcingData,
 ]
 
 __author__ = """Vulcan Technologies, LLC"""
