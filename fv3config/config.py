@@ -28,10 +28,6 @@ def config_dict_from_namelist(namelist_filename):
     return return_dict
 
 
-def config_dict_from_directory(dirname):
-    return config_dict_from_namelist(os.path.join(dirname, 'input.nml'))
-
-
 def write_run_directory(config_dict, target_directory):
     initial_conditions_dir = get_initial_conditions_directory(config_dict)
     base_forcing_dir = get_base_forcing_directory(config_dict)

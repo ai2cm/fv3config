@@ -1,8 +1,12 @@
 import unittest
 from fv3config import (
-    get_base_forcing_directory, get_orographic_forcing_directory, link_directory,
-    get_default_config_dict, ConfigError, get_initial_conditions_directory,
-    write_run_directory, get_field_table_filename, get_diag_table_filename
+    get_default_config_dict, ConfigError,
+    write_run_directory
+)
+from fv3config.datastore import (
+    get_base_forcing_directory, get_orographic_forcing_directory,
+    link_directory, get_initial_conditions_directory, get_field_table_filename,
+    get_diag_table_filename,
 )
 import os
 import shutil

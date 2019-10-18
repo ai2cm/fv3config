@@ -1,5 +1,5 @@
 import unittest
-from fv3config import config_dict_to_namelist, config_dict_from_namelist, config_dict_from_directory, InvalidFileError, default_config_dict
+from fv3config import config_dict_to_namelist, config_dict_from_namelist, InvalidFileError, get_default_config_dict
 import os
 import shutil
 import f90nml
@@ -89,20 +89,6 @@ class ConfigDictTests(unittest.TestCase):
         with open(namelist_filename, 'w') as f:
             f.write(all_types_namelist)
         config = config_dict_from_namelist(namelist_filename)
-        self.assertEqual(config, all_types_dict)
-
-    def test_init_from_empty_directory(self):
-        rundir = self.make_run_directory('test_rundir')
-        namelist_filename = os.path.join(rundir, 'input.nml')
-        with self.assertRaises(InvalidFileError):
-            config_dict_from_directory(rundir)
-
-    def test_init_from_directory_with_namelist(self):
-        rundir = self.make_run_directory('test_rundir')
-        namelist_filename = os.path.join(rundir, 'input.nml')
-        with open(namelist_filename, 'w') as f:
-            f.write(all_types_namelist)
-        config = config_dict_from_directory(rundir)
         self.assertEqual(config, all_types_dict)
 
     def test_empty_write_to_namelist(self):
