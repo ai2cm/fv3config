@@ -132,16 +132,74 @@ class ForcingTests(unittest.TestCase):
         self.assertTrue('field_table' in filename)
 
     def test_get_specified_field_table_filename(self):
-        pass
+        rundir = self.make_run_directory('test_rundir')
+        source_rundir = self.make_run_directory('source_rundir')
+        field_table_filename = os.path.join(source_rundir, 'field_table')
+        open(field_table_filename, 'w').close()
+        config = get_default_config_dict()
+        config['field_table'] = field_table_filename
+        filename = get_field_table_filename(config)
+        self.assertEqual(filename, field_table_filename)
+
+
+    def test_get_bad_field_table_filename(self):
+        rundir = self.make_run_directory('test_rundir')
+        field_table_filename = '/not/a/path/field_table'
+        config = get_default_config_dict()
+        config['field_table'] = field_table_filename
+        with self.assertRaises(ConfigError):
+            get_field_table_filename(config)
 
     def test_get_specified_diag_table_filename(self):
-        pass
+        rundir = self.make_run_directory('test_rundir')
+        source_rundir = self.make_run_directory('source_rundir')
+        diag_table_filename = os.path.join(source_rundir, 'diag_table')
+        open(diag_table_filename, 'w').close()
+        config = get_default_config_dict()
+        config['diag_table'] = diag_table_filename
+        filename = get_diag_table_filename(config)
+        self.assertEqual(filename, diag_table_filename)
+
+
+    def test_get_bad_diag_table_filename(self):
+        rundir = self.make_run_directory('test_rundir')
+        diag_table_filename = '/not/a/path/diag_table'
+        config = get_default_config_dict()
+        config['diag_table'] = diag_table_filename
+        with self.assertRaises(ConfigError):
+            get_diag_table_filename(config)
 
     def test_get_specified_initial_conditions_directory(self):
-        pass
+        rundir = self.make_run_directory('test_rundir')
+        source_rundir = self.make_run_directory('source_rundir')
+        config = get_default_config_dict()
+        config['initial_conditions'] = source_rundir
+        dirname = get_initial_conditions_directory(config)
+        self.assertEqual(dirname, source_rundir)
+
+    def test_get_bad_initial_conditions_directory(self):
+        rundir = self.make_run_directory('test_rundir')
+        source_rundir = '/not/a/real/directory'
+        config = get_default_config_dict()
+        config['initial_conditions'] = source_rundir
+        with self.assertRaises(ConfigError):
+            get_initial_conditions_directory(config)
 
     def test_get_specified_forcing_directory(self):
-        pass
+        rundir = self.make_run_directory('test_rundir')
+        source_rundir = self.make_run_directory('source_rundir')
+        config = get_default_config_dict()
+        config['forcing'] = source_rundir
+        dirname = get_base_forcing_directory(config)
+        self.assertEqual(dirname, source_rundir)
+
+    def test_get_bad_forcing_directory(self):
+        rundir = self.make_run_directory('test_rundir')
+        source_rundir = '/not/a/real/directory'
+        config = get_default_config_dict()
+        config['forcing'] = source_rundir
+        with self.assertRaises(ConfigError):
+            get_base_forcing_directory(config)
 
     def test_write_default_run_directory(self):
         rundir = self.make_run_directory('test_rundir')

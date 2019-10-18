@@ -62,12 +62,18 @@ def get_base_forcing_directory(config):
 
 
 def get_initial_conditions_directory(config):
-    resolution = get_resolution(config)
-    if resolution != 'C48':
-        raise NotImplemenedError(
-            'Default initial conditions only available for C48, please specify an initial conditions directory'
-        )
-    return os.path.join(inputdata_dir, 'gfs_initial_conditions')
+    if 'initial_conditions' in config:
+        dirname = config['initial_conditions']
+        if not os.path.isdir(dirname):
+            raise ConfigError(f'Specified initial conditions directory {dirname} does not exist')
+    else:
+        resolution = get_resolution(config)
+        if resolution != 'C48':
+            raise NotImplemenedError(
+                'Default initial conditions only available for C48, please specify an initial conditions directory'
+            )
+        dirname = os.path.join(inputdata_dir, 'gfs_initial_conditions')
+    return dirname
 
 
 def get_diag_table_filename(config):
@@ -76,15 +82,17 @@ def get_diag_table_filename(config):
         return option
     elif option not in diag_table_options_dict.keys():
         raise ConfigError(
-            f'Diag table option {option} is not one of the valid options: {list(initial_conditions_dict.keys())}'
+            f'Diag table option {option} is not one of the valid options: {list(diag_table_options_dict.keys())}'
         )
     else:
         return diag_table_options_dict[option]
 
 
 def get_field_table_filename(config):
-    if os.path.isfile(config.get('field_table', '')):
+    if 'field_table' in config:
         filename = config.get('field_table')
+        if not os.path.isfile(config['field_table']):
+            raise ConfigError(f'Specified field table {filename} does not exist')
     elif config['gfs_physics_nml'].get('imp_physics', 11) != 11:
         raise NotImplemenedError(
             'Currently only have a field_table for GFS physics (gfs_physics_nml.imp_physics = 11)'
