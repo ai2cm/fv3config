@@ -1,7 +1,7 @@
 import unittest
 from fv3config import (
     get_base_forcing_directory, get_orographic_forcing_directory, link_directory,
-    get_default_config_dict, ConfigError
+    get_default_config_dict, ConfigError, get_initial_conditions_directory
 )
 import os
 import shutil
@@ -30,6 +30,13 @@ required_base_forcing_filenames = [
 
 required_orographic_forcing_filenames = [
     f'oro_data.tile{tile}.nc' for tile in range(1, 7)
+]
+
+required_default_initial_conditions_filenames = [
+    'gfs_ctrl.nc'] + [
+    f'gfs_data.tile{n}.nc' for n in range(1, 7)
+] + [
+    f'sfc_data.tile{n}.nc' for n in range(1, 7)
 ]
 
 class RunDirectory(object):
@@ -65,6 +72,10 @@ class ForcingTests(unittest.TestCase):
             full_filename = os.path.join(rundir, filename)
             self.assertTrue(os.path.isfile(full_filename), msg=full_filename)
 
+    def test_get_custom_forcing_directory(self):
+        forcing_dir = get_base_forcing_directory(option=test_directory)
+        self.assertEqual(forcing_dir, test_directory)
+
     def test_invalid_base_forcing_option(self):
         with self.assertRaises(ConfigError):
             get_base_forcing_directory('invalid_option')
@@ -98,6 +109,15 @@ class ForcingTests(unittest.TestCase):
         }
         with self.assertRaises(ConfigError):
             get_orographic_forcing_directory(config)
+
+    def test_link_default_initial_conditions_directory(self):
+        rundir = self.make_run_directory('test_rundir')
+        initial_conditions_dir = get_initial_conditions_directory()
+        self.assertTrue(os.path.isdir(initial_conditions_dir))
+        link_directory(initial_conditions_dir, rundir)
+        for filename in required_default_initial_conditions_filenames:
+            full_filename = os.path.join(rundir, filename)
+            self.assertTrue(os.path.isfile(full_filename), msg=full_filename)
 
 
 if __name__ == '__main__':

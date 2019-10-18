@@ -26,6 +26,10 @@ forcing_directory_dict = {
     'default': os.path.join(inputdata_dir, 'forcing_base')
 }
 
+initial_conditions_dict = {
+    'default': os.path.join(inputdata_dir, 'gfs_initial_conditions')
+}
+
 def get_orographic_forcing_directory(config):
     npx = config['fv_core_nml']['npx']
     npy = config['fv_core_nml']['npy']
@@ -40,14 +44,25 @@ def get_orographic_forcing_directory(config):
 
 
 def get_base_forcing_directory(option='default'):
-    if option not in forcing_directory_dict.keys():
+    if os.path.isdir(option):
+        return option
+    elif option not in forcing_directory_dict.keys():
         raise ConfigError(
             f'Forcing option {option} is not one of the valid options: {list(forcing_directory_dict.keys())}'
         )
-    if option == 'default':
-        return os.path.join(inputdata_dir, 'forcing_base')
     else:
-        raise NotImplementedError()
+        return forcing_directory_dict[option]
+
+
+def get_initial_conditions_directory(option='default'):
+    if os.path.isdir(option):
+        return option
+    elif option not in initial_conditions_dict.keys():
+        raise ConfigError(
+            f'Forcing option {option} is not one of the valid options: {list(initial_conditions_dict.keys())}'
+        )
+    else:
+        return initial_conditions_dict[option]
 
 
 def link_directory(source_path, target_path):

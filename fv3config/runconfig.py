@@ -3,7 +3,7 @@ from .datastore import get_base_forcing_directory, link_directory
 
 class RunConfig(object):
 
-    def __init__(self, input_data=None, forcing_dir=None, config=None):
+    def __init__(self, config=None):
         if config is None:
             self._config = get_default_config_dict()
         else:
@@ -35,5 +35,6 @@ class RunConfig(object):
 
     def write(self, target_directory):
         link_directory(self._base_forcing_dir, target_directory)
+        link_directory(self._orographic_forcing_dir, target_directory)
         self._input_data.write(target_directory)
         config_dict_to_namelist(self._config, os.path.join(target_directory, 'input.nml'))
