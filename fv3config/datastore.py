@@ -26,16 +26,22 @@ forcing_directory_dict = {
     'default': os.path.join(inputdata_dir, 'forcing_base')
 }
 
-initial_conditions_dict = {
-    'default': os.path.join(inputdata_dir, 'gfs_initial_conditions')
+diag_table_options_dict = {
+    'default': os.path.join(inputdata_dir, 'diag_table')
 }
 
-def get_orographic_forcing_directory(config):
+
+def get_resolution(config):
     npx = config['fv_core_nml']['npx']
     npy = config['fv_core_nml']['npy']
     if npx != npy:
         raise ConfigError(f'npx and npy in fv_core_nml must be equal, but are {npx} and {npy}')
     resolution = f'C{npx-1}'
+    return resolution
+
+
+def get_orographic_forcing_directory(config):
+    resolution = get_resolution(config)
     dirname = os.path.join(inputdata_dir, f'orographic_data/{resolution}')
     if not os.path.isdir(dirname):
         valid_options = os.listdir(os.path.join(inputdata_dir, 'orographic_data'))
@@ -43,26 +49,49 @@ def get_orographic_forcing_directory(config):
     return dirname
 
 
-def get_base_forcing_directory(option='default'):
-    if os.path.isdir(option):
-        return option
-    elif option not in forcing_directory_dict.keys():
+def get_base_forcing_directory(config):
+    forcing_option = config.get('forcing', 'default')
+    if os.path.isdir(forcing_option):
+        return forcing_option
+    elif forcing_option not in forcing_directory_dict.keys():
         raise ConfigError(
-            f'Forcing option {option} is not one of the valid options: {list(forcing_directory_dict.keys())}'
+            f'Forcing option {forcing_option} is not one of the valid options: {list(forcing_directory_dict.keys())}'
         )
     else:
-        return forcing_directory_dict[option]
+        return forcing_directory_dict[forcing_option]
 
 
-def get_initial_conditions_directory(option='default'):
-    if os.path.isdir(option):
+def get_initial_conditions_directory(config):
+    resolution = get_resolution(config)
+    if resolution != 'C48':
+        raise NotImplemenedError(
+            'Default initial conditions only available for C48, please specify an initial conditions directory'
+        )
+    return os.path.join(inputdata_dir, 'gfs_initial_conditions')
+
+
+def get_diag_table_filename(config):
+    option = config.get('diag_table', 'default')
+    if os.path.isfile(option):
         return option
-    elif option not in initial_conditions_dict.keys():
+    elif option not in diag_table_options_dict.keys():
         raise ConfigError(
-            f'Forcing option {option} is not one of the valid options: {list(initial_conditions_dict.keys())}'
+            f'Diag table option {option} is not one of the valid options: {list(initial_conditions_dict.keys())}'
         )
     else:
-        return initial_conditions_dict[option]
+        return diag_table_options_dict[option]
+
+
+def get_field_table_filename(config):
+    if os.path.isfile(config.get('field_table', '')):
+        filename = config.get('field_table')
+    elif config['gfs_physics_nml'].get('imp_physics', 11) != 11:
+        raise NotImplemenedError(
+            'Currently only have a field_table for GFS physics (gfs_physics_nml.imp_physics = 11)'
+        )
+    else:
+        filename = os.path.join(inputdata_dir, 'field_table')
+    return filename
 
 
 def link_directory(source_path, target_path):
@@ -77,6 +106,10 @@ def link_directory(source_path, target_path):
             if not os.path.isdir(target_item):
                 os.mkdir(target_item)
             link_directory(source_item, target_item)
+
+
+def link_file(source_path, target_path):
+    os.symlink(source_path, target_path)
 
 
 def data_is_downloaded():

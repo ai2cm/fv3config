@@ -164,6 +164,7 @@
        ivegsrc        = 1
        isot           = 1
        debug          = .false.
+       imp_physics    = 11
 /
 
  &gfdl_cloud_microphysics_nml

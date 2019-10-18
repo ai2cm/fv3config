@@ -2,7 +2,7 @@ import unittest
 from fv3config import (
     get_base_forcing_directory, get_orographic_forcing_directory, link_directory,
     get_default_config_dict, ConfigError, get_initial_conditions_directory,
-    write_run_directory
+    write_run_directory, get_field_table_filename, get_diag_table_filename
 )
 import os
 import shutil
@@ -40,6 +40,11 @@ required_default_initial_conditions_filenames = [
     f'sfc_data.tile{n}.nc' for n in range(1, 7)
 ]
 
+additional_required_filenames = [
+    'diag_table',
+    'field_table',
+]
+
 class RunDirectory(object):
 
     def __init__(self, directory_path):
@@ -66,20 +71,13 @@ class ForcingTests(unittest.TestCase):
 
     def test_link_default_base_forcing_directory(self):
         rundir = self.make_run_directory('test_rundir')
-        forcing_dir = get_base_forcing_directory()
+        config = get_default_config_dict()
+        forcing_dir = get_base_forcing_directory(config)
         self.assertTrue(os.path.isdir(forcing_dir))
         link_directory(forcing_dir, rundir)
         for filename in required_base_forcing_filenames:
             full_filename = os.path.join(rundir, filename)
             self.assertTrue(os.path.isfile(full_filename), msg=full_filename)
-
-    def test_get_custom_forcing_directory(self):
-        forcing_dir = get_base_forcing_directory(option=test_directory)
-        self.assertEqual(forcing_dir, test_directory)
-
-    def test_invalid_base_forcing_option(self):
-        with self.assertRaises(ConfigError):
-            get_base_forcing_directory('invalid_option')
 
     def test_link_default_orographic_forcing_directory(self):
         rundir = self.make_run_directory('test_rundir')
@@ -113,24 +111,52 @@ class ForcingTests(unittest.TestCase):
 
     def test_link_default_initial_conditions_directory(self):
         rundir = self.make_run_directory('test_rundir')
-        initial_conditions_dir = get_initial_conditions_directory()
+        config = get_default_config_dict()
+        initial_conditions_dir = get_initial_conditions_directory(config)
         self.assertTrue(os.path.isdir(initial_conditions_dir))
         link_directory(initial_conditions_dir, rundir)
         for filename in required_default_initial_conditions_filenames:
             full_filename = os.path.join(rundir, filename)
             self.assertTrue(os.path.isfile(full_filename), msg=full_filename)
 
+    def test_default_diag_table_filename(self):
+        config = get_default_config_dict()
+        filename = get_diag_table_filename(config)
+        self.assertTrue(os.path.isfile(filename))
+        self.assertTrue('diag_table' in filename)
+
+    def test_default_field_table_filename(self):
+        config = get_default_config_dict()
+        filename = get_field_table_filename(config)
+        self.assertTrue(os.path.isfile(filename))
+        self.assertTrue('field_table' in filename)
+
+    def test_get_specified_field_table_filename(self):
+        pass
+
+    def test_get_specified_diag_table_filename(self):
+        pass
+
+    def test_get_specified_initial_conditions_directory(self):
+        pass
+
+    def test_get_specified_forcing_directory(self):
+        pass
 
     def test_write_default_run_directory(self):
         rundir = self.make_run_directory('test_rundir')
         config = get_default_config_dict()
         write_run_directory(config, rundir)
+        missing_filenames = []
         for filename in (
                 required_default_initial_conditions_filenames +
                 required_base_forcing_filenames +
-                required_orographic_forcing_filenames):
+                required_orographic_forcing_filenames +
+                additional_required_filenames):
             full_filename = os.path.join(rundir, filename)
-            self.assertTrue(os.path.isfile(full_filename), msg=full_filename)
+            if not os.path.isfile(full_filename):
+                missing_filenames.append(full_filename)
+        self.assertTrue(len(missing_filenames) == 0, missing_filenames)
 
 
 if __name__ == '__main__':
