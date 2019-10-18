@@ -1,6 +1,10 @@
 import os
 import f90nml
 from .exceptions import InvalidFileError
+from .datastore import (
+    get_base_forcing_directory, get_orographic_forcing_directory,
+    get_initial_conditions_directory, link_directory
+)
 
 
 package_directory = os.path.dirname(os.path.realpath(__file__))
@@ -25,3 +29,16 @@ def config_dict_from_namelist(namelist_filename):
 
 def config_dict_from_directory(dirname):
     return config_dict_from_namelist(os.path.join(dirname, 'input.nml'))
+
+
+def write_run_directory(config_dict, target_directory):
+    initial_conditions_dir = get_initial_conditions_directory()
+    base_forcing_dir = get_base_forcing_directory()
+    orographic_forcing_dir = get_orographic_forcing_directory(config_dict)
+    if not os.path.isdir(target_directory):
+        os.mkdir(target_directory)
+    link_directory(base_forcing_dir, target_directory)
+    link_directory(orographic_forcing_dir, target_directory)
+    link_directory(initial_conditions_dir, target_directory)
+    config_dict_to_namelist(config_dict, os.path.join(target_directory, 'input.nml'))
+

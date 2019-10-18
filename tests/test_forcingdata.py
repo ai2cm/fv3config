@@ -1,7 +1,8 @@
 import unittest
 from fv3config import (
     get_base_forcing_directory, get_orographic_forcing_directory, link_directory,
-    get_default_config_dict, ConfigError, get_initial_conditions_directory
+    get_default_config_dict, ConfigError, get_initial_conditions_directory,
+    write_run_directory
 )
 import os
 import shutil
@@ -116,6 +117,18 @@ class ForcingTests(unittest.TestCase):
         self.assertTrue(os.path.isdir(initial_conditions_dir))
         link_directory(initial_conditions_dir, rundir)
         for filename in required_default_initial_conditions_filenames:
+            full_filename = os.path.join(rundir, filename)
+            self.assertTrue(os.path.isfile(full_filename), msg=full_filename)
+
+
+    def test_write_default_run_directory(self):
+        rundir = self.make_run_directory('test_rundir')
+        config = get_default_config_dict()
+        write_run_directory(config, rundir)
+        for filename in (
+                required_default_initial_conditions_filenames +
+                required_base_forcing_filenames +
+                required_orographic_forcing_filenames):
             full_filename = os.path.join(rundir, filename)
             self.assertTrue(os.path.isfile(full_filename), msg=full_filename)
 

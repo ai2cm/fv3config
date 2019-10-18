@@ -4,6 +4,7 @@
 
 from .config import (
     config_dict_to_namelist, config_dict_from_namelist, config_dict_from_directory, get_default_config_dict,
+    write_run_directory,
 )
 from .exceptions import InvalidFileError, ConfigError
 from .datastore import (
@@ -13,6 +14,7 @@ from .datastore import (
 
 __all__ = [
     config_dict_to_namelist, config_dict_from_namelist, config_dict_from_directory, get_default_config_dict,
+    write_run_directory,
     InvalidFileError, ConfigError,
     get_base_forcing_directory, get_orographic_forcing_directory, link_directory
 ]
