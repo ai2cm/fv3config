@@ -22,7 +22,7 @@ url = f'http://storage.googleapis.com/vcm-ml-public/{filename}'
 local_archive_filename = os.path.join(app_data_dir, filename)
 
 forcing_directory_dict = {
-    'default': os.path.join(inputdata_dir, 'forcing_base')
+    'default': os.path.join(inputdata_dir, 'base_forcing')
 }
 
 diag_table_options_dict = {
