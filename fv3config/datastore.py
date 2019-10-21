@@ -17,7 +17,7 @@ app_data_dir = appdirs.user_data_dir(app_name, app_author)
 inputdata_dir = os.path.join(app_data_dir, 'inputdata')
 
 filename = '2019-10-18-fv3gfs-inputdata.tar.gz'
-filename = '2019-10-18-fv3gfs-inputdata'
+filename_root = '2019-10-18-fv3gfs-inputdata'
 url = f'http://storage.googleapis.com/vcm-ml-public/{filename}'
 local_archive_filename = os.path.join(app_data_dir, filename)
 
