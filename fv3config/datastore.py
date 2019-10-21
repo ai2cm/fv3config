@@ -121,7 +121,7 @@ def link_file(source_path, target_path):
 def ensure_data_is_downloaded():
     if not os.path.isfile(local_archive_filename):
         download_data_archive()
-    if not os.path.isdir(app_data_dir):
+    if not os.path.isdir(inputdata_dir):
         extract_data()
 
 
