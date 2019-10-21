@@ -149,6 +149,7 @@ def extract_data():
         os.mkdir(app_data_dir)
     with tarfile.open(os.path.join(app_data_dir, filename), mode='r:gz') as f:
         f.extractall(app_data_dir)
+        shutil.move(os.path.join(app_data_dir, filename_root), inputdata_dir)
 
 
 ensure_data_is_downloaded()
