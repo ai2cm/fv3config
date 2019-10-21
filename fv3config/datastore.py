@@ -16,10 +16,8 @@ app_author = 'vulcan'
 app_data_dir = appdirs.user_data_dir(app_name, app_author)
 inputdata_dir = os.path.join(app_data_dir, 'inputdata')
 
-dirname = '2019-09-27-FV3GFS-docker-input-c48-LH-nml'
-filename = 'fv3gfs-data-docker_2019-09-27.tar.gz'
-url = f'http://storage.googleapis.com/vcm-ml-public/{dirname}/{filename}'
-
+filename = '2019-10-18-fv3gfs-inputdata.tar.gz'
+url = f'http://storage.googleapis.com/vcm-ml-public/{filename}'
 local_archive_filename = os.path.join(app_data_dir, filename)
 
 forcing_directory_dict = {
