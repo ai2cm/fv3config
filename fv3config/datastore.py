@@ -14,7 +14,7 @@ app_name = 'fv3gfs'
 app_author = 'vulcan'
 
 app_data_dir = appdirs.user_data_dir(app_name, app_author)
-inputdata_dir = os.path.join(app_data_dir, 'inputdata')
+local_archive_dir = os.path.join(app_data_dir, 'archive')
 
 filename = '2019-10-18-fv3gfs-inputdata.tar.gz'
 filename_root = '2019-10-18-fv3gfs-inputdata'
@@ -22,15 +22,15 @@ url = f'http://storage.googleapis.com/vcm-ml-public/{filename}'
 local_archive_filename = os.path.join(app_data_dir, filename)
 
 forcing_directory_dict = {
-    'default': os.path.join(inputdata_dir, 'base_forcing')
+    'default': os.path.join(local_archive_dir, 'base_forcing')
 }
 
 diag_table_options_dict = {
-    'default': os.path.join(inputdata_dir, 'diag_table')
+    'default': os.path.join(local_archive_dir, 'diag_table')
 }
 
 data_table_options_dict = {
-    'default': os.path.join(inputdata_dir, 'data_table')
+    'default': os.path.join(local_archive_dir, 'data_table')
 }
 
 
@@ -45,9 +45,9 @@ def get_resolution(config):
 
 def get_orographic_forcing_directory(config):
     resolution = get_resolution(config)
-    dirname = os.path.join(inputdata_dir, f'orographic_data/{resolution}')
+    dirname = os.path.join(local_archive_dir, f'orographic_data/{resolution}')
     if not os.path.isdir(dirname):
-        valid_options = os.listdir(os.path.join(inputdata_dir, 'orographic_data'))
+        valid_options = os.listdir(os.path.join(local_archive_dir, 'orographic_data'))
         raise ConfigError(f'resolution {resolution} is unsupported; valid options are {valid_options}')
     return dirname
 
@@ -75,7 +75,7 @@ def get_initial_conditions_directory(config):
             raise NotImplemenedError(
                 'Default initial conditions only available for C48, please specify an initial conditions directory'
             )
-        dirname = os.path.join(inputdata_dir, 'gfs_initial_conditions')
+        dirname = os.path.join(local_archive_dir, 'gfs_initial_conditions')
     return dirname
 
 
@@ -114,7 +114,7 @@ def get_field_table_filename(config):
             'gfs_physics_nml.ncld = 5) '
         )
     else:
-        filename = os.path.join(inputdata_dir, 'field_table')
+        filename = os.path.join(local_archive_dir, 'field_table')
     return filename
 
 
@@ -139,7 +139,7 @@ def link_file(source_path, target_path):
 def ensure_data_is_downloaded():
     if not os.path.isfile(local_archive_filename):
         download_data_archive()
-    if not os.path.isdir(inputdata_dir):
+    if not os.path.isdir(local_archive_dir):
         extract_data()
 
 
@@ -167,7 +167,7 @@ def extract_data():
         os.mkdir(app_data_dir)
     with tarfile.open(os.path.join(app_data_dir, filename), mode='r:gz') as f:
         f.extractall(app_data_dir)
-        shutil.move(os.path.join(app_data_dir, filename_root), inputdata_dir)
+        shutil.move(os.path.join(app_data_dir, filename_root), local_archive_dir)
 
 
 ensure_data_is_downloaded()
