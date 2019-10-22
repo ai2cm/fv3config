@@ -1,5 +1,5 @@
 import unittest
-from fv3config import config_dict_to_namelist, config_dict_from_namelist, InvalidFileError, get_default_config_dict
+from fv3config import config_to_namelist, config_from_namelist, InvalidFileError, get_default_config
 import os
 import shutil
 import f90nml
@@ -66,21 +66,21 @@ class ConfigDictTests(unittest.TestCase):
         rundir = self.make_run_directory('test_rundir')
         namelist_filename = os.path.join(rundir, 'input.nml')
         open(namelist_filename, 'a').close()
-        config = config_dict_from_namelist(namelist_filename)
+        config = config_from_namelist(namelist_filename)
         self.assertIsInstance(config, dict)
 
     def test_init_from_missing_namelist(self):
         rundir = self.make_run_directory('test_rundir')
         namelist_filename = os.path.join(rundir, 'input.nml')
         with self.assertRaises(InvalidFileError):
-            config_dict_from_namelist(namelist_filename)
+            config_from_namelist(namelist_filename)
 
     def test_init_from_one_item_namelist(self):
         rundir = self.make_run_directory('test_rundir')
         namelist_filename = os.path.join(rundir, 'input.nml')
         with open(namelist_filename, 'w') as f:
             f.write(one_item_namelist)
-        config = config_dict_from_namelist(namelist_filename)
+        config = config_from_namelist(namelist_filename)
         self.assertEqual(config, one_item_dict)
 
     def test_init_from_many_item_namelist(self):
@@ -88,14 +88,14 @@ class ConfigDictTests(unittest.TestCase):
         namelist_filename = os.path.join(rundir, 'input.nml')
         with open(namelist_filename, 'w') as f:
             f.write(all_types_namelist)
-        config = config_dict_from_namelist(namelist_filename)
+        config = config_from_namelist(namelist_filename)
         self.assertEqual(config, all_types_dict)
 
     def test_empty_write_to_namelist(self):
         rundir = self.make_run_directory('test_rundir')
         namelist_filename = os.path.join(rundir, 'input.nml')
         config = {}
-        config_dict_to_namelist(config, namelist_filename)
+        config_to_namelist(config, namelist_filename)
         self.assertTrue(os.path.isfile(namelist_filename))
         with open(namelist_filename, 'r') as namelist_file:
             written_namelist = namelist_file.read()
@@ -105,7 +105,7 @@ class ConfigDictTests(unittest.TestCase):
         rundir = self.make_run_directory('test_rundir')
         namelist_filename = os.path.join(rundir, 'input.nml')
         config = deepcopy(one_item_dict)
-        config_dict_to_namelist(config, namelist_filename)
+        config_to_namelist(config, namelist_filename)
         self.assertTrue(os.path.isfile(namelist_filename))
         with open(namelist_filename, 'r') as namelist_file:
             written_namelist = namelist_file.read()
@@ -115,7 +115,7 @@ class ConfigDictTests(unittest.TestCase):
         rundir = self.make_run_directory('test_rundir')
         namelist_filename = os.path.join(rundir, 'input.nml')
         config = deepcopy(all_types_dict)
-        config_dict_to_namelist(config, namelist_filename)
+        config_to_namelist(config, namelist_filename)
         self.assertTrue(os.path.isfile(namelist_filename))
         with open(namelist_filename, 'r') as namelist_file:
             written_lines = namelist_file.readlines()
@@ -131,7 +131,7 @@ class ConfigDictTests(unittest.TestCase):
         with open(namelist_filename, 'w') as f:
             f.write(one_item_namelist)
         config = deepcopy(all_types_dict)
-        config_dict_to_namelist(config, namelist_filename)
+        config_to_namelist(config, namelist_filename)
         with open(namelist_filename, 'r') as namelist_file:
             written_lines = namelist_file.readlines()
         target_lines = [line + '\n' for line in all_types_namelist.split('\n') if line]
@@ -141,7 +141,7 @@ class ConfigDictTests(unittest.TestCase):
         self.assertEqual(written_lines[6:], target_lines[6:])
 
     def test_default_config_has_entries(self):
-        config = get_default_config_dict()
+        config = get_default_config()
         self.assertTrue(len(config) > 0)
         self.assertIn('fv_core_nml', config)
         self.assertIsInstance(config['fv_core_nml'], dict)

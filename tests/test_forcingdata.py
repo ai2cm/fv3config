@@ -1,6 +1,6 @@
 import unittest
 from fv3config import (
-    get_default_config_dict, ConfigError,
+    get_default_config, ConfigError,
     write_run_directory
 )
 from fv3config.datastore import (
@@ -79,7 +79,7 @@ class ForcingTests(unittest.TestCase):
 
     def test_link_default_base_forcing_directory(self):
         rundir = self.make_run_directory('test_rundir')
-        config = get_default_config_dict()
+        config = get_default_config()
         forcing_dir = get_base_forcing_directory(config)
         self.assertTrue(os.path.isdir(forcing_dir))
         link_directory(forcing_dir, rundir)
@@ -89,7 +89,7 @@ class ForcingTests(unittest.TestCase):
 
     def test_link_default_orographic_forcing_directory(self):
         rundir = self.make_run_directory('test_rundir')
-        config = get_default_config_dict()
+        config = get_default_config()
         orographic_forcing_dir = get_orographic_forcing_directory(config)
         self.assertTrue(os.path.isdir(orographic_forcing_dir))
         link_directory(orographic_forcing_dir, os.path.join(rundir, 'INPUT'))
@@ -119,7 +119,7 @@ class ForcingTests(unittest.TestCase):
 
     def test_link_default_initial_conditions_directory(self):
         rundir = self.make_run_directory('test_rundir')
-        config = get_default_config_dict()
+        config = get_default_config()
         initial_conditions_dir = get_initial_conditions_directory(config)
         self.assertTrue(os.path.isdir(initial_conditions_dir))
         link_directory(initial_conditions_dir, os.path.join(rundir, 'INPUT'))
@@ -128,13 +128,13 @@ class ForcingTests(unittest.TestCase):
             self.assertTrue(os.path.isfile(full_filename), msg=full_filename)
 
     def test_default_diag_table_filename(self):
-        config = get_default_config_dict()
+        config = get_default_config()
         filename = get_diag_table_filename(config)
         self.assertTrue(os.path.isfile(filename))
         self.assertTrue('diag_table' in filename)
 
     def test_default_field_table_filename(self):
-        config = get_default_config_dict()
+        config = get_default_config()
         filename = get_field_table_filename(config)
         self.assertTrue(os.path.isfile(filename))
         self.assertTrue('field_table' in filename)
@@ -144,7 +144,7 @@ class ForcingTests(unittest.TestCase):
         source_rundir = self.make_run_directory('source_rundir')
         field_table_filename = os.path.join(source_rundir, 'field_table')
         open(field_table_filename, 'w').close()
-        config = get_default_config_dict()
+        config = get_default_config()
         config['field_table'] = field_table_filename
         filename = get_field_table_filename(config)
         self.assertEqual(filename, field_table_filename)
@@ -153,7 +153,7 @@ class ForcingTests(unittest.TestCase):
     def test_get_bad_field_table_filename(self):
         rundir = self.make_run_directory('test_rundir')
         field_table_filename = '/not/a/path/field_table'
-        config = get_default_config_dict()
+        config = get_default_config()
         config['field_table'] = field_table_filename
         with self.assertRaises(ConfigError):
             get_field_table_filename(config)
@@ -163,7 +163,7 @@ class ForcingTests(unittest.TestCase):
         source_rundir = self.make_run_directory('source_rundir')
         diag_table_filename = os.path.join(source_rundir, 'diag_table')
         open(diag_table_filename, 'w').close()
-        config = get_default_config_dict()
+        config = get_default_config()
         config['diag_table'] = diag_table_filename
         filename = get_diag_table_filename(config)
         self.assertEqual(filename, diag_table_filename)
@@ -172,7 +172,7 @@ class ForcingTests(unittest.TestCase):
     def test_get_bad_diag_table_filename(self):
         rundir = self.make_run_directory('test_rundir')
         diag_table_filename = '/not/a/path/diag_table'
-        config = get_default_config_dict()
+        config = get_default_config()
         config['diag_table'] = diag_table_filename
         with self.assertRaises(ConfigError):
             get_diag_table_filename(config)
@@ -180,7 +180,7 @@ class ForcingTests(unittest.TestCase):
     def test_get_specified_initial_conditions_directory(self):
         rundir = self.make_run_directory('test_rundir')
         source_rundir = self.make_run_directory('source_rundir')
-        config = get_default_config_dict()
+        config = get_default_config()
         config['initial_conditions'] = source_rundir
         dirname = get_initial_conditions_directory(config)
         self.assertEqual(dirname, source_rundir)
@@ -188,7 +188,7 @@ class ForcingTests(unittest.TestCase):
     def test_get_bad_initial_conditions_directory(self):
         rundir = self.make_run_directory('test_rundir')
         source_rundir = '/not/a/real/directory'
-        config = get_default_config_dict()
+        config = get_default_config()
         config['initial_conditions'] = source_rundir
         with self.assertRaises(ConfigError):
             get_initial_conditions_directory(config)
@@ -196,7 +196,7 @@ class ForcingTests(unittest.TestCase):
     def test_get_specified_forcing_directory(self):
         rundir = self.make_run_directory('test_rundir')
         source_rundir = self.make_run_directory('source_rundir')
-        config = get_default_config_dict()
+        config = get_default_config()
         config['forcing'] = source_rundir
         dirname = get_base_forcing_directory(config)
         self.assertEqual(dirname, source_rundir)
@@ -204,14 +204,14 @@ class ForcingTests(unittest.TestCase):
     def test_get_bad_forcing_directory(self):
         rundir = self.make_run_directory('test_rundir')
         source_rundir = '/not/a/real/directory'
-        config = get_default_config_dict()
+        config = get_default_config()
         config['forcing'] = source_rundir
         with self.assertRaises(ConfigError):
             get_base_forcing_directory(config)
 
     def test_write_default_run_directory(self):
         rundir = self.make_run_directory('test_rundir')
-        config = get_default_config_dict()
+        config = get_default_config()
         write_run_directory(config, rundir)
         missing_subdirectories = []
         for subdirectory in required_run_directory_subdirectories:
@@ -232,7 +232,7 @@ class ForcingTests(unittest.TestCase):
     def test_restart_directory_exists_and_empty(self):
         rundir = self.make_run_directory('test_rundir')
         restart_directory = os.path.join(rundir, 'RESTART')
-        config = get_default_config_dict()
+        config = get_default_config()
         write_run_directory(config, rundir)
         self.assertTrue(os.path.isdir(restart_directory))
         self.assertEqual(len(os.listdir(restart_directory)), 0)
