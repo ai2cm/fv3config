@@ -229,13 +229,13 @@ class ForcingTests(unittest.TestCase):
                 missing_filenames.append(full_filename)
         self.assertTrue(len(missing_filenames) == 0, missing_filenames)
 
-    def test_RESTART_directory_exists_and_empty(self):
+    def test_restart_directory_exists_and_empty(self):
         rundir = self.make_run_directory('test_rundir')
-        RESTART_directory = os.path.join(rundir, 'RESTART')
+        restart_directory = os.path.join(rundir, 'RESTART')
         config = get_default_config_dict()
         write_run_directory(config, rundir)
-        self.assertTrue(os.path.isdir(RESTART_directory))
-        self.assertEqual(len(os.listdir(RESTART_directory)), 0)
+        self.assertTrue(os.path.isdir(restart_directory))
+        self.assertEqual(len(os.listdir(restart_directory)), 0)
 
 
 
