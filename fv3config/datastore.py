@@ -29,6 +29,10 @@ diag_table_options_dict = {
     'default': os.path.join(inputdata_dir, 'diag_table')
 }
 
+data_table_options_dict = {
+    'default': os.path.join(inputdata_dir, 'data_table')
+}
+
 
 def get_resolution(config):
     npx = config['fv_core_nml']['npx']
@@ -73,6 +77,18 @@ def get_initial_conditions_directory(config):
             )
         dirname = os.path.join(inputdata_dir, 'gfs_initial_conditions')
     return dirname
+
+
+def get_data_table_filename(config):
+    option = config.get('data_table', 'default')
+    if os.path.isfile(option):
+        return option
+    elif option not in data_table_options_dict.keys():
+        raise ConfigError(
+            f'Data table option {option} is not one of the valid options: {list(data_table_options_dict.keys())}'
+        )
+    else:
+        return data_table_options_dict[option]
 
 
 def get_diag_table_filename(config):
