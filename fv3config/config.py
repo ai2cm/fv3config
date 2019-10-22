@@ -30,17 +30,20 @@ def config_dict_from_namelist(namelist_filename):
 
 
 def write_run_directory(config_dict, target_directory):
+    INPUT_directory = os.path.join(target_directory, 'INPUT')
+    RESTART_directory = os.path.join(target_directory, 'RESTART')
     initial_conditions_dir = get_initial_conditions_directory(config_dict)
     base_forcing_dir = get_base_forcing_directory(config_dict)
     orographic_forcing_dir = get_orographic_forcing_directory(config_dict)
     field_table_filename = get_field_table_filename(config_dict)
     diag_table_filename = get_diag_table_filename(config_dict)
     data_table_filename = get_data_table_filename(config_dict)
-    if not os.path.isdir(target_directory):
-        os.mkdir(target_directory)
+    for directory in [target_directory, INPUT_directory, RESTART_directory]:
+        if not os.path.isdir(directory):
+            os.mkdir(directory)
     link_directory(base_forcing_dir, target_directory)
-    link_directory(orographic_forcing_dir, target_directory)
-    link_directory(initial_conditions_dir, target_directory)
+    link_directory(orographic_forcing_dir, INPUT_directory)
+    link_directory(initial_conditions_dir, INPUT_directory)
     link_file(field_table_filename, os.path.join(target_directory, 'field_table'))
     link_file(diag_table_filename, os.path.join(target_directory, 'diag_table'))
     link_file(data_table_filename, os.path.join(target_directory, 'data_table'))

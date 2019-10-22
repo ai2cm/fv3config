@@ -13,6 +13,8 @@ import shutil
 
 test_directory = os.path.dirname(os.path.realpath(__file__))
 
+required_run_directory_subdirectories = ['INPUT', 'RESTART']
+
 required_base_forcing_filenames = [
     f'co2historicaldata_{year}.txt' for year in range(2010, 2017)
 ] + [
@@ -33,14 +35,14 @@ required_base_forcing_filenames = [
 ]
 
 required_orographic_forcing_filenames = [
-    f'oro_data.tile{tile}.nc' for tile in range(1, 7)
+    f'INPUT/oro_data.tile{tile}.nc' for tile in range(1, 7)
 ]
 
 required_default_initial_conditions_filenames = [
-    'gfs_ctrl.nc'] + [
-    f'gfs_data.tile{n}.nc' for n in range(1, 7)
+    'INPUT/gfs_ctrl.nc'] + [
+    f'INPUT/gfs_data.tile{n}.nc' for n in range(1, 7)
 ] + [
-    f'sfc_data.tile{n}.nc' for n in range(1, 7)
+    f'INPUT/sfc_data.tile{n}.nc' for n in range(1, 7)
 ]
 
 additional_required_filenames = [
@@ -53,6 +55,8 @@ class RunDirectory(object):
 
     def __init__(self, directory_path):
         os.mkdir(directory_path)
+        os.mkdir(os.path.join(directory_path, 'INPUT'))
+        os.mkdir(os.path.join(directory_path, 'RESTART'))
         self.directory_path = directory_path
 
     def cleanup(self):
@@ -88,7 +92,7 @@ class ForcingTests(unittest.TestCase):
         config = get_default_config_dict()
         orographic_forcing_dir = get_orographic_forcing_directory(config)
         self.assertTrue(os.path.isdir(orographic_forcing_dir))
-        link_directory(orographic_forcing_dir, rundir)
+        link_directory(orographic_forcing_dir, os.path.join(rundir, 'INPUT'))
         for filename in required_orographic_forcing_filenames:
             full_filename = os.path.join(rundir, filename)
             self.assertTrue(os.path.isfile(full_filename), msg=full_filename)
@@ -118,7 +122,7 @@ class ForcingTests(unittest.TestCase):
         config = get_default_config_dict()
         initial_conditions_dir = get_initial_conditions_directory(config)
         self.assertTrue(os.path.isdir(initial_conditions_dir))
-        link_directory(initial_conditions_dir, rundir)
+        link_directory(initial_conditions_dir, os.path.join(rundir, 'INPUT'))
         for filename in required_default_initial_conditions_filenames:
             full_filename = os.path.join(rundir, filename)
             self.assertTrue(os.path.isfile(full_filename), msg=full_filename)
@@ -209,6 +213,11 @@ class ForcingTests(unittest.TestCase):
         rundir = self.make_run_directory('test_rundir')
         config = get_default_config_dict()
         write_run_directory(config, rundir)
+        missing_subdirectories = []
+        for subdirectory in required_run_directory_subdirectories:
+            full_path = os.path.join(rundir, subdirectory)
+            if not os.path.isdir(full_path):
+                missing_subdirectories.append(full_path)
         missing_filenames = []
         for filename in (
                 required_default_initial_conditions_filenames +
@@ -219,6 +228,15 @@ class ForcingTests(unittest.TestCase):
             if not os.path.isfile(full_filename):
                 missing_filenames.append(full_filename)
         self.assertTrue(len(missing_filenames) == 0, missing_filenames)
+
+    def test_RESTART_directory_exists_and_empty(self):
+        rundir = self.make_run_directory('test_rundir')
+        RESTART_directory = os.path.join(rundir, 'RESTART')
+        config = get_default_config_dict()
+        write_run_directory(config, rundir)
+        self.assertTrue(os.path.isdir(RESTART_directory))
+        self.assertEqual(len(os.listdir(RESTART_directory)), 0)
+
 
 
 if __name__ == '__main__':
