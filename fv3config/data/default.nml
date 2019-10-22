@@ -11,7 +11,11 @@
      blocksize = 24
      chksum_debug = .false.
      dycore_only = .F.
-     fdiag = 1.
+     fdiag = 0.
+     fhout = 0.25
+     fhmax = 1024.0
+     fhouthf = 0.0
+     fhmaxhf = -1.0
 /
 
 &diag_manager_nml
@@ -66,7 +70,7 @@
        p_fac = 0.1
        k_split  = 1
        n_split  = 6
-       nwat = 2 
+       nwat = 6 
        na_init = 1
        d_ext = 0.0
        dnats = 1
@@ -84,15 +88,16 @@
        nggps_ic = .T.
        mountain = .F.
        ncep_ic = .F.
+       nudge = .false.
        d_con = 1.
-       hord_mt =  5
-       hord_vt =  5
-       hord_tm =  5
-       hord_dp =  5
+       hord_mt =  6
+       hord_vt =  6
+       hord_tm =  6
+       hord_dp =  6
        hord_tr = 8
        adjust_dry_mass = .F.
        consv_te = 1.
-       do_sat_adj = .F.
+       do_sat_adj = .T.
        consv_am = .F.
        fill = .T.
        dwind_2d = .F.
@@ -100,23 +105,22 @@
        warm_start = .F.
        no_dycore = .F.
        z_tracer = .T.
-       fill_dp = .T.
 /
 
  &coupler_nml
        months = 0
        days  = 0
        hours = 0
-       minutes = 15
+       minutes = 30
        seconds = 0
-       dt_atmos = 450
-       dt_ocean = 450
+       dt_atmos = 900
+       dt_ocean = 900
        current_date =  2016,08,01,00,0,0
        calendar = 'julian'
        memuse_verbose = .T.
-       atmos_nthreads = 2
+       atmos_nthreads = 1
        use_hyper_thread = .true.
-       ncores_per_node = 12
+       ncores_per_node = 32
 /
 
  &external_ic_nml 
@@ -129,13 +133,15 @@
 
 
  &gfs_physics_nml
-       fhzero         = 1.
+       fhzero         = 0.25
+       lprecip_accu   = .false.
        ldiag3d        = .false.
-       fhcyc          = 0.
+       fhcyc          = 24.
        nst_anl        = .true.
        use_ufo        = .true.
        pre_rad        = .false.
-       ncld           = 1
+       ncld           = 5
+       imp_physics    = 11
        pdfcld         = .false.
        fhswr          = 3600.
        fhlwr          = 3600.
@@ -164,12 +170,11 @@
        ivegsrc        = 1
        isot           = 1
        debug          = .false.
-       imp_physics    = 11
 /
 
  &gfdl_cloud_microphysics_nml
-       sedi_transport = .F. 
-       do_sedi_heat = .F.   
+       sedi_transport = .false.
+       do_sedi_heat = .false.
        rad_snow = .true.
        rad_graupel = .true.
        rad_rain = .true.
@@ -177,38 +182,38 @@
        const_vs = .F.
        const_vg = .F.
        const_vr = .F.
-       vi_fac = 1.0 ! for non-constant
-       vg_fac = 2.0 ! TEST: Increased
-       vi_max = 3.  ! increased 
-       vs_max = 6.  ! increased
-       vg_max = 20. ! **Really** increased 
-       vr_max = 16. ! increased 
-       qi_lim = 1. ! old Fast MP
+       vi_max = 1.
+       vs_max = 2.
+       vg_max = 12.
+       vr_max = 12.
+       qi_lim = 1.
        prog_ccn = .false.
        do_qa = .true.
-       fast_sat_adj = .T.
-       tau_l2v = 180
-       tau_v2l =  90.
-       tau_g2v = 600.
-       rthresh = 10.0e-6  ! This is a key parameter for cloud water ! use 10 for shallow conv
+       fast_sat_adj = .true.
+       tau_l2v = 300.
+       tau_l2v = 225.
+       tau_v2l = 150.
+       tau_g2v = 900.
+       rthresh = 10.e-6  ! This is a key parameter for cloud water
        dw_land  = 0.16
        dw_ocean = 0.10
        ql_gen = 1.0e-3
-       qi0_crt = 1.2e-4 
-       qi0_max = 2.0e-4 
-       qs0_crt = 1.0e-3 ! 10x smaller, increase snow --> graupel AC
-       tau_i2s = 1000.   !ice to snow autoconversion time
-       c_psaci = 0.1   
-       c_pgacs = 0.1 ! 100x increased rain --> graupel accretion
-       c_cracw = 1.0 
+       ql_mlt = 1.0e-3
+       qi0_crt = 8.0E-5
+       qs0_crt = 1.0e-3
+       tau_i2s = 1000.
+       c_psaci = 0.05
+       c_pgacs = 0.01
        rh_inc = 0.30
        rh_inr = 0.30
        rh_ins = 0.30
-       ccn_l = 270. !for CONUS
-       ccn_o = 90.
-       use_ppm = .T.  ! set to true
+       ccn_l = 300.
+       ccn_o = 100.
+       c_paut = 0.5
+       c_cracw = 0.8
+       use_ppm = .false.
        use_ccn = .true.
-       mono_prof = .false.
+       mono_prof = .true.
        z_slope_liq  = .true.
        z_slope_ice  = .true.
        de_ice = .false.
@@ -222,27 +227,27 @@
 /
 
 &namsfc
-       FNGLAC   = "./input/global_glacier.2x2.grb",
-       FNMXIC   = "./input/global_maxice.2x2.grb",
-       FNTSFC   = "./input/RTGSST.1982.2012.monthly.clim.grb",
-       FNSNOC   = "./input/global_snoclim.1.875.grb",
+       FNGLAC   = "grb/global_glacier.2x2.grb",
+       FNMXIC   = "grb/global_maxice.2x2.grb",
+       FNTSFC   = "grb/RTGSST.1982.2012.monthly.clim.grb",
+       FNSNOC   = "grb/global_snoclim.1.875.grb",
        FNZORC   = "igbp",
-       FNALBC   = "./input/global_snowfree_albedo.bosu.t1534.3072.1536.rg.grb",
-       FNALBC2  = "./input/global_albedo4.1x1.grb",
-       FNAISC   = "./input/CFSR.SEAICE.1982.2012.monthly.clim.grb",
-       FNTG3C   = "./input/global_tg3clim.2.6x1.5.grb",
-       FNVEGC   = "./input/global_vegfrac.0.144.decpercent.grb",
-       FNVETC   = "./input/global_vegtype.igbp.t1534.3072.1536.rg.grb",
-       FNSOTC   = "./input/global_soiltype.statsgo.t1534.3072.1536.rg.grb",
-       FNSMCC   = "./input/global_soilmgldas.t1534.3072.1536.grb",
-       FNMSKH   = "./input/seaice_newland.grb"
+       FNALBC   = "grb/global_snowfree_albedo.bosu.t1534.3072.1536.rg.grb",
+       FNALBC2  = "grb/global_albedo4.1x1.grb",
+       FNAISC   = "grb/CFSR.SEAICE.1982.2012.monthly.clim.grb",
+       FNTG3C   = "grb/global_tg3clim.2.6x1.5.grb",
+       FNVEGC   = "grb/global_vegfrac.0.144.decpercent.grb",
+       FNVETC   = "grb/global_vegtype.igbp.t1534.3072.1536.rg.grb",
+       FNSOTC   = "grb/global_soiltype.statsgo.t1534.3072.1536.rg.grb",
+       FNSMCC   = "grb/global_soilmgldas.t1534.3072.1536.grb",
+       FNMSKH   = "grb/seaice_newland.grb",
        FNTSFA   = "",
        FNACNA   = "",
        FNSNOA   = "",
-       FNVMNC   = "./input/global_shdmin.0.144x0.144.grb",
-       FNVMXC   = "./input/global_shdmax.0.144x0.144.grb",
-       FNSLPC   = "./input/global_slope.1x1.grb",
-       FNABSC   = "./input/global_mxsnoalb.uariz.t1534.3072.1536.rg.grb",
+       FNVMNC   = "grb/global_shdmin.0.144x0.144.grb",
+       FNVMXC   = "grb/global_shdmax.0.144x0.144.grb",
+       FNSLPC   = "grb/global_slope.1x1.grb",
+       FNABSC   = "grb/global_mxsnoalb.uariz.t1534.3072.1536.rg.grb",
        LDEBUG   =.false.,
        FSMCL(2) = 99999
        FSMCL(3) = 99999
@@ -261,10 +266,4 @@
        FABSL    = 99999,
        FSNOS    = 99999,
        FSICS    = 99999,
-/
-
-&nam_stochy
-  ntrunc = 94,
-  lon_s = 192,
-  lat_s = 96,
 /
