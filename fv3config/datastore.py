@@ -108,9 +108,10 @@ def get_field_table_filename(config):
         filename = config.get('field_table')
         if not os.path.isfile(config['field_table']):
             raise ConfigError(f'Specified field table {filename} does not exist')
-    elif config['gfs_physics_nml'].get('imp_physics') != 11:
+    elif config['gfs_physics_nml'].get('imp_physics') != 11 or config['gfs_physics_nml'].get('ncld') != 5:
         raise NotImplemenedError(
-            'Currently only have a field_table for GFDL Microphysics (gfs_physics_nml.imp_physics = 11)'
+            'Currently only have a field_table for GFDL Microphysics (gfs_physics_nml.imp_physics = 11 and '
+            'gfs_physics_nml.ncld = 5) '
         )
     else:
         filename = os.path.join(inputdata_dir, 'field_table')
