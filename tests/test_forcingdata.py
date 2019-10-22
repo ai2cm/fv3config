@@ -6,7 +6,7 @@ from fv3config import (
 from fv3config.datastore import (
     get_base_forcing_directory, get_orographic_forcing_directory,
     link_directory, get_initial_conditions_directory, get_field_table_filename,
-    get_diag_table_filename,
+    get_diag_table_filename, get_data_table_filename
 )
 import os
 import shutil
@@ -19,7 +19,6 @@ required_base_forcing_filenames = [
     'sfc_emissivity_idx.txt',
     'solarconstant_noaa_an.txt',
     'aerosol.dat',
-    'data_table',
     'INPUT/global_o3prdlos.f77'
 ] + [
     'grb/CFSR.SEAICE.1982.2012.monthly.clim.grb', 'grb/global_snoclim.1.875.grb',
@@ -45,6 +44,7 @@ required_default_initial_conditions_filenames = [
 ]
 
 additional_required_filenames = [
+    'data_table',
     'diag_table',
     'field_table',
 ]
