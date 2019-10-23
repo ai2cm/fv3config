@@ -5,8 +5,11 @@ from fv3config import (
 )
 from fv3config.datastore import (
     get_base_forcing_directory, get_orographic_forcing_directory,
-    link_directory, get_initial_conditions_directory, get_field_table_filename,
-    get_diag_table_filename, get_data_table_filename
+    link_directory, get_initial_conditions_directory
+)
+from fv3config.tables import (
+    get_field_table_filename, get_diag_table_filename, get_data_table_filename,
+    get_microphysics_name_from_config
 )
 import os
 import shutil
@@ -49,6 +52,7 @@ additional_required_filenames = [
     'data_table',
     'diag_table',
     'field_table',
+    'input.nml',
 ]
 
 class RunDirectory(object):
@@ -99,9 +103,11 @@ class ForcingTests(unittest.TestCase):
 
     def test_zero_resolution_orographic_forcing_directory(self):
         config = {
-            'fv_core_nml': {
-                'npx': 0,
-                'npy': 0,
+            'namelist': {
+                'fv_core_nml': {
+                    'npx': 0,
+                    'npy': 0,
+                }
             }
         }
         with self.assertRaises(ConfigError):
@@ -109,9 +115,11 @@ class ForcingTests(unittest.TestCase):
 
     def test_negative_resolution_orographic_forcing_directory(self):
         config = {
-            'fv_core_nml': {
-                'npx': -1,
-                'npy': -1,
+            'namelist': {
+                'fv_core_nml': {
+                    'npx': -1,
+                    'npy': -1,
+                }
             }
         }
         with self.assertRaises(ConfigError):
@@ -127,6 +135,12 @@ class ForcingTests(unittest.TestCase):
             full_filename = os.path.join(rundir, filename)
             self.assertTrue(os.path.isfile(full_filename), msg=full_filename)
 
+    def test_default_data_table_filename(self):
+        config = get_default_config()
+        filename = get_data_table_filename(config)
+        self.assertTrue(os.path.isfile(filename))
+        self.assertTrue('data_table' in filename)
+
     def test_default_diag_table_filename(self):
         config = get_default_config()
         filename = get_diag_table_filename(config)
@@ -139,27 +153,16 @@ class ForcingTests(unittest.TestCase):
         self.assertTrue(os.path.isfile(filename))
         self.assertTrue('field_table' in filename)
 
-    def test_get_specified_field_table_filename(self):
-        rundir = self.make_run_directory('test_rundir')
+    def test_get_specified_data_table_filename(self):
         source_rundir = self.make_run_directory('source_rundir')
-        field_table_filename = os.path.join(source_rundir, 'field_table')
-        open(field_table_filename, 'w').close()
+        data_table_filename = os.path.join(source_rundir, 'data_table')
+        open(data_table_filename, 'w').close()
         config = get_default_config()
-        config['field_table'] = field_table_filename
-        filename = get_field_table_filename(config)
-        self.assertEqual(filename, field_table_filename)
-
-
-    def test_get_bad_field_table_filename(self):
-        rundir = self.make_run_directory('test_rundir')
-        field_table_filename = '/not/a/path/field_table'
-        config = get_default_config()
-        config['field_table'] = field_table_filename
-        with self.assertRaises(ConfigError):
-            get_field_table_filename(config)
+        config['data_table'] = data_table_filename
+        filename = get_data_table_filename(config)
+        self.assertEqual(filename, data_table_filename)
 
     def test_get_specified_diag_table_filename(self):
-        rundir = self.make_run_directory('test_rundir')
         source_rundir = self.make_run_directory('source_rundir')
         diag_table_filename = os.path.join(source_rundir, 'diag_table')
         open(diag_table_filename, 'w').close()
@@ -168,9 +171,19 @@ class ForcingTests(unittest.TestCase):
         filename = get_diag_table_filename(config)
         self.assertEqual(filename, diag_table_filename)
 
+    def test_get_bad_field_table_filename(self):
+        config = get_default_config()
+        config['namelist']['gfs_physics_nml']['imp_physics'] = -1
+        with self.assertRaises(NotImplementedError):
+            get_field_table_filename(config)
+
+    def test_get_bad_microphysics_name_from_config(self):
+        config = get_default_config()
+        config['namelist']['gfs_physics_nml']['imp_physics'] = -1
+        with self.assertRaises(NotImplementedError):
+            get_microphysics_name_from_config(config)
 
     def test_get_bad_diag_table_filename(self):
-        rundir = self.make_run_directory('test_rundir')
         diag_table_filename = '/not/a/path/diag_table'
         config = get_default_config()
         config['diag_table'] = diag_table_filename
@@ -178,7 +191,6 @@ class ForcingTests(unittest.TestCase):
             get_diag_table_filename(config)
 
     def test_get_specified_initial_conditions_directory(self):
-        rundir = self.make_run_directory('test_rundir')
         source_rundir = self.make_run_directory('source_rundir')
         config = get_default_config()
         config['initial_conditions'] = source_rundir
@@ -186,7 +198,6 @@ class ForcingTests(unittest.TestCase):
         self.assertEqual(dirname, source_rundir)
 
     def test_get_bad_initial_conditions_directory(self):
-        rundir = self.make_run_directory('test_rundir')
         source_rundir = '/not/a/real/directory'
         config = get_default_config()
         config['initial_conditions'] = source_rundir
@@ -194,7 +205,6 @@ class ForcingTests(unittest.TestCase):
             get_initial_conditions_directory(config)
 
     def test_get_specified_forcing_directory(self):
-        rundir = self.make_run_directory('test_rundir')
         source_rundir = self.make_run_directory('source_rundir')
         config = get_default_config()
         config['forcing'] = source_rundir
@@ -202,7 +212,6 @@ class ForcingTests(unittest.TestCase):
         self.assertEqual(dirname, source_rundir)
 
     def test_get_bad_forcing_directory(self):
-        rundir = self.make_run_directory('test_rundir')
         source_rundir = '/not/a/real/directory'
         config = get_default_config()
         config['forcing'] = source_rundir

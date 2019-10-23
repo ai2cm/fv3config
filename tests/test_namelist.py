@@ -94,7 +94,7 @@ class ConfigDictTests(unittest.TestCase):
     def test_empty_write_to_namelist(self):
         rundir = self.make_run_directory('test_rundir')
         namelist_filename = os.path.join(rundir, 'input.nml')
-        config = {}
+        config = {'namelist': {}}
         config_to_namelist(config, namelist_filename)
         self.assertTrue(os.path.isfile(namelist_filename))
         with open(namelist_filename, 'r') as namelist_file:
@@ -104,7 +104,7 @@ class ConfigDictTests(unittest.TestCase):
     def test_one_item_write_to_namelist(self):
         rundir = self.make_run_directory('test_rundir')
         namelist_filename = os.path.join(rundir, 'input.nml')
-        config = deepcopy(one_item_dict)
+        config = {'namelist': deepcopy(one_item_dict)}
         config_to_namelist(config, namelist_filename)
         self.assertTrue(os.path.isfile(namelist_filename))
         with open(namelist_filename, 'r') as namelist_file:
@@ -114,7 +114,7 @@ class ConfigDictTests(unittest.TestCase):
     def test_many_items_write_to_namelist(self):
         rundir = self.make_run_directory('test_rundir')
         namelist_filename = os.path.join(rundir, 'input.nml')
-        config = deepcopy(all_types_dict)
+        config = {'namelist': deepcopy(all_types_dict)}
         config_to_namelist(config, namelist_filename)
         self.assertTrue(os.path.isfile(namelist_filename))
         with open(namelist_filename, 'r') as namelist_file:
@@ -130,7 +130,7 @@ class ConfigDictTests(unittest.TestCase):
         namelist_filename = os.path.join(rundir, 'input.nml')
         with open(namelist_filename, 'w') as f:
             f.write(one_item_namelist)
-        config = deepcopy(all_types_dict)
+        config = {'namelist': deepcopy(all_types_dict)}
         config_to_namelist(config, namelist_filename)
         with open(namelist_filename, 'r') as namelist_file:
             written_lines = namelist_file.readlines()
@@ -143,8 +143,11 @@ class ConfigDictTests(unittest.TestCase):
     def test_default_config_has_entries(self):
         config = get_default_config()
         self.assertTrue(len(config) > 0)
-        self.assertIn('fv_core_nml', config)
-        self.assertIsInstance(config['fv_core_nml'], dict)
+        self.assertIn('namelist', config)
+        self.assertIsInstance(config['namelist'], dict)
+        for name in ['diag_table', 'data_table', 'forcing']:
+            self.assertIn(name, config)
+            self.assertIsInstance(config[name], str)
         for name, value in config.items():
             self.assertIsInstance(name, str, f'key {name} is not a string')
 

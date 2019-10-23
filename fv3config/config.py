@@ -4,21 +4,32 @@ from .exceptions import InvalidFileError
 from .datastore import (
     get_base_forcing_directory, get_orographic_forcing_directory,
     get_initial_conditions_directory, link_directory, link_file,
+)
+from .tables import (
     get_field_table_filename, get_diag_table_filename,
     get_data_table_filename
 )
 
-
 package_directory = os.path.dirname(os.path.realpath(__file__))
 
+namelist_options_dict = {
+    'default': os.path.join(package_directory, 'data/namelist/default.nml')
+}
+
+
 def get_default_config():
-    return f90nml.read(os.path.join(package_directory, 'data/default.nml'))
+    config = {}
+    config['namelist'] = f90nml.read(namelist_options_dict['default'])
+    config['diag_table'] = 'default'
+    config['data_table'] = 'default'
+    config['forcing'] = 'default'
+    return config
 
 
 def config_to_namelist(config, namelist_filename):
     if os.path.isfile(namelist_filename):
         os.remove(namelist_filename)
-    f90nml.write(config, namelist_filename)
+    f90nml.write(config['namelist'], namelist_filename)
 
 
 def config_from_namelist(namelist_filename):

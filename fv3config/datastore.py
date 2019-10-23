@@ -1,6 +1,6 @@
 import os
 import appdirs
-from .exceptions import ConfigError
+from .exceptions import ConfigError, NotImplementedError
 try:
     import wget
 except ImportError:
@@ -16,8 +16,8 @@ app_author = 'vulcan'
 app_data_dir = appdirs.user_data_dir(app_name, app_author)
 local_archive_dir = os.path.join(app_data_dir, 'archive')
 
-filename = '2019-10-18-fv3gfs-inputdata.tar.gz'
-filename_root = '2019-10-18-fv3gfs-inputdata'
+filename = '2019-10-23-data-for-running-fv3gfs.tar.gz'
+filename_root = '2019-10-23-data-for-running-fv3gfs'
 url = f'http://storage.googleapis.com/vcm-ml-public/{filename}'
 local_archive_filename = os.path.join(app_data_dir, filename)
 
@@ -25,18 +25,10 @@ forcing_directory_dict = {
     'default': os.path.join(local_archive_dir, 'base_forcing')
 }
 
-diag_table_options_dict = {
-    'default': os.path.join(local_archive_dir, 'diag_table')
-}
-
-data_table_options_dict = {
-    'default': os.path.join(local_archive_dir, 'data_table')
-}
-
 
 def get_resolution(config):
-    npx = config['fv_core_nml']['npx']
-    npy = config['fv_core_nml']['npy']
+    npx = config['namelist']['fv_core_nml']['npx']
+    npy = config['namelist']['fv_core_nml']['npy']
     if npx != npy:
         raise ConfigError(f'npx and npy in fv_core_nml must be equal, but are {npx} and {npy}')
     resolution = f'C{npx-1}'
@@ -72,50 +64,11 @@ def get_initial_conditions_directory(config):
     else:
         resolution = get_resolution(config)
         if resolution != 'C48':
-            raise NotImplemenedError(
+            raise NotImplementedError(
                 'Default initial conditions only available for C48, please specify an initial conditions directory'
             )
         dirname = os.path.join(local_archive_dir, 'gfs_initial_conditions')
     return dirname
-
-
-def get_data_table_filename(config):
-    option = config.get('data_table', 'default')
-    if os.path.isfile(option):
-        return option
-    elif option not in data_table_options_dict.keys():
-        raise ConfigError(
-            f'Data table option {option} is not one of the valid options: {list(data_table_options_dict.keys())}'
-        )
-    else:
-        return data_table_options_dict[option]
-
-
-def get_diag_table_filename(config):
-    option = config.get('diag_table', 'default')
-    if os.path.isfile(option):
-        return option
-    elif option not in diag_table_options_dict.keys():
-        raise ConfigError(
-            f'Diag table option {option} is not one of the valid options: {list(diag_table_options_dict.keys())}'
-        )
-    else:
-        return diag_table_options_dict[option]
-
-
-def get_field_table_filename(config):
-    if 'field_table' in config:
-        filename = config.get('field_table')
-        if not os.path.isfile(config['field_table']):
-            raise ConfigError(f'Specified field table {filename} does not exist')
-    elif config['gfs_physics_nml'].get('imp_physics') != 11 or config['gfs_physics_nml'].get('ncld') != 5:
-        raise NotImplementedError(
-            'Currently only have a field_table for GFDL Microphysics (gfs_physics_nml.imp_physics = 11 and '
-            'gfs_physics_nml.ncld = 5) '
-        )
-    else:
-        filename = os.path.join(local_archive_dir, 'field_table')
-    return filename
 
 
 def link_directory(source_path, target_path):

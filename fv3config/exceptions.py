@@ -4,3 +4,6 @@ class InvalidFileError(Exception):
 
 class ConfigError(Exception):
     pass
+
+class NotImplementedError(Exception):
+    pass
