@@ -90,6 +90,10 @@ def link_file(source_path, target_path):
     os.symlink(source_path, target_path)
 
 
+def copy_file(source_path, target_path):
+    shutil.copy(source_path, target_path)
+
+
 def check_if_data_is_downloaded():
     if not os.path.isdir(local_archive_dir):
         raise DataMissingError(f'Required data for running fv3gfs not available. Try python -m fv3config.download_data')

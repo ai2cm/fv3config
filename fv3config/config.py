@@ -4,7 +4,7 @@ from .exceptions import InvalidFileError
 from .datastore import (
     get_base_forcing_directory, get_orographic_forcing_directory,
     get_initial_conditions_directory, link_directory, link_file,
-    check_if_data_is_downloaded
+    check_if_data_is_downloaded, copy_file
 )
 from .tables import (
     get_field_table_filename, get_diag_table_filename,
@@ -57,8 +57,8 @@ def write_run_directory(config, target_directory):
     link_directory(base_forcing_dir, target_directory)
     link_directory(orographic_forcing_dir, input_directory)
     link_directory(initial_conditions_dir, input_directory)
-    link_file(field_table_filename, os.path.join(target_directory, 'field_table'))
-    link_file(diag_table_filename, os.path.join(target_directory, 'diag_table'))
-    link_file(data_table_filename, os.path.join(target_directory, 'data_table'))
+    copy_file(field_table_filename, os.path.join(target_directory, 'field_table'))
+    copy_file(diag_table_filename, os.path.join(target_directory, 'diag_table'))
+    copy_file(data_table_filename, os.path.join(target_directory, 'data_table'))
     config_to_namelist(config, os.path.join(target_directory, 'input.nml'))
 
