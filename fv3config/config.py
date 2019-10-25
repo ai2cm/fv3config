@@ -4,6 +4,7 @@ from .exceptions import InvalidFileError
 from .datastore import (
     get_base_forcing_directory, get_orographic_forcing_directory,
     get_initial_conditions_directory, link_directory, link_file,
+    check_if_data_is_downloaded
 )
 from .tables import (
     get_field_table_filename, get_diag_table_filename,
@@ -41,6 +42,7 @@ def config_from_namelist(namelist_filename):
 
 
 def write_run_directory(config, target_directory):
+    check_if_data_is_downloaded()
     input_directory = os.path.join(target_directory, 'INPUT')
     restart_directory = os.path.join(target_directory, 'RESTART')
     initial_conditions_dir = get_initial_conditions_directory(config)

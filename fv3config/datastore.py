@@ -1,6 +1,7 @@
 import os
 import appdirs
-from .exceptions import ConfigError, NotImplementedError
+import logging
+from .exceptions import ConfigError, NotImplementedError, DataMissingError
 try:
     import wget
 except ImportError:
@@ -89,6 +90,11 @@ def link_file(source_path, target_path):
     os.symlink(source_path, target_path)
 
 
+def check_if_data_is_downloaded():
+    if not os.path.isdir(local_archive_dir):
+        raise DataMissingError(f'Required data for running fv3gfs not available. Try python -m fv3config.download_data')
+
+
 def ensure_data_is_downloaded():
     if not os.path.isfile(local_archive_filename):
         download_data_archive()
@@ -107,6 +113,7 @@ def download_data_archive():
         raise FileExistsError(f'Archive already exists at {local_archive_filename}')
     if not os.path.isdir(app_data_dir):
         os.makedirs(app_data_dir, exist_ok=True)
+    logging.info(f'Downloading required data for running fv3gfs to {app_data_dir}')
     if wget is not None:
         wget.download(url, out=local_archive_filename)
     else:
@@ -122,8 +129,6 @@ def extract_data():
         f.extractall(app_data_dir)
         shutil.move(os.path.join(app_data_dir, filename_root), local_archive_dir)
 
-
-ensure_data_is_downloaded()
 
 if __name__ == '__main__':
     pass

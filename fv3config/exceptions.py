@@ -1,3 +1,5 @@
+class DataMissingError(Exception):
+    pass
 
 class InvalidFileError(Exception):
     pass
