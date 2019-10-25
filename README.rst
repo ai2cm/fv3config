@@ -16,5 +16,7 @@ Basic usage
     config = get_default_config()
     write_run_directory(config, './rundir')
 
-`config` is a configuration dictionary which contains namelists, input data specifications,
+:code:`config` is a configuration dictionary which contains namelists, input data specifications,
 and other options. It can be edited just like any dictionary.
+
+For more in-depth usage, please refer to the documentation. This can be generated with :code:`make docs`.

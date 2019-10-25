@@ -12,15 +12,17 @@ The following code would write a default run directory::
     config = get_default_config()
     write_run_directory(config, './rundir')
 
-`config` is a configuration dictionary which contains namelists, input data specifications,
+:code:`config` is a configuration dictionary which contains namelists, input data specifications,
 and other options. It can be edited just like any dictionary. Namelists are specified as
 sub-dictionaries.
 
 Data Caching
 ------------
 
-`fv3config` writes run directories by symbolically linking cached data files into the directory.
-Before this data can be linked, it must be downloaded. This can be done form the command line::
+:code:`fv3config` writes run directories by symbolically linking cached data files into the directory.
+Before this data can be linked, it must be downloaded. This can be done form the command line:
+
+.. code-block:: console
 
     $ python -m fv3config.download_data
 
