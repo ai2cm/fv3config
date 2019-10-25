@@ -4,7 +4,8 @@ from fv3config import (
 )
 from fv3config.tables import (
     get_field_table_filename, get_diag_table_filename, get_data_table_filename,
-    get_microphysics_name_from_config
+    get_microphysics_name_from_config, get_current_date_from_coupler_res,
+    get_current_date_from_config
 )
 import os
 import shutil
@@ -12,10 +13,18 @@ import shutil
 
 test_directory = os.path.dirname(os.path.realpath(__file__))
 
-sample_coupler_res = """
-     2        (Calendar: no_calendar=0, thirty_day_months=1, julian=2, gregorian=3, noleap=4)
+
+valid_coupler_res = """    2        (Calendar: no_calendar=0, thirty_day_months=1, julian=2, gregorian=3, noleap=4)
   2016     8     1     0     0     0        Model start time:   year, month, day, hour, minute, second
   2016     8     3     0     0     0        Current model time: year, month, day, hour, minute, second
+/
+"""
+
+valid_current_date = [2016, 8, 3, 0, 0, 0]
+
+bad_coupler_res = """    2        (Calendar: no_calendar=0, thirty_day_months=1, julian=2, gregorian=3, noleap=4)
+  2016     8     1     0     0     0        Model start time:   year, month, day, hour, minute, second
+  2016     8  missing  0     0     0        Current model time: year, month, day, hour, minute, second
 /
 """
 
@@ -101,9 +110,27 @@ class ForcingTests(unittest.TestCase):
             get_diag_table_filename(config)
 
     def test_get_current_date_from_coupler_res(self):
-        config = get_default_config()
         rundir = self.make_run_directory('test_rundir')
-        diag_table_filename = os.path.join(rundir, 'diag_table')
-        with open(diag_filename, 'w') as f:
-            f.write(sample_diag_table)
-        self.assertIsInstance(config, dict)
+        coupler_res_filename = os.path.join(rundir, 'coupler.res')
+        with open(coupler_res_filename, 'w') as f:
+            f.write(valid_coupler_res)
+        current_date = get_current_date_from_coupler_res(coupler_res_filename)
+        self.assertEqual(current_date, valid_current_date)
+
+    def test_get_current_date_from_bad_coupler_res(self):
+        rundir = self.make_run_directory('test_rundir')
+        coupler_res_filename = os.path.join(rundir, 'coupler.res')
+        with open(coupler_res_filename, 'w') as f:
+            f.write(bad_coupler_res)
+        with self.assertRaises(ConfigError):
+            get_current_date_from_coupler_res(coupler_res_filename)
+
+    def test_get_current_date_from_config(self):
+        config = get_default_config()
+        config['namelist']['coupler_nml']['current_date'] = valid_current_date
+        current_date = get_current_date_from_config(config)
+        self.assertEqual(current_date, valid_current_date)
+
+
+if __name__ == '__main__':
+    unittest.main()

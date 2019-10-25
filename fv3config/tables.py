@@ -1,4 +1,5 @@
 import os
+import re
 from .exceptions import ConfigError
 from .datastore import get_initial_conditions_directory
 
@@ -44,15 +45,25 @@ def get_diag_table_filename(config):
         return diag_table_options_dict[option]
 
 
+def get_current_date_from_coupler_res(coupler_res_filename):
+    with open(coupler_res_filename) as f:
+        third_line = f.readlines()[2]
+        current_date = [int(d) for d in re.findall(r'\d+', third_line)]
+        if len(current_date) != 6:
+            raise ConfigError(
+                f'{coupler_res_filename} does not have a valid current model time (need six integers on third line)'
+            )
+    return current_date
+
+
 def get_current_date_from_config(config):
     force_date_from_namelist = config['namelist']['coupler_nml'].get('force_date_from_namelist', False)
     if force_date_from_namelist:
         current_date = config['namelist']['coupler_nml'].get('current_date', [0, 0, 0, 0, 0, 0])
     else:
-        coupler_res = os.path.join(get_initial_conditions_directory(config), 'coupler.res')
-        if os.path.exists(coupler_res):
-            with open(coupler_res) as file:
-                current_date = file.readlines()[2]
+        coupler_res_filename = os.path.join(get_initial_conditions_directory(config), 'coupler.res')
+        if os.path.exists(coupler_res_filename):
+            current_date = get_current_date_from_coupler_res(coupler_res_filename)
         else:
             current_date = config['namelist']['coupler_nml'].get('current_date', [0, 0, 0, 0, 0, 0])
     return current_date
@@ -61,7 +72,7 @@ def get_current_date_from_config(config):
 def write_diag_table(config, source_diag_table_filename, target_diag_table_filename):
     with open(source_diag_table_filename) as source_diag_table:
         lines = source_diag_table.read().splitlines()
-        lines[0] = config['experiment_name']
+        lines[0] = config.get('experiment_name', 'default_experiment')
         lines[1] = ' '.join([str(x) for x in get_current_date_from_config(config)])
         with open(target_diag_table_filename, 'w') as target_diag_table:
             target_diag_table.write('\n'.join(lines))

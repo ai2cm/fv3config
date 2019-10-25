@@ -151,5 +151,6 @@ class ConfigDictTests(unittest.TestCase):
         for name, value in config.items():
             self.assertIsInstance(name, str, f'key {name} is not a string')
 
+
 if __name__ == '__main__':
     unittest.main()
