@@ -1,15 +1,14 @@
 import os
-import appdirs
+import tarfile
+import shutil
 import logging
-from .exceptions import ConfigError, NotImplementedError, DataMissingError
+import appdirs
+from .exceptions import ConfigError, DataMissingError
 try:
     import wget
 except ImportError:
     wget = None
     import requests
-import tarfile
-import shutil
-from glob import glob
 
 app_name = 'fv3gfs'
 app_author = 'vulcan'
@@ -48,6 +47,8 @@ def get_resolution(config):
 
 
 def get_orographic_forcing_directory(config):
+    """Return the string path of the orographic forcing directory specified by a config dictonary.
+    """
     resolution = get_resolution(config)
     dirname = os.path.join(local_archive_dir, f'orographic_data/{resolution}')
     if not os.path.isdir(dirname):
@@ -57,18 +58,24 @@ def get_orographic_forcing_directory(config):
 
 
 def get_base_forcing_directory(config):
+    """Return the string path of the base forcing directory specified by a config dictonary.
+    """
     forcing_option = config.get('forcing', 'default')
     if os.path.isdir(forcing_option):
-        return forcing_option
-    elif forcing_option not in forcing_directory_dict.keys():
-        raise ConfigError(
-            f'Forcing option {forcing_option} is not one of the valid options: {list(forcing_directory_dict.keys())}'
-        )
+        return_value = forcing_option
     else:
-        return forcing_directory_dict[forcing_option]
+        if forcing_option not in forcing_directory_dict.keys():
+            raise ConfigError(
+                f'Forcing option {forcing_option} is not one of the valid options: {list(forcing_directory_dict.keys())}'
+            )
+        else:
+            return_value = forcing_directory_dict[forcing_option]
+    return return_value
 
 
 def get_initial_conditions_directory(config):
+    """Return the string path of the initial conditions directory specified by a config dictonary.
+    """
     if 'initial_conditions' in config:
         dirname = config['initial_conditions']
         if not os.path.isdir(dirname):
@@ -84,6 +91,8 @@ def get_initial_conditions_directory(config):
 
 
 def link_directory(source_path, target_path):
+    """Recursively symbolic link the files in a source path into a target path.
+    """
     for base_filename in os.listdir(source_path):
         source_item = os.path.join(source_path, base_filename)
         target_item = os.path.join(target_path, base_filename)
@@ -118,12 +127,14 @@ def ensure_data_is_downloaded():
 
 
 def refresh_downloaded_data():
+    """Delete and re-download the cached data. Assumes the data is present."""
     os.remove(local_archive_filename)
     shutil.rmtree(app_data_dir)
     ensure_data_is_downloaded()
 
 
 def download_data_archive():
+    """Download the cached data. Raises FileExistsError if dat ais already present."""
     if os.path.isfile(local_archive_filename):
         raise FileExistsError(f'Archive already exists at {local_archive_filename}')
     if not os.path.isdir(app_data_dir):
@@ -138,8 +149,7 @@ def download_data_archive():
 
 
 def extract_data():
-    if not os.path.isdir(app_data_dir):
-        os.mkdir(app_data_dir)
+    """Extract the downloaded archive, over-writing any data already present."""
     with tarfile.open(os.path.join(app_data_dir, filename), mode='r:gz') as f:
         f.extractall(app_data_dir)
         shutil.move(os.path.join(app_data_dir, filename_root), local_archive_dir)
