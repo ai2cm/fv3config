@@ -120,6 +120,7 @@ def check_if_data_is_downloaded():
 
 
 def ensure_data_is_downloaded():
+    """Check of the cached data is present, and if not, download it."""
     if not os.path.isfile(local_archive_filename):
         download_data_archive()
     if not os.path.isdir(local_archive_dir):
@@ -127,7 +128,7 @@ def ensure_data_is_downloaded():
 
 
 def refresh_downloaded_data():
-    """Delete and re-download the cached data. Assumes the data is present."""
+    """Delete the cached data (if present) and re-download it."""
     os.remove(local_archive_filename)
     shutil.rmtree(app_data_dir)
     ensure_data_is_downloaded()
