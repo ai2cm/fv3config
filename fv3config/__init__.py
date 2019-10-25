@@ -9,9 +9,9 @@ from .config import (
 from .exceptions import InvalidFileError, ConfigError
 
 __all__ = [
-    config_to_namelist, config_from_namelist, get_default_config,
-    write_run_directory,
-    InvalidFileError, ConfigError
+    'config_to_namelist', 'config_from_namelist', 'get_default_config',
+    'write_run_directory',
+    'InvalidFileError', 'ConfigError'
 ]
 
 __author__ = """Vulcan Technologies, LLC"""

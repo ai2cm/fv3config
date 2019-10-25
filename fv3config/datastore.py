@@ -28,6 +28,17 @@ forcing_directory_dict = {
 
 
 def get_resolution(config):
+    """Get the model resolution based on a configuration dictionary.
+
+    Args:
+        config (dict): a configuration dictionary
+    
+    Returns:
+        resolution (str): a model resolution (e.g. 'C48' or 'C96')
+
+    Raises:
+        ConfigError: if the number of processors in x and y on a tile are unequal
+    """
     npx = config['namelist']['fv_core_nml']['npx']
     npy = config['namelist']['fv_core_nml']['npy']
     if npx != npy:
