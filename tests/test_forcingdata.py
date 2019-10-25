@@ -5,7 +5,7 @@ from fv3config import (
 )
 from fv3config.datastore import (
     get_base_forcing_directory, get_orographic_forcing_directory,
-    link_directory, get_initial_conditions_directory
+    link_directory, get_initial_conditions_directory, ensure_data_is_downloaded
 )
 import os
 import shutil
@@ -190,4 +190,5 @@ class ForcingTests(unittest.TestCase):
 
 
 if __name__ == '__main__':
+    ensure_data_is_downloaded()
     unittest.main()
