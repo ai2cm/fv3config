@@ -129,8 +129,8 @@ def get_microphysics_name_from_config(config):
         str: name of microphysics scheme
 
     Raises:
-        NotImplementedError: no microphysics name defined for not specified
-            for imp_physics and ncld combination
+        NotImplementedError: no microphysics name defined for specified
+            imp_physics and ncld combination
     """
     imp_physics = config['namelist']['gfs_physics_nml'].get('imp_physics')
     ncld = config['namelist']['gfs_physics_nml'].get('ncld')
