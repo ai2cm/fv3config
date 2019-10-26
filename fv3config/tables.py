@@ -13,6 +13,8 @@ data_table_options_dict = {
 
 diag_table_options_dict = {
     'default': os.path.join(package_directory, 'data/diag_table/diag_table_default'),
+    'no_output': os.path.join(package_directory, 'data/diag_table/diag_table_no_output'),
+    'grid_spec': os.path.join(package_directory, 'data/diag_table/diag_table_grid_spec'),
 }
 
 field_table_options_dict = {
@@ -22,6 +24,14 @@ field_table_options_dict = {
 
 
 def get_data_table_filename(config):
+    """Return filename for data_table specified in config
+
+    Args:
+        config (dict): a configuration dictionary
+
+    Returns:
+        str: data_table filename
+    """
     option = config.get('data_table', 'default')
     if os.path.isfile(option):
         return option
@@ -34,6 +44,14 @@ def get_data_table_filename(config):
 
 
 def get_diag_table_filename(config):
+    """Return filename for diag_table specified in config
+
+    Args:
+        config (dict): a configuration dictionary
+
+    Returns:
+        str: diag_table filename
+    """
     option = config.get('diag_table', 'default')
     if os.path.isfile(option):
         return option
@@ -46,6 +64,14 @@ def get_diag_table_filename(config):
 
 
 def get_current_date_from_coupler_res(coupler_res_filename):
+    """Return current_date specified in coupler.res file
+
+    Args:
+        coupler_res_filename (str): a coupler.res filename
+
+    Returns:
+        list: current_date as list of ints [year, month, day, hour, min, sec]
+    """
     with open(coupler_res_filename) as f:
         third_line = f.readlines()[2]
         current_date = [int(d) for d in re.findall(r'\d+', third_line)]
@@ -57,6 +83,14 @@ def get_current_date_from_coupler_res(coupler_res_filename):
 
 
 def get_current_date_from_config(config):
+    """Return current_date from configuration dictionary
+
+    Args:
+        config (dict): a configuration dictionary
+
+    Returns:
+        list: current_date as list of ints [year, month, day, hour, min, sec]
+    """
     force_date_from_namelist = config['namelist']['coupler_nml'].get('force_date_from_namelist', False)
     if force_date_from_namelist:
         current_date = config['namelist']['coupler_nml'].get('current_date', [0, 0, 0, 0, 0, 0])
@@ -70,6 +104,13 @@ def get_current_date_from_config(config):
 
 
 def write_diag_table(config, source_diag_table_filename, target_diag_table_filename):
+    """Write diag_table with title and current_date from config dictionary
+
+    Args:
+        config (dict): a configuration dictionary
+        source_diag_table_filename (str): input diag_table filename
+        target_diag_table_filename (str): output diag_table filename
+    """
     with open(source_diag_table_filename) as source_diag_table:
         lines = source_diag_table.read().splitlines()
         lines[0] = config.get('experiment_name', 'default_experiment')
@@ -79,6 +120,18 @@ def write_diag_table(config, source_diag_table_filename, target_diag_table_filen
 
 
 def get_microphysics_name_from_config(config):
+    """Get name of microphysics scheme from configuration dictionary
+
+    Args:
+        config (dict): a configuration dictionary
+
+    Returns:
+        str: name of microphysics scheme
+
+    Raises:
+        NotImplementedError: no microphysics name defined for not specified
+            for imp_physics and ncld combination
+    """
     imp_physics = config['namelist']['gfs_physics_nml'].get('imp_physics')
     ncld = config['namelist']['gfs_physics_nml'].get('ncld')
     if imp_physics == 11 and ncld == 5:
@@ -93,6 +146,18 @@ def get_microphysics_name_from_config(config):
 
 
 def get_field_table_filename(config):
+    """Get field_table filename given configuration dictionary
+
+    Args:
+        config (dict): a configuration dictionary
+
+    Returns:
+        str: field_table filename
+
+    Raises:
+        NotImplementedError: if field_table for microphysics option specified
+            in config has not been implemented
+    """
     microphysics_name = get_microphysics_name_from_config(config)
     if microphysics_name in field_table_options_dict.keys():
         filename = field_table_options_dict[microphysics_name]
