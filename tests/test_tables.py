@@ -5,7 +5,7 @@ from fv3config import (
 from fv3config.tables import (
     get_field_table_filename, get_diag_table_filename, get_data_table_filename,
     get_microphysics_name_from_config, get_current_date_from_coupler_res,
-    get_current_date_from_config
+    get_current_date_from_config, write_diag_table
 )
 import os
 import shutil
@@ -27,6 +27,15 @@ bad_coupler_res = """    2        (Calendar: no_calendar=0, thirty_day_months=1,
   2016     8  missing  0     0     0        Current model time: year, month, day, hour, minute, second
 /
 """
+
+empty_config = {}
+
+config_for_write_diag_table_test = {'experiment_name': 'diag_table_test',
+                                    'namelist': {'coupler_nml': {'current_date': valid_current_date,
+                                                                 'force_date_from_namelist': True}}}
+
+diag_table_test_in = 'default_experiment\n2016 1 1 0 0 0\nother contents here'
+diag_table_test_out = 'diag_table_test\n2016 8 3 0 0 0\nother contents here'
 
 class RunDirectory(object):
 
@@ -109,6 +118,19 @@ class ForcingTests(unittest.TestCase):
         with self.assertRaises(ConfigError):
             get_diag_table_filename(config)
 
+    def test_get_diag_table_from_empty_config(self):
+        with self.assertRaises(ConfigError):
+            get_diag_table_filename(empty_config)
+
+    def test_get_data_table_from_empty_config(self):
+        with self.assertRaises(ConfigError):
+            get_data_table_filename(empty_config)
+
+    def test_write_diag_table_from_empty_config(self):
+        rundir = self.make_run_directory('rundir')
+        with self.assertRaises(ConfigError):
+            write_diag_table(empty_config, os.path.join(rundir, 'source'), os.path.join(rundir, 'target'))
+
     def test_get_current_date_from_coupler_res(self):
         rundir = self.make_run_directory('test_rundir')
         coupler_res_filename = os.path.join(rundir, 'coupler.res')
@@ -127,9 +149,20 @@ class ForcingTests(unittest.TestCase):
 
     def test_get_current_date_from_config(self):
         config = get_default_config()
+        config['namelist']['coupler_nml']['force_date_from_namelist'] = True
         config['namelist']['coupler_nml']['current_date'] = valid_current_date
         current_date = get_current_date_from_config(config)
         self.assertEqual(current_date, valid_current_date)
+
+    def test_write_diag_table(self):
+        rundir = self.make_run_directory('test_rundir')
+        diag_table_in = os.path.join(rundir, 'diag_table_in')
+        diag_table_out = os.path.join(rundir, 'diag_table_out')
+        with open(diag_table_in, 'w') as f:
+            f.write(diag_table_test_in)
+        write_diag_table(config_for_write_diag_table_test, diag_table_in, diag_table_out)
+        with open(diag_table_out) as f:
+            self.assertEqual(diag_table_test_out, f.read())
 
 
 if __name__ == '__main__':

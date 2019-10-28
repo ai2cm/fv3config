@@ -3,7 +3,7 @@ import f90nml
 from .exceptions import InvalidFileError
 from .datastore import (
     get_base_forcing_directory, get_orographic_forcing_directory,
-    get_initial_conditions_directory, link_directory, link_file,
+    get_initial_conditions_directory, link_directory,
     check_if_data_is_downloaded, copy_file
 )
 from .tables import (
@@ -25,6 +25,9 @@ def get_default_config():
     config['diag_table'] = 'default'
     config['data_table'] = 'default'
     config['forcing'] = 'default'
+    config['initial_conditions'] = 'gfs_initial_conditions'
+    config['experiment_name'] = 'default_experiment'
+
     return config
 
 

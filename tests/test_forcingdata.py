@@ -51,6 +51,15 @@ additional_required_filenames = [
     'input.nml',
 ]
 
+required_config_keys = [
+    'namelist',
+    'diag_table',
+    'data_table',
+    'forcing',
+    'experiment_name',
+    'initial_conditions'
+]
+
 class RunDirectory(object):
 
     def __init__(self, directory_path):
@@ -186,6 +195,10 @@ class ForcingTests(unittest.TestCase):
         write_run_directory(config, rundir)
         self.assertTrue(os.path.isdir(restart_directory))
         self.assertEqual(len(os.listdir(restart_directory)), 0)
+
+    def test_default_config_has_required_keys(self):
+        config = get_default_config()
+        self.assertTrue(set(required_config_keys) <= set(config.keys()))
 
 
 

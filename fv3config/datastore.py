@@ -25,13 +25,17 @@ forcing_directory_dict = {
     'default': os.path.join(local_archive_dir, 'base_forcing')
 }
 
+initial_conditions_options_dict = {
+    'gfs_initial_conditions': os.path.join(local_archive_dir, 'gfs_initial_conditions')
+}
+
 
 def get_resolution(config):
     """Get the model resolution based on a configuration dictionary.
 
     Args:
         config (dict): a configuration dictionary
-    
+
     Returns:
         resolution (str): a model resolution (e.g. 'C48' or 'C96')
 
@@ -47,7 +51,7 @@ def get_resolution(config):
 
 
 def get_orographic_forcing_directory(config):
-    """Return the string path of the orographic forcing directory specified by a config dictonary.
+    """Return the string path of the orographic forcing directory specified by a config dictionary.
     """
     resolution = get_resolution(config)
     dirname = os.path.join(local_archive_dir, f'orographic_data/{resolution}')
@@ -58,9 +62,11 @@ def get_orographic_forcing_directory(config):
 
 
 def get_base_forcing_directory(config):
-    """Return the string path of the base forcing directory specified by a config dictonary.
+    """Return the string path of the base forcing directory specified by a config dictionary.
     """
-    forcing_option = config.get('forcing', 'default')
+    if 'forcing' not in config:
+        raise ConfigError('config dictionary must have a \'forcing\' key')
+    forcing_option = config['forcing']
     if os.path.isdir(forcing_option):
         return_value = forcing_option
     else:
@@ -74,19 +80,21 @@ def get_base_forcing_directory(config):
 
 
 def get_initial_conditions_directory(config):
-    """Return the string path of the initial conditions directory specified by a config dictonary.
+    """Return the string path of the initial conditions directory specified by a config dictionary.
     """
-    if 'initial_conditions' in config:
-        dirname = config['initial_conditions']
-        if not os.path.isdir(dirname):
-            raise ConfigError(f'Specified initial conditions directory {dirname} does not exist')
-    else:
+    if 'initial_conditions' not in config:
+        raise ConfigError('config dictionary must have an \'initial_conditions\' key')
+    if config['initial_conditions'] in initial_conditions_options_dict:
         resolution = get_resolution(config)
         if resolution != 'C48':
             raise NotImplementedError(
                 'Default initial conditions only available for C48, please specify an initial conditions directory'
             )
-        dirname = os.path.join(local_archive_dir, 'gfs_initial_conditions')
+        dirname = initial_conditions_options_dict[config['initial_conditions']]
+    else:
+        dirname = config['initial_conditions']
+        if not os.path.isdir(dirname):
+            raise ConfigError(f'Specified initial conditions directory {dirname} does not exist')
     return dirname
 
 
@@ -116,7 +124,9 @@ def copy_file(source_path, target_path):
 
 def check_if_data_is_downloaded():
     if not os.path.isdir(local_archive_dir):
-        raise DataMissingError(f'Required data for running fv3gfs not available. Try python -m fv3config.download_data')
+        raise DataMissingError(
+            f'Required data for running fv3gfs not available. Try python -m fv3config.download_data or ensure_data_is_downloaded()'
+        )
 
 
 def ensure_data_is_downloaded():

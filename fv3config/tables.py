@@ -32,7 +32,9 @@ def get_data_table_filename(config):
     Returns:
         str: data_table filename
     """
-    option = config.get('data_table', 'default')
+    if 'data_table' not in config:
+        raise ConfigError('config dictionary must have a \'data_table\' key')
+    option = config['data_table']
     if os.path.isfile(option):
         return option
     elif option not in data_table_options_dict.keys():
@@ -52,7 +54,9 @@ def get_diag_table_filename(config):
     Returns:
         str: diag_table filename
     """
-    option = config.get('diag_table', 'default')
+    if 'diag_table' not in config:
+        raise ConfigError('config dictionary must have a \'diag_table\' key')
+    option = config['diag_table']
     if os.path.isfile(option):
         return option
     elif option not in diag_table_options_dict.keys():
@@ -111,6 +115,8 @@ def write_diag_table(config, source_diag_table_filename, target_diag_table_filen
         source_diag_table_filename (str): input diag_table filename
         target_diag_table_filename (str): output diag_table filename
     """
+    if 'experiment_name' not in config:
+        raise ConfigError('config dictionary must have a \'experiment_name\' key')
     with open(source_diag_table_filename) as source_diag_table:
         lines = source_diag_table.read().splitlines()
         lines[0] = config.get('experiment_name', 'default_experiment')
