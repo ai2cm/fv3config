@@ -1,7 +1,6 @@
 default_experiment
 2016 08 01 00 0 0
 #output files
-"grid_spec",              -1,  "months",   1, "days",  "time"
 "atmos_static",           -1,  "hours",    1, "hours", "time"
 "atmos_dt_atmos",          0,  "hours",    1, "hours",  "time"
 "atmos_8xdaily",           3,  "hours",    1, "hours",  "time"
@@ -9,14 +8,6 @@ default_experiment
 #
 #output variables
 #
-###
-# grid_spec
-###
- "dynamics", "grid_lon", "grid_lon", "grid_spec", "all", .false.,  "none", 2,
- "dynamics", "grid_lat", "grid_lat", "grid_spec", "all", .false.,  "none", 2,
- "dynamics", "grid_lont", "grid_lont", "grid_spec", "all", .false.,  "none", 2,
- "dynamics", "grid_latt", "grid_latt", "grid_spec", "all", .false.,  "none", 2,
- "dynamics", "area",     "area",     "grid_spec", "all", .false.,  "none", 2,
 ###
 # atmos_static
 ###
@@ -28,6 +19,11 @@ default_experiment
 ###
 # atmos_dt_atmos
 ###
+ "dynamics",  "grid_lont",   "lon",           "atmos_dt_atmos", "all", .false.,  "none", 2,
+ "dynamics",  "grid_latt",   "lat",           "atmos_dt_atmos", "all", .false.,  "none", 2,
+ "dynamics",  "grid_lon",    "lonb",          "atmos_dt_atmos", "all", .false.,  "none", 2,
+ "dynamics",  "grid_lat",    "latb",          "atmos_dt_atmos", "all", .false.,  "none", 2,
+ "dynamics",  "area",        "area",          "atmos_dt_atmos", "all", .false.,  "none", 2,
  "dynamics",  "us",          "UGRDlowest",    "atmos_dt_atmos", "all", .false.,  "none", 2
  "dynamics",  "u850",        "UGRD850",       "atmos_dt_atmos", "all", .false.,  "none", 2
  "dynamics",  "u500",        "UGRD500",       "atmos_dt_atmos", "all", .false.,  "none", 2
@@ -81,6 +77,11 @@ default_experiment
 ###
 # atmos_8xdaily
 ###
+ "dynamics",  "grid_lont",   "lon",           "atmos_8xdaily", "all", .false.,  "none", 2,
+ "dynamics",  "grid_latt",   "lat",           "atmos_8xdaily", "all", .false.,  "none", 2,
+ "dynamics",  "grid_lon",    "lonb",          "atmos_8xdaily", "all", .false.,  "none", 2,
+ "dynamics",  "grid_lat",    "latb",          "atmos_8xdaily", "all", .false.,  "none", 2,
+ "dynamics",  "area",        "area",          "atmos_8xdaily", "all", .false.,  "none", 2,
  "dynamics",  "ucomp",        "ucomp",        "atmos_8xdaily",  "all",  .false.,  "none",  2
  "dynamics",  "vcomp",        "vcomp",        "atmos_8xdaily",  "all",  .false.,  "none",  2
  "dynamics",  "temp",         "temp",         "atmos_8xdaily",  "all",  .false.,  "none",  2
@@ -99,6 +100,11 @@ default_experiment
 ###
 # sfc_dt_atmos
 ###
+ "dynamics",  "grid_lont",     "lon",       "sfc_dt_atmos",         "all",  .false.,  "none", 2,
+ "dynamics",  "grid_latt",     "lat",       "sfc_dt_atmos",         "all",  .false.,  "none", 2,
+ "dynamics",  "grid_lon",      "lonb",      "sfc_dt_atmos",         "all", .false.,  "none", 2,
+ "dynamics",  "grid_lat",      "latb",      "sfc_dt_atmos",         "all", .false.,  "none", 2,
+ "dynamics",  "area",          "area",      "sfc_dt_atmos",         "all",  .false.,  "none", 2,
  "gfs_phys",  "cnvprcp_ave"    "CPRATsfc"   "sfc_dt_atmos",         "all",  .false.,  "none",  2
  "gfs_phys",  "totprcp_ave"    "PRATEsfc"   "sfc_dt_atmos",         "all",  .false.,  "none",  2
  "gfs_phys",  "totice_ave"     "ICEsfc"     "sfc_dt_atmos",         "all",  .false.,  "none",  2
