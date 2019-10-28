@@ -2,6 +2,9 @@ include CONTRIBUTING.rst
 include HISTORY.rst
 include LICENSE
 include README.md
+include fv3config/*_table/*
+
+recursive-include *.nml
 
 recursive-include tests *
 recursive-exclude * __pycache__
