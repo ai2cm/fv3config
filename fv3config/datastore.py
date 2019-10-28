@@ -118,10 +118,6 @@ def link_directory(source_path, target_path):
             link_directory(source_item, target_item)
 
 
-def link_file(source_path, target_path):
-    os.symlink(source_path, target_path)
-
-
 def copy_file(source_path, target_path):
     shutil.copy(source_path, target_path)
 
