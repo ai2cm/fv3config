@@ -25,7 +25,7 @@ def get_default_config():
     config['diag_table'] = 'default'
     config['data_table'] = 'default'
     config['forcing'] = 'default'
-    config['initial_conditions'] = 'gfs_initial_conditions'
+    config['initial_conditions'] = 'gfs_example'
     config['experiment_name'] = 'default_experiment'
 
     return config

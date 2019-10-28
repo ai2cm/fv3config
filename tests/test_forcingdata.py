@@ -1,4 +1,6 @@
 import unittest
+import os
+import shutil
 from fv3config import (
     get_default_config, ConfigError,
     write_run_directory
@@ -7,8 +9,6 @@ from fv3config.datastore import (
     get_base_forcing_directory, get_orographic_forcing_directory,
     link_directory, get_initial_conditions_directory, ensure_data_is_downloaded
 )
-import os
-import shutil
 
 test_directory = os.path.dirname(os.path.realpath(__file__))
 
@@ -38,8 +38,23 @@ required_orographic_forcing_filenames = [
 ]
 
 required_default_initial_conditions_filenames = [
-    'INPUT/gfs_ctrl.nc'] + [
+    'INPUT/gfs_ctrl.nc'
+] + [
     f'INPUT/gfs_data.tile{n}.nc' for n in range(1, 7)
+] + [
+    f'INPUT/sfc_data.tile{n}.nc' for n in range(1, 7)
+]
+
+required_restart_initial_conditions_filenames = [
+    'INPUT/coupler.res'
+] + [
+    f'INPUT/fv_core.res.tile{n}.nc' for n in range(1, 7)
+] + [
+    f'INPUT/fv_srf_wnd.res.tile{n}.nc' for n in range(1, 7)
+] + [
+    f'INPUT/fv_tracer.res.tile{n}.nc' for n in range(1, 7)
+] + [
+    f'INPUT/phy_data.tile{n}.nc' for n in range(1, 7)
 ] + [
     f'INPUT/sfc_data.tile{n}.nc' for n in range(1, 7)
 ]
@@ -59,6 +74,7 @@ required_config_keys = [
     'experiment_name',
     'initial_conditions'
 ]
+
 
 class RunDirectory(object):
 
@@ -140,6 +156,28 @@ class ForcingTests(unittest.TestCase):
             full_filename = os.path.join(rundir, filename)
             self.assertTrue(os.path.isfile(full_filename), msg=full_filename)
 
+    def test_link_gfs_initial_conditions_directory(self):
+        rundir = self.make_run_directory('test_rundir')
+        config = get_default_config()
+        config['initial_conditions'] = 'gfs_example'
+        initial_conditions_dir = get_initial_conditions_directory(config)
+        self.assertTrue(os.path.isdir(initial_conditions_dir))
+        link_directory(initial_conditions_dir, os.path.join(rundir, 'INPUT'))
+        for filename in required_default_initial_conditions_filenames:
+            full_filename = os.path.join(rundir, filename)
+            self.assertTrue(os.path.isfile(full_filename), msg=full_filename)
+
+    def test_link_restart_initial_conditions_directory(self):
+        rundir = self.make_run_directory('test_rundir')
+        config = get_default_config()
+        config['initial_conditions'] = 'restart_example'
+        initial_conditions_dir = get_initial_conditions_directory(config)
+        self.assertTrue(os.path.isdir(initial_conditions_dir))
+        link_directory(initial_conditions_dir, os.path.join(rundir, 'INPUT'))
+        for filename in required_restart_initial_conditions_filenames:
+            full_filename = os.path.join(rundir, filename)
+            self.assertTrue(os.path.isfile(full_filename), msg=full_filename)
+
     def test_get_specified_initial_conditions_directory(self):
         source_rundir = self.make_run_directory('source_rundir')
         config = get_default_config()
@@ -199,7 +237,6 @@ class ForcingTests(unittest.TestCase):
     def test_default_config_has_required_keys(self):
         config = get_default_config()
         self.assertTrue(set(required_config_keys) <= set(config.keys()))
-
 
 
 if __name__ == '__main__':

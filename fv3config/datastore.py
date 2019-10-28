@@ -26,7 +26,8 @@ forcing_directory_dict = {
 }
 
 initial_conditions_options_dict = {
-    'gfs_initial_conditions': os.path.join(local_archive_dir, 'gfs_initial_conditions')
+    'gfs_example': os.path.join(local_archive_dir, 'initial_conditions/gfs_initial_conditions'),
+    'restart_example': os.path.join(local_archive_dir, 'initial_conditions/restart_initial_conditions'),
 }
 
 
@@ -91,10 +92,13 @@ def get_initial_conditions_directory(config):
                 'Default initial conditions only available for C48, please specify an initial conditions directory'
             )
         dirname = initial_conditions_options_dict[config['initial_conditions']]
-    else:
+    elif os.path.isdir(config['initial_conditions']):
         dirname = config['initial_conditions']
-        if not os.path.isdir(dirname):
-            raise ConfigError(f'Specified initial conditions directory {dirname} does not exist')
+    else:
+        raise ConfigError(
+            f'Initial conditions {config["initial_conditions"]} '
+            f'is not one of the valid options: {list(initial_conditions_options_dict.keys())}'
+        )
     return dirname
 
 
