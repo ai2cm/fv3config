@@ -5,7 +5,7 @@ from fv3config import (
     get_default_config, ConfigError,
     write_run_directory
 )
-from fv3config.datastore import (
+from fv3config._datastore import (
     get_base_forcing_directory, get_orographic_forcing_directory,
     link_directory, get_initial_conditions_directory, ensure_data_is_downloaded
 )

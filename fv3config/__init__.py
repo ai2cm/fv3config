@@ -2,12 +2,12 @@
 
 """Top-level package for FV3Config."""
 
-from .config import (
+from ._config import (
     config_to_namelist, config_from_namelist, get_default_config,
     write_run_directory,
 )
-from .exceptions import InvalidFileError, ConfigError
-from .datastore import refresh_downloaded_data, ensure_data_is_downloaded
+from ._exceptions import InvalidFileError, ConfigError
+from ._datastore import refresh_downloaded_data, ensure_data_is_downloaded
 
 __all__ = [
     'config_to_namelist', 'config_from_namelist', 'get_default_config',

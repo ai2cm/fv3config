@@ -1,7 +1,7 @@
 import os
 import re
-from .exceptions import ConfigError
-from .datastore import get_initial_conditions_directory
+from ._exceptions import ConfigError
+from ._datastore import get_initial_conditions_directory
 
 
 package_directory = os.path.dirname(os.path.realpath(__file__))

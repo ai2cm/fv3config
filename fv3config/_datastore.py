@@ -3,7 +3,7 @@ import tarfile
 import shutil
 import logging
 import appdirs
-from .exceptions import ConfigError, DataMissingError
+from ._exceptions import ConfigError, DataMissingError
 try:
     import wget
 except ImportError:

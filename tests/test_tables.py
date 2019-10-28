@@ -1,14 +1,14 @@
 import unittest
+import os
+import shutil
 from fv3config import (
     get_default_config, ConfigError,
 )
-from fv3config.tables import (
+from fv3config._tables import (
     get_field_table_filename, get_diag_table_filename, get_data_table_filename,
     get_microphysics_name_from_config, get_current_date_from_coupler_res,
     get_current_date_from_config, write_diag_table
 )
-import os
-import shutil
 
 
 test_directory = os.path.dirname(os.path.realpath(__file__))
@@ -36,6 +36,7 @@ config_for_write_diag_table_test = {'experiment_name': 'diag_table_test',
 
 diag_table_test_in = 'default_experiment\n2016 1 1 0 0 0\nother contents here'
 diag_table_test_out = 'diag_table_test\n2016 8 3 0 0 0\nother contents here'
+
 
 class RunDirectory(object):
 

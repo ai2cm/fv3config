@@ -1,12 +1,12 @@
 import os
 import f90nml
-from .exceptions import InvalidFileError
-from .datastore import (
+from ._exceptions import InvalidFileError
+from ._datastore import (
     get_base_forcing_directory, get_orographic_forcing_directory,
     get_initial_conditions_directory, link_directory,
     check_if_data_is_downloaded, copy_file
 )
-from .tables import (
+from ._tables import (
     get_field_table_filename, get_diag_table_filename,
     get_data_table_filename, write_diag_table
 )
