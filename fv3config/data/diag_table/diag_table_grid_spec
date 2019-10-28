@@ -8,7 +8,7 @@ default_experiment
 ###
 # grid_spec
 ###
- "dynamics", "grid_lon", " grid_lon",   "grid_spec", "all", .false.,  "none", 2,
+ "dynamics", "grid_lon",  "grid_lon",   "grid_spec", "all", .false.,  "none", 2,
  "dynamics", "grid_lat",  "grid_lat",   "grid_spec", "all", .false.,  "none", 2,
  "dynamics", "grid_lont", "grid_lont",  "grid_spec", "all", .false.,  "none", 2,
  "dynamics", "grid_latt", "grid_latt",  "grid_spec", "all", .false.,  "none", 2,
