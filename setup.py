@@ -16,7 +16,6 @@ requirements = [
     'f90nml>=1.1.0',
     'appdirs>=1.4.0',
     'wget>=3.0',
-    'gsutil'
 ]
 
 setup_requirements = [ ]
