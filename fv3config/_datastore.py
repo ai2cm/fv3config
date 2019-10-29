@@ -145,7 +145,7 @@ def refresh_downloaded_data():
 
 
 def download_data_archive():
-    """Download the cached data. Raises FileExistsError if dat ais already present."""
+    """Download the cached data. Raises FileExistsError if data is already present."""
     if os.path.isfile(local_archive_filename):
         raise FileExistsError(f'Archive already exists at {local_archive_filename}')
     if not os.path.isdir(app_data_dir):
