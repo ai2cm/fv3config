@@ -50,7 +50,7 @@ class RunDirectory(object):
         shutil.rmtree(self.directory_path)
 
 
-class ForcingTests(unittest.TestCase):
+class TableTests(unittest.TestCase):
 
     def setUp(self):
         self._run_directory_list = []
