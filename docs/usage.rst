@@ -57,7 +57,7 @@ forcing              str      'default'            none
 In addition to one of the built-in options, a custom ``diag_table`` and ``data_table`` can be specified
 by supplying a path to a file. Custom ``initial_conditions`` and ``forcing`` can be specified by
 supplying a path to a directory with the appropriate initial conditions files and forcing files,
-respectively.
+respectively. Paths must be given as absolute paths.
 
 The ``namelist`` item is special in that it is explicitly stored in the ``config`` dictionary. For the
 fv3gfs model, individual namelists are specified for various components of the model. As an example, the
