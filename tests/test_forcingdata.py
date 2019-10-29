@@ -156,9 +156,7 @@ class ForcingTests(unittest.TestCase):
         initial_conditions_dir = get_initial_conditions_directory(config)
         self.assertTrue(os.path.isdir(initial_conditions_dir))
         link_directory(initial_conditions_dir, os.path.join(rundir, 'INPUT'))
-        for filename in required_default_initial_conditions_filenames:
-            full_filename = os.path.join(rundir, filename)
-            self.assertTrue(os.path.isfile(full_filename), msg=full_filename)
+        self.assert_subpaths_present(rundir, required_default_initial_conditions_filenames)
 
     def test_link_gfs_initial_conditions_directory(self):
         rundir = self.make_run_directory('test_rundir')
@@ -167,9 +165,7 @@ class ForcingTests(unittest.TestCase):
         initial_conditions_dir = get_initial_conditions_directory(config)
         self.assertTrue(os.path.isdir(initial_conditions_dir))
         link_directory(initial_conditions_dir, os.path.join(rundir, 'INPUT'))
-        for filename in required_default_initial_conditions_filenames:
-            full_filename = os.path.join(rundir, filename)
-            self.assertTrue(os.path.isfile(full_filename), msg=full_filename)
+        self.assert_subpaths_present(rundir, required_default_initial_conditions_filenames)
 
     def test_link_restart_initial_conditions_directory(self):
         rundir = self.make_run_directory('test_rundir')
@@ -178,9 +174,7 @@ class ForcingTests(unittest.TestCase):
         initial_conditions_dir = get_initial_conditions_directory(config)
         self.assertTrue(os.path.isdir(initial_conditions_dir))
         link_directory(initial_conditions_dir, os.path.join(rundir, 'INPUT'))
-        for filename in required_restart_initial_conditions_filenames:
-            full_filename = os.path.join(rundir, filename)
-            self.assertTrue(os.path.isfile(full_filename), msg=full_filename)
+        self.assert_subpaths_present(rundir, required_restart_initial_conditions_filenames)
 
     def test_get_specified_initial_conditions_directory(self):
         source_rundir = self.make_run_directory('source_rundir')
@@ -214,21 +208,14 @@ class ForcingTests(unittest.TestCase):
         rundir = self.make_run_directory('test_rundir')
         config = get_default_config()
         write_run_directory(config, rundir)
-        missing_subdirectories = []
-        for subdirectory in required_run_directory_subdirectories:
-            full_path = os.path.join(rundir, subdirectory)
-            if not os.path.isdir(full_path):
-                missing_subdirectories.append(full_path)
-        missing_filenames = []
-        for filename in (
-                required_default_initial_conditions_filenames +
-                required_base_forcing_filenames +
-                required_orographic_forcing_filenames +
-                additional_required_filenames):
-            full_filename = os.path.join(rundir, filename)
-            if not os.path.isfile(full_filename):
-                missing_filenames.append(full_filename)
-        self.assertTrue(len(missing_filenames) == 0, missing_filenames)
+        self.assert_subpaths_present(
+            rundir,
+            required_run_directory_subdirectories +
+            required_default_initial_conditions_filenames +
+            required_base_forcing_filenames +
+            required_orographic_forcing_filenames +
+            additional_required_filenames
+        )
 
     def test_restart_directory_exists_and_empty(self):
         rundir = self.make_run_directory('test_rundir')
@@ -241,6 +228,14 @@ class ForcingTests(unittest.TestCase):
     def test_default_config_has_required_keys(self):
         config = get_default_config()
         self.assertTrue(set(required_config_keys) <= set(config.keys()))
+
+    def assert_subpaths_present(self, dirname, subpath_list):
+        missing_paths = []
+        for subpath in subpath_list:
+            path = os.path.join(dirname, subpath)
+            if not os.path.exists(path):
+                missing_paths.append(path)
+        self.assertTrue(len(missing_paths) == 0, missing_paths)
 
 
 if __name__ == '__main__':
