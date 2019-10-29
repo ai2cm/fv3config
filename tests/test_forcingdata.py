@@ -90,6 +90,10 @@ class RunDirectory(object):
 
 class ForcingTests(unittest.TestCase):
 
+    def __init__(self, *args, **kwargs):
+        ensure_data_is_downloaded()
+        super(ForcingTests, self).__init__(*args, **kwargs)
+
     def setUp(self):
         self._run_directory_list = []
 
@@ -240,5 +244,4 @@ class ForcingTests(unittest.TestCase):
 
 
 if __name__ == '__main__':
-    ensure_data_is_downloaded()
     unittest.main()
