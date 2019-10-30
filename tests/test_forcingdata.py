@@ -112,9 +112,7 @@ class ForcingTests(unittest.TestCase):
         forcing_dir = get_base_forcing_directory(config)
         self.assertTrue(os.path.isdir(forcing_dir))
         link_directory(forcing_dir, rundir)
-        for filename in required_base_forcing_filenames:
-            full_filename = os.path.join(rundir, filename)
-            self.assertTrue(os.path.isfile(full_filename), msg=full_filename)
+        self.assert_subpaths_present(rundir, required_base_forcing_filenames)
 
     def test_link_default_orographic_forcing_directory(self):
         rundir = self.make_run_directory('test_rundir')
@@ -122,9 +120,7 @@ class ForcingTests(unittest.TestCase):
         orographic_forcing_dir = get_orographic_forcing_directory(config)
         self.assertTrue(os.path.isdir(orographic_forcing_dir))
         link_directory(orographic_forcing_dir, os.path.join(rundir, 'INPUT'))
-        for filename in required_orographic_forcing_filenames:
-            full_filename = os.path.join(rundir, filename)
-            self.assertTrue(os.path.isfile(full_filename), msg=full_filename)
+        self.assert_subpaths_present(rundir, required_orographic_forcing_filenames)
 
     def test_zero_resolution_orographic_forcing_directory(self):
         config = {
