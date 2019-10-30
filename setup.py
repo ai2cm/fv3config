@@ -16,6 +16,7 @@ requirements = [
     'f90nml>=1.1.0',
     'appdirs>=1.4.0',
     'requests',
+    'xarray>=0.13.0',
 ]
 
 setup_requirements = [ ]
