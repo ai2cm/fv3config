@@ -8,8 +8,7 @@ Welcome to FV3Config's documentation!
    readme
    installation
    usage
-   modules
-   contributing
+   api
    history
 
 Indices and tables
