@@ -64,6 +64,20 @@ def config_from_namelist(namelist_filename):
     return return_dict
 
 
+def enable_restart(config):
+    """Apply namelist settings for initializing from model restart files.
+
+    Args:
+        config (dict): a configuration dictionary
+    """
+    config['namelist']['fv_core_nml']['external_ic'] = False
+    config['namelist']['fv_core_nml']['nggps_ic'] = False
+    config['namelist']['fv_core_nml']['make_nh'] = False
+    config['namelist']['fv_core_nml']['mountain'] = True
+    config['namelist']['fv_core_nml']['warm_start'] = True
+    config['namelist']['fv_core_nml']['na_init'] = 0
+
+
 def write_run_directory(config, target_directory):
     """Write a run directory based on a configuration dictionary.
 

@@ -1,5 +1,5 @@
 import unittest
-from fv3config import config_to_namelist, config_from_namelist, InvalidFileError, get_default_config
+from fv3config import config_to_namelist, config_from_namelist, InvalidFileError, get_default_config, enable_restart
 import os
 import shutil
 import f90nml
@@ -34,6 +34,17 @@ all_types_dict = {
         'string_option': 'three',
         'true_option': True,
         'false_option': False,
+    }
+}
+
+restart_namelist_settings = {
+    'fv_core_nml': {
+        'external_ic': False,
+        'nggps_ic': False,
+        'make_nh': False,
+        'mountain': True,
+        'warm_start': True,
+         'na_init': 0,
     }
 }
 
@@ -150,6 +161,14 @@ class ConfigDictTests(unittest.TestCase):
             self.assertIsInstance(config[name], str)
         for name, value in config.items():
             self.assertIsInstance(name, str, f'key {name} is not a string')
+
+    def test_enable_restart_from_default(self):
+        config = get_default_config()
+        enable_restart(config)
+        for nml in restart_namelist_settings:
+            for param in restart_namelist_settings[nml]:
+                self.assertEqual(config['namelist'][nml][param],
+                                 restart_namelist_settings[nml][param])
 
 
 if __name__ == '__main__':
