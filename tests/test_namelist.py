@@ -44,7 +44,7 @@ restart_namelist_settings = {
         'make_nh': False,
         'mountain': True,
         'warm_start': True,
-         'na_init': 0,
+        'na_init': 0,
     }
 }
 
@@ -164,10 +164,10 @@ class ConfigDictTests(unittest.TestCase):
 
     def test_enable_restart_from_default(self):
         config = get_default_config()
-        enable_restart(config)
+        restart_config = enable_restart(config)
         for nml in restart_namelist_settings:
             for param in restart_namelist_settings[nml]:
-                self.assertEqual(config['namelist'][nml][param],
+                self.assertEqual(restart_config['namelist'][nml][param],
                                  restart_namelist_settings[nml][param])
 
 

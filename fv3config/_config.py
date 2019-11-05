@@ -1,3 +1,4 @@
+import copy
 import os
 import f90nml
 from ._exceptions import InvalidFileError
@@ -69,13 +70,18 @@ def enable_restart(config):
 
     Args:
         config (dict): a configuration dictionary
+
+    Returns:
+        dict: a configuration dictionary
     """
-    config['namelist']['fv_core_nml']['external_ic'] = False
-    config['namelist']['fv_core_nml']['nggps_ic'] = False
-    config['namelist']['fv_core_nml']['make_nh'] = False
-    config['namelist']['fv_core_nml']['mountain'] = True
-    config['namelist']['fv_core_nml']['warm_start'] = True
-    config['namelist']['fv_core_nml']['na_init'] = 0
+    new_config = copy.deepcopy(config)
+    new_config['namelist']['fv_core_nml']['external_ic'] = False
+    new_config['namelist']['fv_core_nml']['nggps_ic'] = False
+    new_config['namelist']['fv_core_nml']['make_nh'] = False
+    new_config['namelist']['fv_core_nml']['mountain'] = True
+    new_config['namelist']['fv_core_nml']['warm_start'] = True
+    new_config['namelist']['fv_core_nml']['na_init'] = 0
+    return new_config
 
 
 def write_run_directory(config, target_directory):
