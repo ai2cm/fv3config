@@ -74,14 +74,14 @@ def enable_restart(config):
     Returns:
         dict: a configuration dictionary
     """
-    new_config = copy.deepcopy(config)
-    new_config['namelist']['fv_core_nml']['external_ic'] = False
-    new_config['namelist']['fv_core_nml']['nggps_ic'] = False
-    new_config['namelist']['fv_core_nml']['make_nh'] = False
-    new_config['namelist']['fv_core_nml']['mountain'] = True
-    new_config['namelist']['fv_core_nml']['warm_start'] = True
-    new_config['namelist']['fv_core_nml']['na_init'] = 0
-    return new_config
+    restart_config = copy.deepcopy(config)
+    restart_config['namelist']['fv_core_nml']['external_ic'] = False
+    restart_config['namelist']['fv_core_nml']['nggps_ic'] = False
+    restart_config['namelist']['fv_core_nml']['make_nh'] = False
+    restart_config['namelist']['fv_core_nml']['mountain'] = True
+    restart_config['namelist']['fv_core_nml']['warm_start'] = True
+    restart_config['namelist']['fv_core_nml']['na_init'] = 0
+    return restart_config
 
 
 def write_run_directory(config, target_directory):
