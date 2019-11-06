@@ -1,7 +1,7 @@
 import os
 import re
 from ._exceptions import ConfigError
-from ._datastore import get_initial_conditions_directory
+from ._datastore import get_initial_conditions_directory, resolve_option
 
 
 package_directory = os.path.dirname(os.path.realpath(__file__))
@@ -34,15 +34,7 @@ def get_data_table_filename(config):
     """
     if 'data_table' not in config:
         raise ConfigError('config dictionary must have a \'data_table\' key')
-    option = config['data_table']
-    if os.path.isfile(option):
-        return option
-    elif option not in data_table_options_dict.keys():
-        raise ConfigError(
-            f'Data table option {option} is not one of the valid options: {list(data_table_options_dict.keys())}'
-        )
-    else:
-        return data_table_options_dict[option]
+    return resolve_option(config['data_table'], data_table_options_dict)
 
 
 def get_diag_table_filename(config):
@@ -56,15 +48,7 @@ def get_diag_table_filename(config):
     """
     if 'diag_table' not in config:
         raise ConfigError('config dictionary must have a \'diag_table\' key')
-    option = config['diag_table']
-    if os.path.isfile(option):
-        return option
-    elif option not in diag_table_options_dict.keys():
-        raise ConfigError(
-            f'Diag table option {option} is not one of the valid options: {list(diag_table_options_dict.keys())}'
-        )
-    else:
-        return diag_table_options_dict[option]
+    return resolve_option(config['diag_table'], diag_table_options_dict)
 
 
 def get_current_date_from_coupler_res(coupler_res_filename):
