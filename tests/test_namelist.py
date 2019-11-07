@@ -202,6 +202,13 @@ class ConfigDictTests(unittest.TestCase):
             else:
                 self.assertEqual(item, target_dict[name])
 
+    def test_enable_restart_makes_copy(self):
+        config = get_default_config()
+        restart_config = enable_restart(config)
+        self.assertEqual(config, get_default_config())
+        restart_config['initial_conditions'] = 'changed item'
+        restart_config['namelist']['fv_core_nml']['npx'] = 0
+        self.assertEqual(config, get_default_config())
 
 if __name__ == '__main__':
     unittest.main()
