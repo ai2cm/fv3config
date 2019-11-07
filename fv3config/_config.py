@@ -1,7 +1,7 @@
 import copy
 import os
 import f90nml
-from ._exceptions import InvalidFileError
+from ._exceptions import InvalidFileError, ConfigError
 from ._datastore import (
     get_base_forcing_directory, get_orographic_forcing_directory,
     get_initial_conditions_directory, link_directory,
@@ -74,6 +74,10 @@ def enable_restart(config):
     Returns:
         dict: a configuration dictionary
     """
+    if 'namelist' not in config:
+        raise ConfigError('config dictionary must have a \'namelist\' key')
+    if 'fv_core_nml' not in config['namelist']:
+        raise ConfigError('config dictionary must have a \'fv_core_nml\' namelist')
     restart_config = copy.deepcopy(config)
     restart_config['namelist']['fv_core_nml']['external_ic'] = False
     restart_config['namelist']['fv_core_nml']['nggps_ic'] = False
