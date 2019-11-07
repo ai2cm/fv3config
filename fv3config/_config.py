@@ -1,6 +1,7 @@
+import copy
 import os
 import f90nml
-from ._exceptions import InvalidFileError
+from ._exceptions import InvalidFileError, ConfigError
 from ._datastore import (
     get_base_forcing_directory, get_orographic_forcing_directory,
     get_initial_conditions_directory, link_directory,
@@ -62,6 +63,29 @@ def config_from_namelist(namelist_filename):
     except FileNotFoundError:
         raise InvalidFileError(f'namelist {namelist_filename} does not exist')
     return return_dict
+
+
+def enable_restart(config):
+    """Apply namelist settings for initializing from model restart files.
+
+    Args:
+        config (dict): a configuration dictionary
+
+    Returns:
+        dict: a configuration dictionary
+    """
+    if 'namelist' not in config:
+        raise ConfigError('config dictionary must have a \'namelist\' key')
+    if 'fv_core_nml' not in config['namelist']:
+        raise ConfigError('config dictionary must have a \'fv_core_nml\' namelist')
+    restart_config = copy.deepcopy(config)
+    restart_config['namelist']['fv_core_nml']['external_ic'] = False
+    restart_config['namelist']['fv_core_nml']['nggps_ic'] = False
+    restart_config['namelist']['fv_core_nml']['make_nh'] = False
+    restart_config['namelist']['fv_core_nml']['mountain'] = True
+    restart_config['namelist']['fv_core_nml']['warm_start'] = True
+    restart_config['namelist']['fv_core_nml']['na_init'] = 0
+    return restart_config
 
 
 def write_run_directory(config, target_directory):

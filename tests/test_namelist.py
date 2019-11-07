@@ -1,8 +1,10 @@
 import unittest
-from fv3config import config_to_namelist, config_from_namelist, InvalidFileError, get_default_config
+from fv3config import (
+    config_to_namelist, config_from_namelist, InvalidFileError, ConfigError,
+    get_default_config, enable_restart
+)
 import os
 import shutil
-import f90nml
 from copy import deepcopy
 
 
@@ -36,6 +38,28 @@ all_types_dict = {
         'false_option': False,
     }
 }
+
+restart_namelist_settings = {
+    'fv_core_nml': {
+        'external_ic': False,
+        'nggps_ic': False,
+        'make_nh': False,
+        'mountain': True,
+        'warm_start': True,
+        'na_init': 0,
+    }
+}
+
+empty_dict = {}
+
+config_with_empty_namelist = {
+    'namelist': {}
+    }
+
+config_with_empty_fv_core_nml = {
+    'namelist': {
+        'fv_core_nml': {}}
+    }
 
 
 class RunDirectory(object):
@@ -151,6 +175,40 @@ class ConfigDictTests(unittest.TestCase):
         for name, value in config.items():
             self.assertIsInstance(name, str, f'key {name} is not a string')
 
+    def test_enable_restart_from_default(self):
+        config = get_default_config()
+        restart_config = enable_restart(config)
+        self.assert_dict_in_and_equal(restart_namelist_settings,
+                                      restart_config['namelist'])
+
+    def test_enable_restart_from_empty_fv_core_nml(self):
+        restart_config = enable_restart(config_with_empty_fv_core_nml)
+        self.assert_dict_in_and_equal(restart_namelist_settings,
+                                      restart_config['namelist'])
+
+    def test_enable_restart_from_empty_namelist(self):
+        with self.assertRaises(ConfigError):
+            enable_restart(config_with_empty_namelist)
+
+    def test_enable_restart_from_empty_config(self):
+        with self.assertRaises(ConfigError):
+            enable_restart(empty_dict)
+
+    def assert_dict_in_and_equal(self, source_dict, target_dict):
+        for name, item in source_dict.items():
+            self.assertIn(name, target_dict)
+            if isinstance(item, dict):
+                self.assert_dict_in_and_equal(item, target_dict[name])
+            else:
+                self.assertEqual(item, target_dict[name])
+
+    def test_enable_restart_makes_copy(self):
+        config = get_default_config()
+        restart_config = enable_restart(config)
+        self.assertEqual(config, get_default_config())
+        restart_config['initial_conditions'] = 'changed item'
+        restart_config['namelist']['fv_core_nml']['npx'] = 0
+        self.assertEqual(config, get_default_config())
 
 if __name__ == '__main__':
     unittest.main()
