@@ -85,7 +85,7 @@ def link_directory(source_path, target_path):
     from Google storage bucket to target path if source_path starts with gs://
     """
     if source_path.startswith(gs_bucket_prefix):
-        check_call(['gsutil', 'cp' '-r', source_path, target_path])
+        check_call(['gsutil', 'cp', '-r', source_path, target_path])
     else:
         for base_filename in os.listdir(source_path):
             source_item = os.path.join(source_path, base_filename)
