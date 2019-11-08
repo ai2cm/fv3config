@@ -20,7 +20,13 @@ requirements = [
 
 setup_requirements = [ ]
 
-test_requirements = [ ]
+test_requirements = [
+    'Click>=7.0',
+    'f90nml>=1.1.0',
+    'appdirs>=1.4.0',
+    'requests',
+    'gsutil',
+]
 
 setup(
     author="Vulcan Technologies, LLC",
@@ -42,6 +48,7 @@ setup(
         ],
     },
     install_requires=requirements,
+    extras_requires={'bucket-access': 'gsutil'},
     license="BSD license",
     long_description=readme + '\n\n' + history,
     include_package_data=True,
