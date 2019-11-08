@@ -85,7 +85,10 @@ def link_directory(source_path, target_path):
     from Google storage bucket to target path if source_path starts with gs://
     """
     if source_path.startswith(gs_bucket_prefix):
-        check_call(['gsutil', 'cp', '-r', source_path, target_path])
+        if gsutil_is_installed():
+            check_call(['gsutil', '-m', 'cp', '-r', os.path.join(source_path, '*'), target_path])
+        else:
+            logging.warning(f'Optional dependency gsutil not found. Files in {source_path} will not be copied to {target_path}')
     else:
         for base_filename in os.listdir(source_path):
             source_item = os.path.join(source_path, base_filename)
@@ -102,9 +105,19 @@ def link_directory(source_path, target_path):
 
 def copy_file(source_path, target_path):
     if source_path.startswith(gs_bucket_prefix):
-        check_call(['gsutil', 'cp', source_path, target_path])
+        if gsutil_is_installed():
+            check_call(['gsutil', 'cp', source_path, target_path])
+        else:
+            logging.warning(f'Optional dependency gsutil not found. File {source_path} will not be copied to {target_path}')
     else:
         shutil.copy(source_path, target_path)
+
+
+def gsutil_is_installed():
+    if shutil.which('gsutil') is None:
+        return False
+    else:
+        return True
 
 
 def check_if_data_is_downloaded():
