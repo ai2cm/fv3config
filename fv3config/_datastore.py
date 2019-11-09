@@ -81,7 +81,7 @@ def get_initial_conditions_directory(config):
 
 
 def link_or_copy_directory(source_path, target_path):
-    """Link or copy files in a source path to a target path"""
+    """Symbolically link or gsutil copy files in a source path to a target path"""
     if is_gsbucket_url(source_path):
         if gsutil_is_installed():
             check_call(['gsutil', '-m', 'cp', '-r', os.path.join(source_path, '*'), target_path])
