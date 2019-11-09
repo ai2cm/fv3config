@@ -92,7 +92,7 @@ def link_or_copy_directory(source_path, target_path):
 
 
 def link_directory(source_path, target_path):
-    """Recursively symbolic link the files in a source path into a target path
+    """Recursively symbolic link the files in a source path into a target path.
     """
     for base_filename in os.listdir(source_path):
         source_item = os.path.join(source_path, base_filename)
