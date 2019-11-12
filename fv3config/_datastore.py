@@ -205,7 +205,8 @@ def resolve_option(option, built_in_options_dict):
             return built_in_options_dict[option]
         else:
             raise ConfigError(
-                f'The option {option} is not one of the built in options: {list(built_in_options_dict.keys())}'
+                f'The provided option {option} is not one of the built in options: '
+                f'{list(built_in_options_dict.keys())}. Paths to local files or directories must be absolute.'
             )
 
 
