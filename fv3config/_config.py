@@ -9,7 +9,8 @@ from ._datastore import (
 )
 from ._tables import (
     get_field_table_filename, get_diag_table_filename,
-    get_data_table_filename, update_diag_table_for_config
+    get_data_table_filename, update_diag_table_for_config,
+    get_current_date_from_config
 )
 
 package_directory = os.path.dirname(os.path.realpath(__file__))
@@ -113,6 +114,7 @@ def write_run_directory(config, target_directory):
     copy_file(field_table_filename, os.path.join(target_directory, 'field_table'))
     copy_file(diag_table_filename, os.path.join(target_directory, 'diag_table'))
     copy_file(data_table_filename, os.path.join(target_directory, 'data_table'))
-    update_diag_table_for_config(config, os.path.join(target_directory, 'diag_table'))
+    current_date = get_current_date_from_config(config, input_directory)
+    update_diag_table_for_config(config, current_date, os.path.join(target_directory, 'diag_table'))
     config_to_namelist(config, os.path.join(target_directory, 'input.nml'))
 

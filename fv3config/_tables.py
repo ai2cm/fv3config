@@ -70,11 +70,12 @@ def get_current_date_from_coupler_res(coupler_res_filename):
     return current_date
 
 
-def get_current_date_from_config(config):
+def get_current_date_from_config(config, input_directory):
     """Return current_date from configuration dictionary
 
     Args:
         config (dict): a configuration dictionary
+        input_directory (str): path to INPUT directory
 
     Returns:
         list: current_date as list of ints [year, month, day, hour, min, sec]
@@ -83,7 +84,7 @@ def get_current_date_from_config(config):
     if force_date_from_namelist:
         current_date = config['namelist']['coupler_nml'].get('current_date', [0, 0, 0, 0, 0, 0])
     else:
-        coupler_res_filename = os.path.join(get_initial_conditions_directory(config), 'coupler.res')
+        coupler_res_filename = os.path.join(input_directory, 'coupler.res')
         if os.path.exists(coupler_res_filename):
             current_date = get_current_date_from_coupler_res(coupler_res_filename)
         else:
@@ -91,12 +92,13 @@ def get_current_date_from_config(config):
     return current_date
 
 
-def update_diag_table_for_config(config, diag_table_filename):
+def update_diag_table_for_config(config, current_date, diag_table_filename):
     """Re-write first two lines of diag_table_filename with experiment_name
     and current_date from config dictionary.
 
     Args:
         config (dict): a configuration dictionary
+        current_date (list): a list of 6 integers representing current_date
         diag_table_filename (str): diag_table filename
     """
     if 'experiment_name' not in config:
@@ -105,7 +107,7 @@ def update_diag_table_for_config(config, diag_table_filename):
     with open(diag_table_filename) as diag_table:
         lines = diag_table.read().splitlines()
         lines[0] = config['experiment_name']
-        lines[1] = ' '.join([str(x) for x in get_current_date_from_config(config)])
+        lines[1] = ' '.join([str(x) for x in current_date])
         with open(temporary_diag_table_filename, 'w') as temporary_diag_table:
             temporary_diag_table.write('\n'.join(lines))
     os.replace(temporary_diag_table_filename, diag_table_filename)
