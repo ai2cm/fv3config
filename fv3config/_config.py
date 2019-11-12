@@ -111,7 +111,11 @@ def write_run_directory(config, target_directory):
     link_or_copy_directory(orographic_forcing_dir, input_directory)
     link_or_copy_directory(initial_conditions_dir, input_directory)
     copy_file(field_table_filename, os.path.join(target_directory, 'field_table'))
-    write_diag_table(config, diag_table_filename, os.path.join(target_directory, 'diag_table'))
+    copy_file(diag_table_filename, os.path.join(target_directory, 'diag_table_temporary'))
     copy_file(data_table_filename, os.path.join(target_directory, 'data_table'))
+    write_diag_table(config,
+                     os.path.join(target_directory, 'diag_table_temporary'),
+                     os.path.join(target_directory, 'diag_table'))
+    os.remove(os.path.join(target_directory, 'diag_table_temporary'))
     config_to_namelist(config, os.path.join(target_directory, 'input.nml'))
 
