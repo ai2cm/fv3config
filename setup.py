@@ -23,7 +23,7 @@ setup_requirements = [ ]
 test_requirements = [ ]
 
 setup(
-    author="Vulcan Technologies, LLC",
+    author="Vulcan Technologies LLC",
     author_email='jeremym@vulcan.com',
     python_requires='>=3.6',
     classifiers=[
