@@ -47,17 +47,19 @@ The ``config`` dictionary must have at least the following items:
 Key                  Type     Default              Other built-in options
 ==================== ======== ==================== ========================
 namelist             Namelist default Namelist     none
-initial_conditions   str      'gfs_example'        'restart_example'
+experiment_name      str      'default_experiment' n/a
 diag_table           str      'default'            'grid_spec', 'no_output'
 data_table           str      'default'            none
-experiment_name      str      'default_experiment' n/a
+initial_conditions   str      'gfs_example'        'restart_example'
 forcing              str      'default'            none
 ==================== ======== ==================== ========================
 
 In addition to one of the built-in options, a custom ``diag_table`` and ``data_table`` can be specified
 by supplying a path to a file. Custom ``initial_conditions`` and ``forcing`` can be specified by
-supplying a path to a directory with the appropriate initial conditions files and forcing files,
-respectively. Paths must be given as absolute paths.
+supplying a path to a directory that contains the appropriate files. Paths to files or directories on the local
+filesystem must be given as absolute paths. If paths are given that begin with ``gs://`` then ``fv3config`` will
+attempt to download the specified file or files from Google Cloud Storage. For this functionality, ``gsutil``
+must be installed and authorized to download from the specified bucket.
 
 The ``namelist`` item is special in that it is explicitly stored in the ``config`` dictionary. For the
 fv3gfs model, individual namelists are specified for various components of the model. As an example, the
