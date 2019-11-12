@@ -8,7 +8,7 @@ from fv3config import (
 from fv3config._datastore import (
     get_base_forcing_directory, get_orographic_forcing_directory,
     link_directory, get_initial_conditions_directory, ensure_data_is_downloaded,
-    resolve_option
+    resolve_option, is_gsbucket_url
 )
 
 test_directory = os.path.dirname(os.path.realpath(__file__))
@@ -261,6 +261,10 @@ class ForcingTests(unittest.TestCase):
         proper_option = one_item_built_in_options_dict[option_tag]
         self.assertEqual(resolve_option(option_tag, one_item_built_in_options_dict),
                          proper_option)
+
+    def test_is_gsbucket_url(self):
+        self.assertTrue(is_gsbucket_url(option_gsbucket))
+        self.assertFalse(is_gsbucket_url(option_abs_path))
 
 
 if __name__ == '__main__':
