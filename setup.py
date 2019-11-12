@@ -20,13 +20,7 @@ requirements = [
 
 setup_requirements = [ ]
 
-test_requirements = [
-    'Click>=7.0',
-    'f90nml>=1.1.0',
-    'appdirs>=1.4.0',
-    'requests',
-    'gsutil',
-]
+test_requirements = [ ]
 
 setup(
     author="Vulcan Technologies, LLC",
