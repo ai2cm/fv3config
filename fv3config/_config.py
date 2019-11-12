@@ -114,6 +114,5 @@ def write_run_directory(config, target_directory):
     copy_file(diag_table_filename, os.path.join(target_directory, 'diag_table'))
     copy_file(data_table_filename, os.path.join(target_directory, 'data_table'))
     update_diag_table_for_config(config, os.path.join(target_directory, 'diag_table'))
-    os.remove(os.path.join(target_directory, 'diag_table_temporary'))
     config_to_namelist(config, os.path.join(target_directory, 'input.nml'))
 
