@@ -176,9 +176,9 @@ def is_gsbucket_url(path):
 
 
 def resolve_option(option, built_in_options_dict):
-    """Determine whether an option is a built-in option or not and return path
-    to file or directory representing option. An option is assumed to be built-in
-    if it is not an absolute path and does not begin with gs://
+    """Determine whether a configuration dictionary option is a built-in option or
+    not and return path to file or directory representing option. An option is
+    assumed to be built-in  if it is not an absolute path and does not begin with gs://
 
     Args:
         option (str): an option
