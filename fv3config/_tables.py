@@ -91,22 +91,24 @@ def get_current_date_from_config(config):
     return current_date
 
 
-def write_diag_table(config, source_diag_table_filename, target_diag_table_filename):
-    """Write diag_table with title and current_date from config dictionary
+def update_diag_table_for_config(config, diag_table_filename):
+    """Re-write first two lines of diag_table_filename with experiment_name
+    and current_date from config dictionary.
 
     Args:
         config (dict): a configuration dictionary
-        source_diag_table_filename (str): input diag_table filename
-        target_diag_table_filename (str): output diag_table filename
+        diag_table_filename (str): diag_table filename
     """
     if 'experiment_name' not in config:
         raise ConfigError('config dictionary must have a \'experiment_name\' key')
-    with open(source_diag_table_filename) as source_diag_table:
-        lines = source_diag_table.read().splitlines()
-        lines[0] = config.get('experiment_name', 'default_experiment')
+    temporary_diag_table_filename = f'{diag_table_filename}_temporary'
+    with open(diag_table_filename) as diag_table:
+        lines = diag_table.read().splitlines()
+        lines[0] = config['experiment_name']
         lines[1] = ' '.join([str(x) for x in get_current_date_from_config(config)])
-        with open(target_diag_table_filename, 'w') as target_diag_table:
-            target_diag_table.write('\n'.join(lines))
+        with open(temporary_diag_table_filename, 'w') as temporary_diag_table:
+            temporary_diag_table.write('\n'.join(lines))
+    os.replace(temporary_diag_table_filename, diag_table_filename)
 
 
 def get_microphysics_name_from_config(config):

@@ -7,7 +7,7 @@ from fv3config import (
 from fv3config._tables import (
     get_field_table_filename, get_diag_table_filename, get_data_table_filename,
     get_microphysics_name_from_config, get_current_date_from_coupler_res,
-    get_current_date_from_config, write_diag_table
+    get_current_date_from_config, update_diag_table_for_config
 )
 
 
@@ -30,7 +30,7 @@ bad_coupler_res = """    2        (Calendar: no_calendar=0, thirty_day_months=1,
 
 empty_config = {}
 
-config_for_write_diag_table_test = {'experiment_name': 'diag_table_test',
+config_for_update_diag_table_test = {'experiment_name': 'diag_table_test',
                                     'namelist': {'coupler_nml': {'current_date': valid_current_date,
                                                                  'force_date_from_namelist': True}}}
 
@@ -127,10 +127,10 @@ class TableTests(unittest.TestCase):
         with self.assertRaises(ConfigError):
             get_data_table_filename(empty_config)
 
-    def test_write_diag_table_from_empty_config(self):
+    def test_update_diag_table_from_empty_config(self):
         rundir = self.make_run_directory('rundir')
         with self.assertRaises(ConfigError):
-            write_diag_table(empty_config, os.path.join(rundir, 'source'), os.path.join(rundir, 'target'))
+            update_diag_table_for_config(empty_config, os.path.join(rundir, 'source'))
 
     def test_get_current_date_from_coupler_res(self):
         rundir = self.make_run_directory('test_rundir')
@@ -155,14 +155,13 @@ class TableTests(unittest.TestCase):
         current_date = get_current_date_from_config(config)
         self.assertEqual(current_date, valid_current_date)
 
-    def test_write_diag_table(self):
+    def test_update_diag_table_for_config(self):
         rundir = self.make_run_directory('test_rundir')
-        diag_table_in = os.path.join(rundir, 'diag_table_in')
-        diag_table_out = os.path.join(rundir, 'diag_table_out')
-        with open(diag_table_in, 'w') as f:
+        diag_table_filename = os.path.join(rundir, 'diag_table')
+        with open(diag_table_filename, 'w') as f:
             f.write(diag_table_test_in)
-        write_diag_table(config_for_write_diag_table_test, diag_table_in, diag_table_out)
-        with open(diag_table_out) as f:
+        update_diag_table_for_config(config_for_update_diag_table_test, diag_table_filename)
+        with open(diag_table_filename) as f:
             self.assertEqual(diag_table_test_out, f.read())
 
 
