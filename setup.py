@@ -12,13 +12,13 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 requirements = [
-    'Click>=7.0',
     'f90nml>=1.1.0',
     'appdirs>=1.4.0',
-    'requests',
+    'requests>=2.22.0',
 ]
 
-setup_requirements = [ ]
+setup_requirements = [
+]
 
 test_requirements = [ ]
 
