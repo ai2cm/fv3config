@@ -169,10 +169,7 @@ def extract_data():
 
 
 def is_gsbucket_url(path):
-    if path.startswith(gs_bucket_prefix):
-        return True
-    else:
-        return False
+    return path.startswith(gs_bucket_prefix)
 
 
 def resolve_option(option, built_in_options_dict):
