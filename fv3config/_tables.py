@@ -71,16 +71,18 @@ def get_current_date_from_coupler_res(coupler_res_filename):
 
 
 def get_current_date_from_config(config, input_directory):
-    """Return current_date from configuration dictionary
+    """Return current_date from configuration dictionary and the local INPUT
+    directory.
 
     Args:
         config (dict): a configuration dictionary
-        input_directory (str): path to INPUT directory
+        input_directory (str): path to local INPUT directory
 
     Returns:
         list: current_date as list of ints [year, month, day, hour, min, sec]
     """
     force_date_from_namelist = config['namelist']['coupler_nml'].get('force_date_from_namelist', False)
+    # following code replicates the logic that the fv3gfs model uses to determine the current_date
     if force_date_from_namelist:
         current_date = config['namelist']['coupler_nml'].get('current_date', [0, 0, 0, 0, 0, 0])
     else:
