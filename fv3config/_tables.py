@@ -72,7 +72,9 @@ def get_current_date_from_coupler_res(coupler_res_filename):
 
 def get_current_date_from_config(config, input_directory):
     """Return current_date from configuration dictionary and the local INPUT
-    directory.
+    directory. The INPUT directory is passed in order to read current_date from
+    any initial conditions files, since config can contain a remote data source
+    and we do not want to download data in this function.
 
     Args:
         config (dict): a configuration dictionary
