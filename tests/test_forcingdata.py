@@ -7,7 +7,8 @@ from fv3config import (
 )
 from fv3config._datastore import (
     get_base_forcing_directory, get_orographic_forcing_directory,
-    link_directory, get_initial_conditions_directory, ensure_data_is_downloaded
+    link_directory, get_initial_conditions_directory, ensure_data_is_downloaded,
+    resolve_option, is_gsbucket_url
 )
 
 test_directory = os.path.dirname(os.path.realpath(__file__))
@@ -75,6 +76,12 @@ required_config_keys = [
     'initial_conditions'
 ]
 
+option_abs_path = '/nonexistent/abs/path'
+option_gsbucket = 'gs://gsbucket-path'
+option_tag = 'custom_option'
+
+empty_built_in_options_dict = {}
+one_item_built_in_options_dict = {'custom_option': '/path/to/custom/option'}
 
 class RunDirectory(object):
 
@@ -232,6 +239,32 @@ class ForcingTests(unittest.TestCase):
             if not os.path.exists(path):
                 missing_paths.append(path)
         self.assertTrue(len(missing_paths) == 0, missing_paths)
+
+    def test_resolve_option_abs_path(self):
+        sample_abs_path = self.make_run_directory('sample_abs_path')
+        self.assertEqual(resolve_option(sample_abs_path, empty_built_in_options_dict),
+                         sample_abs_path)
+
+    def test_resolve_option_nonexistent_abs_path(self):
+        with self.assertRaises(ConfigError):
+            resolve_option(option_abs_path, empty_built_in_options_dict)
+
+    def test_resolve_option_gsbucket(self):
+        self.assertEqual(resolve_option(option_gsbucket, empty_built_in_options_dict),
+                         option_gsbucket)
+
+    def test_resolve_option_tag_empty_built_in_options(self):
+        with self.assertRaises(ConfigError):
+            resolve_option(option_tag, empty_built_in_options_dict)
+
+    def test_resolve_option_tag_proper_built_in_options(self):
+        proper_option = one_item_built_in_options_dict[option_tag]
+        self.assertEqual(resolve_option(option_tag, one_item_built_in_options_dict),
+                         proper_option)
+
+    def test_is_gsbucket_url(self):
+        self.assertTrue(is_gsbucket_url(option_gsbucket))
+        self.assertFalse(is_gsbucket_url(option_abs_path))
 
 
 if __name__ == '__main__':

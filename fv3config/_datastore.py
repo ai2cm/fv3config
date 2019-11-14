@@ -3,6 +3,7 @@ import tarfile
 import shutil
 import logging
 import appdirs
+from subprocess import check_call
 from ._exceptions import ConfigError, DataMissingError
 try:
     import wget
@@ -20,8 +21,9 @@ filename = '2019-10-23-data-for-running-fv3gfs.tar.gz'
 filename_root = '2019-10-23-data-for-running-fv3gfs'
 url = f'http://storage.googleapis.com/vcm-ml-public/{filename}'
 local_archive_filename = os.path.join(app_data_dir, filename)
+gs_bucket_prefix = 'gs://'
 
-forcing_directory_dict = {
+forcing_options_dict = {
     'default': os.path.join(local_archive_dir, 'base_forcing')
 }
 
@@ -67,17 +69,7 @@ def get_base_forcing_directory(config):
     """
     if 'forcing' not in config:
         raise ConfigError('config dictionary must have a \'forcing\' key')
-    forcing_option = config['forcing']
-    if os.path.isdir(forcing_option):
-        return_value = forcing_option
-    else:
-        if forcing_option not in forcing_directory_dict.keys():
-            raise ConfigError(
-                f'Forcing option {forcing_option} is not one of the valid options: {list(forcing_directory_dict.keys())}'
-            )
-        else:
-            return_value = forcing_directory_dict[forcing_option]
-    return return_value
+    return resolve_option(config['forcing'], forcing_options_dict)
 
 
 def get_initial_conditions_directory(config):
@@ -85,21 +77,18 @@ def get_initial_conditions_directory(config):
     """
     if 'initial_conditions' not in config:
         raise ConfigError('config dictionary must have an \'initial_conditions\' key')
-    if config['initial_conditions'] in initial_conditions_options_dict:
-        resolution = get_resolution(config)
-        if resolution != 'C48':
-            raise NotImplementedError(
-                'Default initial conditions only available for C48, please specify an initial conditions directory'
-            )
-        dirname = initial_conditions_options_dict[config['initial_conditions']]
-    elif os.path.isdir(config['initial_conditions']):
-        dirname = config['initial_conditions']
+    return resolve_option(config['initial_conditions'], initial_conditions_options_dict)
+
+
+def link_or_copy_directory(source_path, target_path):
+    """Symbolically link or gsutil copy files in a source path to a target path"""
+    if is_gsbucket_url(source_path):
+        if gsutil_is_installed():
+            check_call(['gsutil', '-m', 'cp', '-r', os.path.join(source_path, '*'), target_path])
+        else:
+            logging.warning(f'Optional dependency gsutil not found. Files in {source_path} will not be copied to {target_path}')
     else:
-        raise ConfigError(
-            f'Initial conditions {config["initial_conditions"]} '
-            f'is not one of the valid options: {list(initial_conditions_options_dict.keys())}'
-        )
-    return dirname
+        link_directory(source_path, target_path)
 
 
 def link_directory(source_path, target_path):
@@ -119,7 +108,20 @@ def link_directory(source_path, target_path):
 
 
 def copy_file(source_path, target_path):
-    shutil.copy(source_path, target_path)
+    if is_gsbucket_url(source_path):
+        if gsutil_is_installed():
+            check_call(['gsutil', 'cp', source_path, target_path])
+        else:
+            logging.warning(f'Optional dependency gsutil not found. File {source_path} will not be copied to {target_path}')
+    else:
+        shutil.copy(source_path, target_path)
+
+
+def gsutil_is_installed():
+    if shutil.which('gsutil') is None:
+        return False
+    else:
+        return True
 
 
 def check_if_data_is_downloaded():
@@ -164,6 +166,45 @@ def extract_data():
     with tarfile.open(os.path.join(app_data_dir, filename), mode='r:gz') as f:
         f.extractall(app_data_dir)
         shutil.move(os.path.join(app_data_dir, filename_root), local_archive_dir)
+
+
+def is_gsbucket_url(path):
+    return path.startswith(gs_bucket_prefix)
+
+
+def resolve_option(option, built_in_options_dict):
+    """Determine whether a configuration dictionary option is a built-in option or
+    not and return path to file or directory representing option. An option is
+    assumed to be built-in if it is not an absolute path and does not begin with gs://
+
+    Args:
+        option (str): an option
+        built_in_options_dict (dict): built-in options
+
+    Returns:
+        (str): a path or url
+
+    Raises:
+        ConfigError: if option is an absolute path but does not exist or if
+                     option is not in default_options_dict
+    """
+    if os.path.isabs(option):
+        if os.path.exists(option):
+            return option
+        else:
+            raise ConfigError(
+                f'The provided path {option} does not exist.'
+            )
+    elif is_gsbucket_url(option):
+        return option
+    else:
+        if option in built_in_options_dict:
+            return built_in_options_dict[option]
+        else:
+            raise ConfigError(
+                f'The provided option {option} is not one of the built in options: '
+                f'{list(built_in_options_dict.keys())}. Paths to local files or directories must be absolute.'
+            )
 
 
 if __name__ == '__main__':

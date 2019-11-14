@@ -1,7 +1,7 @@
 import os
 import re
 from ._exceptions import ConfigError
-from ._datastore import get_initial_conditions_directory
+from ._datastore import get_initial_conditions_directory, resolve_option
 
 
 package_directory = os.path.dirname(os.path.realpath(__file__))
@@ -34,15 +34,7 @@ def get_data_table_filename(config):
     """
     if 'data_table' not in config:
         raise ConfigError('config dictionary must have a \'data_table\' key')
-    option = config['data_table']
-    if os.path.isfile(option):
-        return option
-    elif option not in data_table_options_dict.keys():
-        raise ConfigError(
-            f'Data table option {option} is not one of the valid options: {list(data_table_options_dict.keys())}'
-        )
-    else:
-        return data_table_options_dict[option]
+    return resolve_option(config['data_table'], data_table_options_dict)
 
 
 def get_diag_table_filename(config):
@@ -56,15 +48,7 @@ def get_diag_table_filename(config):
     """
     if 'diag_table' not in config:
         raise ConfigError('config dictionary must have a \'diag_table\' key')
-    option = config['diag_table']
-    if os.path.isfile(option):
-        return option
-    elif option not in diag_table_options_dict.keys():
-        raise ConfigError(
-            f'Diag table option {option} is not one of the valid options: {list(diag_table_options_dict.keys())}'
-        )
-    else:
-        return diag_table_options_dict[option]
+    return resolve_option(config['diag_table'], diag_table_options_dict)
 
 
 def get_current_date_from_coupler_res(coupler_res_filename):
@@ -86,20 +70,25 @@ def get_current_date_from_coupler_res(coupler_res_filename):
     return current_date
 
 
-def get_current_date_from_config(config):
-    """Return current_date from configuration dictionary
+def get_current_date_from_config(config, input_directory):
+    """Return current_date from configuration dictionary and the local INPUT
+    directory. The INPUT directory is passed in order to read current_date from
+    any initial conditions files, since config can contain a remote data source
+    and we do not want to download data in this function.
 
     Args:
         config (dict): a configuration dictionary
+        input_directory (str): path to local INPUT directory
 
     Returns:
         list: current_date as list of ints [year, month, day, hour, min, sec]
     """
     force_date_from_namelist = config['namelist']['coupler_nml'].get('force_date_from_namelist', False)
+    # following code replicates the logic that the fv3gfs model uses to determine the current_date
     if force_date_from_namelist:
         current_date = config['namelist']['coupler_nml'].get('current_date', [0, 0, 0, 0, 0, 0])
     else:
-        coupler_res_filename = os.path.join(get_initial_conditions_directory(config), 'coupler.res')
+        coupler_res_filename = os.path.join(input_directory, 'coupler.res')
         if os.path.exists(coupler_res_filename):
             current_date = get_current_date_from_coupler_res(coupler_res_filename)
         else:
@@ -107,22 +96,25 @@ def get_current_date_from_config(config):
     return current_date
 
 
-def write_diag_table(config, source_diag_table_filename, target_diag_table_filename):
-    """Write diag_table with title and current_date from config dictionary
+def update_diag_table_for_config(config, current_date, diag_table_filename):
+    """Re-write first two lines of diag_table_filename with experiment_name
+    and current_date from config dictionary.
 
     Args:
         config (dict): a configuration dictionary
-        source_diag_table_filename (str): input diag_table filename
-        target_diag_table_filename (str): output diag_table filename
+        current_date (list): a list of 6 integers representing current_date
+        diag_table_filename (str): diag_table filename
     """
     if 'experiment_name' not in config:
         raise ConfigError('config dictionary must have a \'experiment_name\' key')
-    with open(source_diag_table_filename) as source_diag_table:
-        lines = source_diag_table.read().splitlines()
-        lines[0] = config.get('experiment_name', 'default_experiment')
-        lines[1] = ' '.join([str(x) for x in get_current_date_from_config(config)])
-        with open(target_diag_table_filename, 'w') as target_diag_table:
-            target_diag_table.write('\n'.join(lines))
+    temporary_diag_table_filename = f'{diag_table_filename}_temporary'
+    with open(diag_table_filename) as diag_table:
+        lines = diag_table.read().splitlines()
+        lines[0] = config['experiment_name']
+        lines[1] = ' '.join([str(x) for x in current_date])
+        with open(temporary_diag_table_filename, 'w') as temporary_diag_table:
+            temporary_diag_table.write('\n'.join(lines))
+    os.replace(temporary_diag_table_filename, diag_table_filename)
 
 
 def get_microphysics_name_from_config(config):
