@@ -16,6 +16,7 @@ requirements = [
     'appdirs>=1.4.0',
     'requests>=2.22.0',
     'pyyaml>=5.0',
+    'gcsfs>=0.4.0'
 ]
 
 setup_requirements = [
@@ -40,10 +41,11 @@ setup(
     entry_points={
         'console_scripts': [
             'fv3config=fv3config.cli:main',
+            'fv3run=fv3config.run.__main__:main',
         ],
     },
     install_requires=requirements,
-    extras_requires={'bucket-access': 'gsutil'},
+    extras_requires={'bucket-access': ['gsutil', 'gcsfs>=0.4.0']},
     license="BSD license",
     long_description=readme + '\n\n' + history,
     include_package_data=True,
