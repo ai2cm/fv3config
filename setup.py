@@ -15,6 +15,7 @@ requirements = [
     'f90nml>=1.1.0',
     'appdirs>=1.4.0',
     'requests>=2.22.0',
+    'pyyaml>=5.0',
 ]
 
 setup_requirements = [
