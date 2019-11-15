@@ -64,3 +64,21 @@ must be installed and authorized to download from the specified bucket.
 The ``namelist`` item is special in that it is explicitly stored in the ``config`` dictionary. For the
 fv3gfs model, individual namelists are specified for various components of the model. As an example, the
 vertical resolution can be accessed via ``config['namelist']['fv_core_nml']['npz']``.
+
+Restart runs
+------------
+
+The required namelist settings for a restart run (as opposed to a run initialized from an observational
+analysis) can be applied to a configuration dictionary as follows::
+
+    config = enable_restart(config)
+
+A set of restart files is provided in the cached data files. Thus, an example run directory with model
+restart initial conditions can be created with::
+
+    from fv3config import get_default_config, write_run_directory, enable_restart
+
+    config = get_default_config()
+    config['initial_conditions'] = 'restart_example'
+    config = enable_restart(config)
+    write_run_directory(config, './rundir')
