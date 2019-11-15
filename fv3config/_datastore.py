@@ -107,6 +107,12 @@ def link_directory(source_path, target_path):
             link_directory(source_item, target_item)
 
 
+def link_file(source_item, target_item):
+    if os.path.exists(target_item):
+        os.remove(target_item)
+    os.symlink(source_item, target_item)
+
+
 def copy_file(source_path, target_path):
     if is_gsbucket_url(source_path):
         if gsutil_is_installed():
