@@ -6,7 +6,9 @@ import fv3config
 import os
 
 TEST_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
-TAR_GZ_FILENAME = os.path.join(TEST_DIRECTORY, 'data/2019-10-23-data-for-running-fv3gfs.tar.gz')
+TAR_GZ_FILENAME = os.path.join(
+    TEST_DIRECTORY, 'testdata/2019-10-23-data-for-running-fv3gfs.tar.gz'
+)
 
 
 class MockResponse(object):
