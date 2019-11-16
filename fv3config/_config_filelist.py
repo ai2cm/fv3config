@@ -78,17 +78,16 @@ def config_filelist_from_local_dir(source_directory, target_directory='', copy_m
     """Return config_filelist from all files in source_directory with target location equal to
     target_directory. Will recurse to subdirectories if they exist."""
     config_filelist = []
-    for path in os.listdir(source_directory):
-        if os.path.isfile(path):
+    for base_filename in os.listdir(source_directory):
+        source_item = os.path.join(source_directory, base_filename)
+        if os.path.isfile(source_item):
             config_filelist.append(generate_config_filelist_item(source_directory,
-                                                                 os.path.basename(path),
+                                                                 base_filename,
                                                                  target_location=target_directory,
                                                                  copy_method=copy_method))
-        elif os.path.isdir(path):
-            print(f'{path} is a directory')
-            source_subdirectory = os.path.join(source_directory, path)
-            target_subdirectory = os.path.join(target_directory, path)
-            config_filelist += config_filelist_from_local_dir(source_subdirectory,
+        elif os.path.isdir(source_item):
+            target_subdirectory = os.path.join(target_directory, base_filename)
+            config_filelist += config_filelist_from_local_dir(source_item,
                                                               target_directory=target_subdirectory,
                                                               copy_method=copy_method)
     return config_filelist
