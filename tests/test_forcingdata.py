@@ -1,10 +1,8 @@
 import unittest
 import os
 import shutil
-from fv3config import (
-    get_default_config, ConfigError,
-    write_run_directory
-)
+import tempfile
+import fv3config
 from fv3config._datastore import (
     get_base_forcing_directory, get_orographic_forcing_directory,
     link_directory, get_initial_conditions_directory, ensure_data_is_downloaded,
@@ -12,6 +10,7 @@ from fv3config._datastore import (
 )
 
 test_directory = os.path.dirname(os.path.realpath(__file__))
+
 
 required_run_directory_subdirectories = ['INPUT', 'RESTART']
 
@@ -83,6 +82,7 @@ option_tag = 'custom_option'
 empty_built_in_options_dict = {}
 one_item_built_in_options_dict = {'custom_option': '/path/to/custom/option'}
 
+
 class RunDirectory(object):
 
     def __init__(self, directory_path):
@@ -97,9 +97,15 @@ class RunDirectory(object):
 
 class ForcingTests(unittest.TestCase):
 
-    def __init__(self, *args, **kwargs):
+    @classmethod
+    def setUpClass(cls):
+        cls.cache_dir = tempfile.TemporaryDirectory()
+        fv3config.set_cache_dir(cls.cache_dir.name)
         ensure_data_is_downloaded()
-        super(ForcingTests, self).__init__(*args, **kwargs)
+
+    @classmethod
+    def tearDownClass(cls):
+        cls.cache_dir.cleanup()
 
     def setUp(self):
         self._run_directory_list = []
@@ -115,7 +121,7 @@ class ForcingTests(unittest.TestCase):
 
     def test_link_default_base_forcing_directory(self):
         rundir = self.make_run_directory('test_rundir')
-        config = get_default_config()
+        config = fv3config.get_default_config()
         forcing_dir = get_base_forcing_directory(config)
         self.assertTrue(os.path.isdir(forcing_dir))
         link_directory(forcing_dir, rundir)
@@ -123,7 +129,7 @@ class ForcingTests(unittest.TestCase):
 
     def test_link_default_orographic_forcing_directory(self):
         rundir = self.make_run_directory('test_rundir')
-        config = get_default_config()
+        config = fv3config.get_default_config()
         orographic_forcing_dir = get_orographic_forcing_directory(config)
         self.assertTrue(os.path.isdir(orographic_forcing_dir))
         link_directory(orographic_forcing_dir, os.path.join(rundir, 'INPUT'))
@@ -138,7 +144,7 @@ class ForcingTests(unittest.TestCase):
                 }
             }
         }
-        with self.assertRaises(ConfigError):
+        with self.assertRaises(fv3config.ConfigError):
             get_orographic_forcing_directory(config)
 
     def test_negative_resolution_orographic_forcing_directory(self):
@@ -150,12 +156,12 @@ class ForcingTests(unittest.TestCase):
                 }
             }
         }
-        with self.assertRaises(ConfigError):
+        with self.assertRaises(fv3config.ConfigError):
             get_orographic_forcing_directory(config)
 
     def test_link_default_initial_conditions_directory(self):
         rundir = self.make_run_directory('test_rundir')
-        config = get_default_config()
+        config = fv3config.get_default_config()
         initial_conditions_dir = get_initial_conditions_directory(config)
         self.assertTrue(os.path.isdir(initial_conditions_dir))
         link_directory(initial_conditions_dir, os.path.join(rundir, 'INPUT'))
@@ -163,7 +169,7 @@ class ForcingTests(unittest.TestCase):
 
     def test_link_gfs_initial_conditions_directory(self):
         rundir = self.make_run_directory('test_rundir')
-        config = get_default_config()
+        config = fv3config.get_default_config()
         config['initial_conditions'] = 'gfs_example'
         initial_conditions_dir = get_initial_conditions_directory(config)
         self.assertTrue(os.path.isdir(initial_conditions_dir))
@@ -172,7 +178,7 @@ class ForcingTests(unittest.TestCase):
 
     def test_link_restart_initial_conditions_directory(self):
         rundir = self.make_run_directory('test_rundir')
-        config = get_default_config()
+        config = fv3config.get_default_config()
         config['initial_conditions'] = 'restart_example'
         initial_conditions_dir = get_initial_conditions_directory(config)
         self.assertTrue(os.path.isdir(initial_conditions_dir))
@@ -181,36 +187,36 @@ class ForcingTests(unittest.TestCase):
 
     def test_get_specified_initial_conditions_directory(self):
         source_rundir = self.make_run_directory('source_rundir')
-        config = get_default_config()
+        config = fv3config.get_default_config()
         config['initial_conditions'] = source_rundir
         dirname = get_initial_conditions_directory(config)
         self.assertEqual(dirname, source_rundir)
 
     def test_get_bad_initial_conditions_directory(self):
         source_rundir = '/not/a/real/directory'
-        config = get_default_config()
+        config = fv3config.get_default_config()
         config['initial_conditions'] = source_rundir
-        with self.assertRaises(ConfigError):
+        with self.assertRaises(fv3config.ConfigError):
             get_initial_conditions_directory(config)
 
     def test_get_specified_forcing_directory(self):
         source_rundir = self.make_run_directory('source_rundir')
-        config = get_default_config()
+        config = fv3config.get_default_config()
         config['forcing'] = source_rundir
         dirname = get_base_forcing_directory(config)
         self.assertEqual(dirname, source_rundir)
 
     def test_get_bad_forcing_directory(self):
         source_rundir = '/not/a/real/directory'
-        config = get_default_config()
+        config = fv3config.get_default_config()
         config['forcing'] = source_rundir
-        with self.assertRaises(ConfigError):
+        with self.assertRaises(fv3config.ConfigError):
             get_base_forcing_directory(config)
 
     def test_write_default_run_directory(self):
         rundir = self.make_run_directory('test_rundir')
-        config = get_default_config()
-        write_run_directory(config, rundir)
+        config = fv3config.get_default_config()
+        fv3config.write_run_directory(config, rundir)
         self.assert_subpaths_present(
             rundir,
             required_run_directory_subdirectories +
@@ -223,13 +229,13 @@ class ForcingTests(unittest.TestCase):
     def test_restart_directory_exists_and_empty(self):
         rundir = self.make_run_directory('test_rundir')
         restart_directory = os.path.join(rundir, 'RESTART')
-        config = get_default_config()
-        write_run_directory(config, rundir)
+        config = fv3config.get_default_config()
+        fv3config.write_run_directory(config, rundir)
         self.assertTrue(os.path.isdir(restart_directory))
         self.assertEqual(len(os.listdir(restart_directory)), 0)
 
     def test_default_config_has_required_keys(self):
-        config = get_default_config()
+        config = fv3config.get_default_config()
         self.assertTrue(set(required_config_keys) <= set(config.keys()))
 
     def assert_subpaths_present(self, dirname, subpath_list):
@@ -246,7 +252,7 @@ class ForcingTests(unittest.TestCase):
                          sample_abs_path)
 
     def test_resolve_option_nonexistent_abs_path(self):
-        with self.assertRaises(ConfigError):
+        with self.assertRaises(fv3config.ConfigError):
             resolve_option(option_abs_path, empty_built_in_options_dict)
 
     def test_resolve_option_gsbucket(self):
@@ -254,7 +260,7 @@ class ForcingTests(unittest.TestCase):
                          option_gsbucket)
 
     def test_resolve_option_tag_empty_built_in_options(self):
-        with self.assertRaises(ConfigError):
+        with self.assertRaises(fv3config.ConfigError):
             resolve_option(option_tag, empty_built_in_options_dict)
 
     def test_resolve_option_tag_proper_built_in_options(self):
