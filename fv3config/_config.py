@@ -110,7 +110,7 @@ def write_run_directory(config, target_directory):
         if not os.path.isdir(directory):
             os.mkdir(directory)
     for filelist_item in config_filelist:
-        save_filelist_item(filelist_item)
+        save_filelist_item(filelist_item, target_directory)
     current_date = get_current_date_from_config(config, input_directory)
     update_diag_table_for_config(config, current_date, os.path.join(target_directory, 'diag_table'))
     config_to_namelist(config, os.path.join(target_directory, 'input.nml'))
