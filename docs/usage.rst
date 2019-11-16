@@ -38,6 +38,22 @@ It is also possible to delete and re-download the data archive, in case somethin
 
     refresh_downloaded_data()
 
+
+Cache Location
+--------------
+
+If the FV3CONFIG_CACHE_DIR environment variable is set, the package will download
+and store data into this folder. If unset, by default the package will use a
+subdirectory of the user's home folder.
+
+The download location can be retrieved using `fv3config.get_cache_dir()`, and set
+manually using `fv3config.set_cache_dir()`. If the target is set to a directory
+that already contains the archive download, it will automatically start using those
+files. Conversely, if the target is set to an empty directory, it will be necessary
+to re-download the cache files. Do not set the cache directory to a location
+that already contains non-cache files, or the files will not download until you
+call `refresh_downloaded_data` (which will delete any files in the directory).
+
 Configuration
 -------------
 

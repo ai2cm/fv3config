@@ -3,12 +3,19 @@ import tarfile
 import shutil
 import logging
 import tempfile
-import appdirs
 from subprocess import check_call
-from ._exceptions import ConfigError, DataMissingError
 import requests
+import appdirs
+from ._exceptions import ConfigError, DataMissingError
 
-LOCAL_ARCHIVE_DIR = os.path.join(appdirs.user_data_dir('fv3gfs', 'vulcan'), 'archive')
+if 'FV3CONFIG_CACHE_DIR' in os.environ:
+    LOCAL_ARCHIVE_DIR = os.environ['FV3CONFIG_CACHE_DIR']
+else:
+    LOCAL_ARCHIVE_DIR = os.path.join(
+        appdirs.user_data_dir('fv3gfs', 'vulcan'),
+        'archive'
+    )
+
 
 ARCHIVE_FILENAME = '2019-10-23-data-for-running-fv3gfs.tar.gz'
 ARCHIVE_FILENAME_ROOT = '2019-10-23-data-for-running-fv3gfs'
@@ -136,8 +143,9 @@ def ensure_data_is_downloaded():
     """Check of the cached data is present, and if not, download it."""
     os.makedirs(LOCAL_ARCHIVE_DIR, exist_ok=True)
     if len(os.listdir(LOCAL_ARCHIVE_DIR)) == 0:
-        with tempfile.TemporaryFile(mode='wb') as archive_file:
+        with tempfile.NamedTemporaryFile(mode='wb') as archive_file:
             download_data_archive(archive_file)
+            archive_file.flush()
             extract_data(archive_file.name)
 
 
@@ -148,7 +156,7 @@ def refresh_downloaded_data():
 
 
 def download_data_archive(target_file):
-    """Download the cached data. Raises FileExistsError if data is already present."""
+    """Download the cached data."""
     logging.info('Downloading required data for running fv3gfs to temporary file')
     r = requests.get(ARCHIVE_URL)
     target_file.write(r.content)
@@ -160,7 +168,11 @@ def extract_data(archive_filename):
     with tarfile.open(archive_filename, mode='r:gz') as f:
         with tempfile.TemporaryDirectory() as tempdir:
             f.extractall(tempdir)
-            shutil.move(os.path.join(tempdir, ARCHIVE_FILENAME_ROOT), LOCAL_ARCHIVE_DIR)
+            for name in os.listdir(os.path.join(tempdir, ARCHIVE_FILENAME_ROOT)):
+                shutil.move(
+                    os.path.join(tempdir, ARCHIVE_FILENAME_ROOT, name),
+                    LOCAL_ARCHIVE_DIR
+                )
 
 
 def is_gsbucket_url(path):

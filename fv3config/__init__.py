@@ -7,7 +7,9 @@ from ._config import (
     write_run_directory, enable_restart
 )
 from ._exceptions import InvalidFileError, ConfigError
-from ._datastore import refresh_downloaded_data, ensure_data_is_downloaded
+from ._datastore import (
+    refresh_downloaded_data, ensure_data_is_downloaded, set_cache_dir, get_cache_dir
+)
 
 
 __author__ = """Vulcan Technologies, LLC"""
