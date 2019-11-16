@@ -45,7 +45,7 @@ setup(
         ],
     },
     install_requires=requirements,
-    extras_requires={'bucket-access': ['gsutil', 'gcsfs>=0.4.0']},
+    extras_require={'bucket-access': 'gsutil'},
     license="BSD license",
     long_description=readme + '\n\n' + history,
     include_package_data=True,
