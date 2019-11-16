@@ -27,8 +27,8 @@ FORCING_OPTIONS_DICT = {
 }
 
 INITIAL_CONDITIONS_OPTIONS_DICT = {
-    'gfs_example': os.path.join(LOCAL_ARCHIVE_DIR, 'initial_conditions/gfs_initial_conditions'),
-    'restart_example': os.path.join(LOCAL_ARCHIVE_DIR, 'initial_conditions/restart_initial_conditions'),
+    'gfs_example': 'initial_conditions/gfs_initial_conditions',
+    'restart_example': 'initial_conditions/restart_initial_conditions',
 }
 
 
@@ -67,7 +67,7 @@ def get_orographic_forcing_directory(config):
     resolution = get_resolution(config)
     dirname = os.path.join(LOCAL_ARCHIVE_DIR, f'orographic_data/{resolution}')
     if not os.path.isdir(dirname):
-        valid_options = os.listdir(os.path.join(LOCAL_ARCHIVE_DIR, 'orographic_data'))
+        valid_options = os.listdir(os.path.join(get_cache_dir(), 'orographic_data'))
         raise ConfigError(f'resolution {resolution} is unsupported; valid options are {valid_options}')
     return dirname
 
@@ -133,7 +133,7 @@ def gsutil_is_installed():
 
 
 def check_if_data_is_downloaded():
-    if not os.path.isdir(LOCAL_ARCHIVE_DIR) or len(os.listdir(LOCAL_ARCHIVE_DIR)) == 0:
+    if not os.path.isdir(get_cache_dir()) or len(os.listdir(get_cache_dir())) == 0:
         raise DataMissingError(
             f'Required data for running fv3gfs not available. Try python -m fv3config.download_data or ensure_data_is_downloaded()'
         )
@@ -141,8 +141,8 @@ def check_if_data_is_downloaded():
 
 def ensure_data_is_downloaded():
     """Check of the cached data is present, and if not, download it."""
-    os.makedirs(LOCAL_ARCHIVE_DIR, exist_ok=True)
-    if len(os.listdir(LOCAL_ARCHIVE_DIR)) == 0:
+    os.makedirs(get_cache_dir(), exist_ok=True)
+    if len(os.listdir(get_cache_dir())) == 0:
         with tempfile.NamedTemporaryFile(mode='wb') as archive_file:
             download_data_archive(archive_file)
             archive_file.flush()
@@ -151,7 +151,7 @@ def ensure_data_is_downloaded():
 
 def refresh_downloaded_data():
     """Delete the cached data (if present) and re-download it."""
-    shutil.rmtree(LOCAL_ARCHIVE_DIR)
+    shutil.rmtree(get_cache_dir())
     ensure_data_is_downloaded()
 
 
@@ -164,14 +164,14 @@ def download_data_archive(target_file):
 
 def extract_data(archive_filename):
     """Extract the downloaded archive, over-writing any data already present."""
-    logging.info('Extracting required data for running fv3gfs to %s', LOCAL_ARCHIVE_DIR)
+    logging.info('Extracting required data for running fv3gfs to %s', get_cache_dir())
     with tarfile.open(archive_filename, mode='r:gz') as f:
         with tempfile.TemporaryDirectory() as tempdir:
             f.extractall(tempdir)
             for name in os.listdir(os.path.join(tempdir, ARCHIVE_FILENAME_ROOT)):
                 shutil.move(
                     os.path.join(tempdir, ARCHIVE_FILENAME_ROOT, name),
-                    LOCAL_ARCHIVE_DIR
+                    get_cache_dir()
                 )
 
 
@@ -206,7 +206,7 @@ def resolve_option(option, built_in_options_dict):
         return option
     else:
         if option in built_in_options_dict:
-            return os.path.join(LOCAL_ARCHIVE_DIR, built_in_options_dict[option])
+            return os.path.join(get_cache_dir(), built_in_options_dict[option])
         else:
             raise ConfigError(
                 f'The provided option {option} is not one of the built in options: '
