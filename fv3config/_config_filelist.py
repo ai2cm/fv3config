@@ -102,6 +102,8 @@ def config_filelist_from_gs_bucket(source_directory, target_directory='/'):
 def save_filelist_item(item, target_directory):
     source_path = os.path.join(item['source_location'], item['source_name'])
     target_path = os.path.join(target_directory, item['target_location'], item['target_name'])
+    if not os.path.exists(os.path.dirname(target_path)):
+        os.makedirs(os.path.dirname(target_path))
     if item['copy_method'] == 'copy':
         copy_file(source_path, target_path)
     elif item['copy_method'] == 'symlink':
