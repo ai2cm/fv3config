@@ -6,6 +6,7 @@ from ._datastore import (
 from ._tables import (
     get_data_table_filename, get_diag_table_filename, get_field_table_filename
 )
+from ._exceptions import ConfigError
 
 
 def is_dict_or_list(option):
@@ -22,7 +23,7 @@ def get_base_forcing_filelist(config):
         return config['forcing']
     else:
         source_directory = get_base_forcing_directory(config)
-        return config_filelist_from_path(source_directory, '/', target_type='symlink')
+        return config_filelist_from_path(source_directory, '', target_type='symlink')
 
 
 def get_initial_conditions_filelist(config):
@@ -36,22 +37,22 @@ def get_initial_conditions_filelist(config):
 def get_data_table_filelist_item(config):
     data_table_filename = get_data_table_filename(config)
     location, name = os.path.split(data_table_filename)
-    return generate_config_filelist_item(location, name)
+    return generate_config_filelist_item(location, name, target_name='data_table')
 
 
 def get_diag_table_filelist_item(config):
     diag_table_filename = get_diag_table_filename(config)
     location, name = os.path.split(diag_table_filename)
-    return generate_config_filelist_item(location, name)
+    return generate_config_filelist_item(location, name, target_name='diag_table')
 
 
 def get_field_table_filelist_item(config):
     field_table_filename = get_field_table_filename(config)
     location, name = os.path.split(field_table_filename)
-    return generate_config_filelist_item(location, name)
+    return generate_config_filelist_item(location, name, target_name='field_table')
 
 
-def generate_config_filelist_item(source_location, source_name, target_location='/',
+def generate_config_filelist_item(source_location, source_name, target_location='',
                                   target_name=None, target_type='copy'):
     if target_name is None:
         target_name = source_name
@@ -65,7 +66,7 @@ def generate_config_filelist_item(source_location, source_name, target_location=
     return config_filelist_item
 
 
-def config_filelist_from_path(source_directory, target_directory='/', target_type='copy'):
+def config_filelist_from_path(source_directory, target_directory='', target_type='copy'):
     if is_gsbucket_url(source_directory):
         return config_filelist_from_gs_bucket(source_directory, target_directory)
     else:
@@ -73,7 +74,7 @@ def config_filelist_from_path(source_directory, target_directory='/', target_typ
                                               target_type=target_type)
 
 
-def config_filelist_from_local_dir(source_directory, target_directory='/', target_type='copy'):
+def config_filelist_from_local_dir(source_directory, target_directory='', target_type='copy'):
     """Return config_filelist from all files in source_directory with target location equal to
     target_directory. Will recurse to subdirectories if they exist."""
     config_filelist = []
@@ -99,10 +100,12 @@ def config_filelist_from_gs_bucket(source_directory, target_directory='/'):
     return config_filelist
 
 
-def save_filelist_item(item):
+def save_filelist_item(item, target_directory):
     source_path = os.path.join(item['source_location'], item['source_name'])
-    target_path = os.path.join(item['target_location'], item['target_name'])
+    target_path = os.path.join(target_directory, item['target_location'], item['target_name'])
     if item['target_type'] == 'copy':
         copy_file(source_path, target_path)
     elif item['target_type'] == 'symlink':
         link_file(source_path, target_path)
+    else:
+        raise ConfigError(f'target_type not defined for {source_path} filelist item')
