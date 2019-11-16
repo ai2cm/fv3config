@@ -96,8 +96,7 @@ def config_filelist_from_local_dir(source_directory, target_directory='', target
 def config_filelist_from_gs_bucket(source_directory, target_directory='/'):
     """Return config_filelist from all files in source_directory with target location equal to
     target_directory"""
-    config_filelist = []
-    return config_filelist
+    #TODO: return config_filelist given google storage bucket path
 
 
 def save_filelist_item(item, target_directory):
