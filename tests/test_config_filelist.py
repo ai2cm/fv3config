@@ -22,7 +22,7 @@ DEFAULT_DATA_TABLE_FILELIST_ITEM = {
     'source_name': 'data_table_default',
     'target_location': '',
     'target_name': 'data_table',
-    'target_type': 'copy'
+    'copy_method': 'copy'
 }
 
 DEFAULT_DIAG_TABLE_FILELIST_ITEM = {
@@ -30,7 +30,7 @@ DEFAULT_DIAG_TABLE_FILELIST_ITEM = {
     'source_name': 'diag_table_default',
     'target_location': '',
     'target_name': 'diag_table',
-    'target_type': 'copy'
+    'copy_method': 'copy'
 }
 
 DEFAULT_FIELD_TABLE_FILELIST_ITEM = {
@@ -38,7 +38,7 @@ DEFAULT_FIELD_TABLE_FILELIST_ITEM = {
     'source_name': 'field_table_GFDLMP',
     'target_location': '',
     'target_name': 'field_table',
-    'target_type': 'copy'
+    'copy_method': 'copy'
 }
 
 

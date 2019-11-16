@@ -15,7 +15,7 @@ def is_dict_or_list(option):
 
 def get_orographic_forcing_filelist(config):
     source_directory = get_orographic_forcing_directory(config)
-    return config_filelist_from_path(source_directory, 'INPUT', target_type='symlink')
+    return config_filelist_from_path(source_directory, 'INPUT', copy_method='symlink')
 
 
 def get_base_forcing_filelist(config):
@@ -23,7 +23,7 @@ def get_base_forcing_filelist(config):
         return config['forcing']
     else:
         source_directory = get_base_forcing_directory(config)
-        return config_filelist_from_path(source_directory, '', target_type='symlink')
+        return config_filelist_from_path(source_directory, '', copy_method='symlink')
 
 
 def get_initial_conditions_filelist(config):
@@ -31,7 +31,7 @@ def get_initial_conditions_filelist(config):
         return config['initial_conditions']
     else:
         source_directory = get_initial_conditions_directory(config)
-        return config_filelist_from_path(source_directory, 'INPUT', target_type='copy')
+        return config_filelist_from_path(source_directory, 'INPUT', copy_method='copy')
 
 
 def get_data_table_filelist_item(config):
@@ -53,7 +53,7 @@ def get_field_table_filelist_item(config):
 
 
 def generate_config_filelist_item(source_location, source_name, target_location='',
-                                  target_name=None, target_type='copy'):
+                                  target_name=None, copy_method='copy'):
     if target_name is None:
         target_name = source_name
     config_filelist_item = {
@@ -61,20 +61,20 @@ def generate_config_filelist_item(source_location, source_name, target_location=
         'source_name': source_name,
         'target_location': target_location,
         'target_name': target_name,
-        'target_type': target_type,
+        'copy_method': copy_method,
     }
     return config_filelist_item
 
 
-def config_filelist_from_path(source_directory, target_directory='', target_type='copy'):
+def config_filelist_from_path(source_directory, target_directory='', copy_method='copy'):
     if is_gsbucket_url(source_directory):
         return config_filelist_from_gs_bucket(source_directory, target_directory)
     else:
         return config_filelist_from_local_dir(source_directory, target_directory,
-                                              target_type=target_type)
+                                              copy_method=copy_method)
 
 
-def config_filelist_from_local_dir(source_directory, target_directory='', target_type='copy'):
+def config_filelist_from_local_dir(source_directory, target_directory='', copy_method='copy'):
     """Return config_filelist from all files in source_directory with target location equal to
     target_directory. Will recurse to subdirectories if they exist."""
     config_filelist = []
@@ -83,13 +83,14 @@ def config_filelist_from_local_dir(source_directory, target_directory='', target
             config_filelist.append(generate_config_filelist_item(source_directory,
                                                                  os.path.basename(path),
                                                                  target_location=target_directory,
-                                                                 target_type=target_type))
+                                                                 copy_method=copy_method))
         elif os.path.isdir(path):
+            print(f'{path} is a directory')
             source_subdirectory = os.path.join(source_directory, path)
             target_subdirectory = os.path.join(target_directory, path)
             config_filelist += config_filelist_from_local_dir(source_subdirectory,
-                                                              target_subdirectory,
-                                                              target_type=target_type)
+                                                              target_directory=target_subdirectory,
+                                                              copy_method=copy_method)
     return config_filelist
 
 
@@ -102,9 +103,9 @@ def config_filelist_from_gs_bucket(source_directory, target_directory='/'):
 def save_filelist_item(item, target_directory):
     source_path = os.path.join(item['source_location'], item['source_name'])
     target_path = os.path.join(target_directory, item['target_location'], item['target_name'])
-    if item['target_type'] == 'copy':
+    if item['copy_method'] == 'copy':
         copy_file(source_path, target_path)
-    elif item['target_type'] == 'symlink':
+    elif item['copy_method'] == 'symlink':
         link_file(source_path, target_path)
     else:
-        raise ConfigError(f'target_type not defined for {source_path} filelist item')
+        raise ConfigError(f'copy_method not defined for {source_path} filelist item')
