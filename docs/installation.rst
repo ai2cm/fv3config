@@ -8,44 +8,27 @@ Installation
 Stable release
 --------------
 
-To install FV3Config, run this command in your terminal:
-
-.. code-block:: console
-
-    $ pip install fv3config
-
-This is the preferred method to install FV3Config, as it will always install the most recent stable release.
-
-If you don't have `pip`_ installed, this `Python installation guide`_ can guide
-you through the process.
-
-.. _pip: https://pip.pypa.io
-.. _Python installation guide: http://docs.python-guide.org/en/latest/starting/installation/
-
+There is no stable release. This is unsupported, pre-alpha software: use at your own risk!
 
 From sources
 ------------
 
 The sources for FV3Config can be downloaded from the `Github repo`_.
 
-You can either clone the public repository:
+You can clone the public repository:
 
 .. code-block:: console
 
     $ git clone git://github.com/VulcanClimateModeling/fv3config
 
-Or download the `tarball`_:
+Once you have a copy of the source, you can install it interactively with:
 
 .. code-block:: console
 
-    $ curl -OJL https://github.com/VulcanClimateModeling/fv3config/tarball/master
+    $ pip install -e .
 
-Once you have a copy of the source, you can install it with:
-
-.. code-block:: console
-
-    $ pip install .
-
+The `-e` flag will set up the directory so that python uses the local folder including
+any modifications, instead of copying the sources to an installation directory. This
+is very useful for development.
 
 .. _Github repo: https://github.com/VulcanClimateModeling/fv3config
-.. _tarball: https://github.com/VulcanClimateModeling/fv3config/tarball/master
