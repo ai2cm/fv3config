@@ -4,11 +4,11 @@ import appdirs
 from fv3config import (
     get_default_config, ConfigError,
 )
-from fv3config._config_filelist import (
-    is_dict_or_list, get_orographic_forcing_filelist, get_base_forcing_filelist,
-    get_initial_conditions_filelist, get_data_table_filelist_item, get_diag_table_filelist_item,
-    get_field_table_filelist_item, generate_config_filelist_item, config_filelist_from_path,
-    config_filelist_from_local_dir, config_filelist_from_gs_bucket, save_filelist_item
+from fv3config._asset_list import (
+    is_dict_or_list, get_orographic_forcing_asset_list, get_base_forcing_asset_list,
+    get_initial_conditions_asset_list, get_data_table_asset, get_diag_table_asset,
+    get_field_table_asset, generate_config_asset, asset_list_from_path,
+    asset_list_from_local_dir, asset_list_from_gs_bucket, save_asset
 )
 
 
@@ -42,7 +42,7 @@ DEFAULT_FIELD_TABLE_FILELIST_ITEM = {
 }
 
 
-class ConfigFilelistTests(unittest.TestCase):
+class AssetListTests(unittest.TestCase):
 
     def test_is_dict_or_list(self):
         empty_dict = {}
@@ -53,20 +53,20 @@ class ConfigFilelistTests(unittest.TestCase):
         self.assertFalse(is_dict_or_list(1.0))
         self.assertFalse(is_dict_or_list(1))
 
-    def test_get_data_table_filelist_item_default(self):
+    def test_get_data_table_asset_default(self):
         config = get_default_config()
-        data_table_filelist_item = get_data_table_filelist_item(config)
-        self.assertEqual(data_table_filelist_item, DEFAULT_DATA_TABLE_FILELIST_ITEM)
+        data_table_asset = get_data_table_asset(config)
+        self.assertEqual(data_table_asset, DEFAULT_DATA_TABLE_FILELIST_ITEM)
 
-    def test_get_diag_table_filelist_item_default(self):
+    def test_get_diag_table_asset_default(self):
         config = get_default_config()
-        diag_table_filelist_item = get_diag_table_filelist_item(config)
-        self.assertEqual(diag_table_filelist_item, DEFAULT_DIAG_TABLE_FILELIST_ITEM)
+        diag_table_asset = get_diag_table_asset(config)
+        self.assertEqual(diag_table_asset, DEFAULT_DIAG_TABLE_FILELIST_ITEM)
 
-    def test_get_field_table_filelist_item_default(self):
+    def test_get_field_table_asset_default(self):
         config = get_default_config()
-        field_table_filelist_item = get_field_table_filelist_item(config)
-        self.assertEqual(field_table_filelist_item, DEFAULT_FIELD_TABLE_FILELIST_ITEM)
+        field_table_asset = get_field_table_asset(config)
+        self.assertEqual(field_table_asset, DEFAULT_FIELD_TABLE_FILELIST_ITEM)
 
 
 if __name__ == '__main__':
