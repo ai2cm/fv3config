@@ -8,11 +8,7 @@ from ._datastore import (
 from ._tables import (
     update_diag_table_for_config, get_current_date_from_config
 )
-from ._asset_list import (
-    get_base_forcing_asset_list, get_initial_conditions_asset_list, get_orographic_forcing_asset_list,
-    get_data_table_asset, get_diag_table_asset, get_field_table_asset,
-    save_asset
-)
+from ._asset_list import config_to_asset_list, write_asset_list
 
 package_directory = os.path.dirname(os.path.realpath(__file__))
 
@@ -100,17 +96,11 @@ def write_run_directory(config, target_directory):
     check_if_data_is_downloaded()
     input_directory = os.path.join(target_directory, 'INPUT')
     restart_directory = os.path.join(target_directory, 'RESTART')
-    asset_list = get_initial_conditions_asset_list(config)
-    asset_list += get_base_forcing_asset_list(config)
-    asset_list += get_orographic_forcing_asset_list(config)
-    asset_list.append(get_field_table_asset(config))
-    asset_list.append(get_diag_table_asset(config))
-    asset_list.append(get_data_table_asset(config))
+    asset_list = config_to_asset_list(config)
     for directory in [target_directory, input_directory, restart_directory]:
         if not os.path.isdir(directory):
             os.mkdir(directory)
-    for asset in asset_list:
-        save_asset(asset, target_directory)
+    write_asset_list(asset_list)
     current_date = get_current_date_from_config(config, input_directory)
     update_diag_table_for_config(config, current_date, os.path.join(target_directory, 'diag_table'))
     config_to_namelist(config, os.path.join(target_directory, 'input.nml'))

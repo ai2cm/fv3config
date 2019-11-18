@@ -99,7 +99,7 @@ def asset_list_from_gs_bucket(source_directory, target_directory='/'):
     #TODO: return asset_list given google storage bucket path
 
 
-def save_asset(asset, target_directory):
+def write_asset(asset, target_directory):
     source_path = os.path.join(asset['source_location'], asset['source_name'])
     target_path = os.path.join(target_directory, asset['target_location'], asset['target_name'])
     if not os.path.exists(os.path.dirname(target_path)):
@@ -110,3 +110,23 @@ def save_asset(asset, target_directory):
         link_file(source_path, target_path)
     else:
         raise ConfigError(f'copy_method not defined for {source_path} asset')
+
+
+def write_asset_list(asset_list, target_directory):
+    for asset in asset_list:
+        write_asset(asset, target_directory)
+
+
+def config_to_asset_list(config):
+    asset_list = get_initial_conditions_asset_list(config)
+    asset_list += get_base_forcing_asset_list(config)
+    asset_list += get_orographic_forcing_asset_list(config)
+    asset_list.append(get_field_table_asset(config))
+    asset_list.append(get_diag_table_asset(config))
+    asset_list.append(get_data_table_asset(config))
+    if 'patch_files' in config:
+        if isinstance(config['patch_files'], dict):
+            asset_list.append(config['patch_files'])
+        elif isinstance(config['patch_files'], list):
+            asset_list += config['patch_files']
+    return asset_list
