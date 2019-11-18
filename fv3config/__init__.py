@@ -12,6 +12,6 @@ from ._datastore import (
 )
 
 
-__author__ = """Vulcan Technologies, LLC"""
+__author__ = """Vulcan Technologies LLC"""
 __email__ = 'jeremym@vulcan.com'
 __version__ = '0.1.0'
