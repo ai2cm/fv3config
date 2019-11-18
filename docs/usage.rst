@@ -34,9 +34,7 @@ Or from inside Python::
 
 It is also possible to delete and re-download the data archive, in case something goes wrong::
 
-    from fv3config import refresh_downloaded_data
-
-    refresh_downloaded_data()
+    $ python -m fv3config.refresh_data
 
 Configuration
 -------------
