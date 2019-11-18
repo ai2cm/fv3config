@@ -46,33 +46,33 @@ def get_initial_conditions_asset_list(config):
 def get_data_table_asset(config):
     data_table_filename = get_data_table_filename(config)
     location, name = os.path.split(data_table_filename)
-    return generate_config_asset(location, name, target_name='data_table')
+    return generate_asset(location, name, target_name='data_table')
 
 
 def get_diag_table_asset(config):
     diag_table_filename = get_diag_table_filename(config)
     location, name = os.path.split(diag_table_filename)
-    return generate_config_asset(location, name, target_name='diag_table')
+    return generate_asset(location, name, target_name='diag_table')
 
 
 def get_field_table_asset(config):
     field_table_filename = get_field_table_filename(config)
     location, name = os.path.split(field_table_filename)
-    return generate_config_asset(location, name, target_name='field_table')
+    return generate_asset(location, name, target_name='field_table')
 
 
-def generate_config_asset(source_location, source_name, target_location='',
+def generate_asset(source_location, source_name, target_location='',
                                   target_name=None, copy_method='copy'):
     if target_name is None:
         target_name = source_name
-    config_asset = {
+    asset = {
         'source_location': source_location,
         'source_name': source_name,
         'target_location': target_location,
         'target_name': target_name,
         'copy_method': copy_method,
     }
-    return config_asset
+    return asset
 
 
 def asset_list_from_path(source_directory, target_directory='', copy_method='copy'):
@@ -90,10 +90,10 @@ def asset_list_from_local_dir(source_directory, target_directory='', copy_method
     for base_filename in os.listdir(source_directory):
         source_item = os.path.join(source_directory, base_filename)
         if os.path.isfile(source_item):
-            asset_list.append(generate_config_asset(source_directory,
-                                                    base_filename,
-                                                    target_location=target_directory,
-                                                    copy_method=copy_method))
+            asset_list.append(generate_asset(source_directory,
+                                             base_filename,
+                                             target_location=target_directory,
+                                             copy_method=copy_method))
         elif os.path.isdir(source_item):
             target_subdirectory = os.path.join(target_directory, base_filename)
             asset_list += asset_list_from_local_dir(source_item,
