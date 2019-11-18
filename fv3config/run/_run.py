@@ -3,9 +3,10 @@ import os
 import logging
 import contextlib
 import subprocess
+import glob
+import resource
 import yaml
 import gcsfs
-import glob
 from .._config import write_run_directory, _get_n_processes
 
 
@@ -15,6 +16,7 @@ STDERR_FILENAME = 'stderr.log'
 DOCKER_FLAGS = '-it'
 CONFIG_OUT_FILENAME = 'fv3config.yaml'
 GOOGLE_PROJECT = 'VCM-ML'
+DOCKER_OUTDIR = '/outdir'
 
 
 @contextlib.contextmanager
@@ -61,7 +63,7 @@ def _credentials_args(keyfile):
     if keyfile is not None:
         return_list = [
             '-v', f'{keyfile}:{keyfile}',
-            '-e', 'GOOGLE_APPLICATION_CREDENTIALS={keyfile}'
+            '-e', f'GOOGLE_APPLICATION_CREDENTIALS={keyfile}'
         ]
     else:
         return_list = []
@@ -79,14 +81,14 @@ def run_experiment(config_dict_or_location, outdir, runfile=None, dockerimage=No
 
 def _run_in_docker(config_dict_or_location, outdir, dockerimage, runfile=None, keyfile=None):
     with tempfile.TemporaryFile() as temp_file:
+        bind_mount_args = []
         if isinstance(config_dict_or_location, str):
-            bind_mount_args = []
             config_location = config_dict_or_location
         else:
             _write_config_dict(config_dict_or_location, temp_file.name)
-            bind_mount_args = ['-v', f"{temp_file.name}:{temp_file.name}"]
-            bind_mount_args += ['-v', f"{outdir}:{outdir}"]
+            bind_mount_args += ['-v', f"{temp_file.name}:{temp_file.name}"]
             config_location = temp_file.name
+        bind_mount_args += ['-v', f"{os.path.abspath(outdir)}:{DOCKER_OUTDIR}"]
         user_args = ['--user', f'{os.getuid()}:{os.getgid()}']
         docker_command = (
             ['docker', 'run'] +
@@ -98,7 +100,7 @@ def _run_in_docker(config_dict_or_location, outdir, dockerimage, runfile=None, k
             docker_command.append(DOCKER_FLAGS)
         docker_command.append(dockerimage)
         python_command = ['python3', '-m', MODULE_NAME]
-        python_args = [config_location, outdir]
+        python_args = [config_location, DOCKER_OUTDIR]
         if runfile:
             python_args += ['--runfile', runfile]
         subprocess.check_call(docker_command + python_command + python_args)
@@ -110,12 +112,16 @@ def _temporary_directory(outdir):
         try:
             yield tempdir
         finally:
+            logging.info(f'Copying output to {outdir}')
             os.makedirs(outdir, exist_ok=True)
             for source in glob.glob(os.path.join(tempdir, '*')):
                 _copy(source, outdir)
 
 
 def _run_native(config_dict_or_location, outdir, runfile=None):
+    resource.setrlimit(
+        resource.RLIMIT_STACK, (resource.RLIM_INFINITY, resource.RLIM_INFINITY)
+    )
     with _temporary_directory(outdir) as localdir:
         config_out_filename = os.path.join(localdir, CONFIG_OUT_FILENAME)
         config_dict = _get_config_dict_and_write(
@@ -160,6 +166,7 @@ def _run_experiment(dirname, n_processes, runfile_name=None, mpi_flags=None):
     out_filename = os.path.join(dirname, STDOUT_FILENAME)
     err_filename = os.path.join(dirname, STDERR_FILENAME)
     with open(out_filename, 'wb') as out_file, open(err_filename, 'wb') as err_file:
+        logging.info(f'Running experiment in {dirname}')
         subprocess.check_call(
             ["mpirun", "-n", str(n_processes)] + mpi_flags + python_args,
             cwd=dirname, stdout=out_file, stderr=err_file
