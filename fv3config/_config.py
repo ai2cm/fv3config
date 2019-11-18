@@ -2,12 +2,8 @@ import copy
 import os
 import f90nml
 from ._exceptions import InvalidFileError, ConfigError
-from ._datastore import (
-    check_if_data_is_downloaded
-)
-from ._tables import (
-    update_diag_table_for_config, get_current_date_from_config
-)
+from ._datastore import check_if_data_is_downloaded
+from ._tables import update_diag_table_for_config, get_current_date_from_config
 from ._asset_list import config_to_asset_list, write_asset_list
 
 package_directory = os.path.dirname(os.path.realpath(__file__))
