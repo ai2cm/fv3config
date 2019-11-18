@@ -48,6 +48,8 @@ required_default_initial_conditions_filenames = [
 required_restart_initial_conditions_filenames = [
     'INPUT/coupler.res'
 ] + [
+    'INPUT/fv_core.res.nc'
+] + [
     f'INPUT/fv_core.res.tile{n}.nc' for n in range(1, 7)
 ] + [
     f'INPUT/fv_srf_wnd.res.tile{n}.nc' for n in range(1, 7)
