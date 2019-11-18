@@ -8,7 +8,7 @@ from fv3config._asset_list import (
     is_dict_or_list, get_orographic_forcing_asset_list, get_base_forcing_asset_list,
     get_initial_conditions_asset_list, get_data_table_asset, get_diag_table_asset,
     get_field_table_asset, generate_config_asset, asset_list_from_path,
-    asset_list_from_local_dir, asset_list_from_gs_bucket, save_asset
+    asset_list_from_local_dir, asset_list_from_gs_bucket, write_asset, write_asset_list
 )
 
 
