@@ -62,7 +62,7 @@ def get_field_table_asset(config):
 
 
 def generate_asset(source_location, source_name, target_location='',
-                                  target_name=None, copy_method='copy'):
+                   target_name=None, copy_method='copy'):
     if target_name is None:
         target_name = source_name
     asset = {
