@@ -13,6 +13,15 @@ def is_dict_or_list(option):
     return isinstance(option, dict) or isinstance(option, list)
 
 
+def ensure_is_list(asset):
+    if isinstance(asset, dict):
+        return [asset]
+    elif isinstance(asset, list):
+        return asset
+    else:
+        raise ConfigError('Asset must be a dict or list of dicts')
+
+
 def get_orographic_forcing_asset_list(config):
     source_directory = get_orographic_forcing_directory(config)
     return asset_list_from_path(source_directory, 'INPUT', copy_method='symlink')
@@ -20,7 +29,7 @@ def get_orographic_forcing_asset_list(config):
 
 def get_base_forcing_asset_list(config):
     if is_dict_or_list(config['forcing']):
-        return config['forcing']
+        return ensure_is_list(config['forcing'])
     else:
         source_directory = get_base_forcing_directory(config)
         return asset_list_from_path(source_directory, '', copy_method='symlink')
@@ -28,7 +37,7 @@ def get_base_forcing_asset_list(config):
 
 def get_initial_conditions_asset_list(config):
     if is_dict_or_list(config['initial_conditions']):
-        return config['initial_conditions']
+        return ensure_is_list(config['initial_conditions'])
     else:
         source_directory = get_initial_conditions_directory(config)
         return asset_list_from_path(source_directory, 'INPUT', copy_method='copy')
@@ -100,21 +109,32 @@ def asset_list_from_gs_bucket(source_directory, target_directory='/'):
 
 
 def write_asset(asset, target_directory):
+    check_asset_valid(asset)
     source_path = os.path.join(asset['source_location'], asset['source_name'])
     target_path = os.path.join(target_directory, asset['target_location'], asset['target_name'])
+    copy_method = asset['copy_method']
     if not os.path.exists(os.path.dirname(target_path)):
         os.makedirs(os.path.dirname(target_path))
-    if asset['copy_method'] == 'copy':
+    if copy_method == 'copy':
         copy_file(source_path, target_path)
-    elif asset['copy_method'] == 'symlink':
+    elif copy_method == 'symlink':
         link_file(source_path, target_path)
     else:
-        raise ConfigError(f'copy_method not defined for {source_path} asset')
+        raise ConfigError(
+            f'Behavior of copy_method {copy_method} not defined for {source_path} asset'
+        )
 
 
 def write_asset_list(asset_list, target_directory):
     for asset in asset_list:
         write_asset(asset, target_directory)
+
+
+def check_asset_valid(asset):
+    asset_properties = ['source_location', 'source_name', 'target_location',
+                        'target_name', 'copy_method']
+    for asset_property in asset_properties:
+        assert asset_property in asset, f'Asset must have a {asset_property}'
 
 
 def config_to_asset_list(config):
@@ -125,8 +145,8 @@ def config_to_asset_list(config):
     asset_list.append(get_diag_table_asset(config))
     asset_list.append(get_data_table_asset(config))
     if 'patch_files' in config:
-        if isinstance(config['patch_files'], dict):
-            asset_list.append(config['patch_files'])
-        elif isinstance(config['patch_files'], list):
-            asset_list += config['patch_files']
+        if is_dict_or_list(config['patch_files']):
+            asset_list += ensure_is_list(config['patch_files'])
+        else:
+            raise ConfigError('patch_files item in config dictionary must be a dict or list')
     return asset_list
