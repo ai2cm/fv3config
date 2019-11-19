@@ -3,10 +3,9 @@ import os
 import shutil
 import fv3config
 from fv3config._asset_list import (
-    is_dict_or_list, get_orographic_forcing_asset_list, get_base_forcing_asset_list,
-    get_initial_conditions_asset_list, get_data_table_asset, get_diag_table_asset,
-    get_field_table_asset, generate_asset, asset_list_from_path, ensure_is_list,
-    asset_list_from_local_dir, asset_list_from_gs_bucket, write_asset, write_asset_list,
+    is_dict_or_list, get_data_table_asset, get_diag_table_asset,
+    get_field_table_asset, generate_asset, ensure_is_list,
+    asset_list_from_local_dir, write_asset
 )
 
 
@@ -59,6 +58,8 @@ SAMPLE_ASSET_WITH_KWARGS = {
     'copy_method': SAMPLE_COPY_METHOD,
 }
 
+TEST_SOURCE_DIR = 'test_source_dir'
+
 FILELIST_EMPTY = []
 
 FILELIST_ONE_FILE_IN_ROOT = [
@@ -66,12 +67,12 @@ FILELIST_ONE_FILE_IN_ROOT = [
 ]
 
 FILELIST_WITH_SUBDIR = [
-    'file_in_root_dir',
     os.path.join('subdir', 'file_in_subdir'),
+    'file_in_root_dir',
 ]
 
 ASSET_FILE_IN_ROOT_DIR = {
-    'source_location': '',
+    'source_location': TEST_SOURCE_DIR,
     'source_name': 'file_in_root_dir',
     'target_location': '',
     'target_name': 'file_in_root_dir',
@@ -79,7 +80,7 @@ ASSET_FILE_IN_ROOT_DIR = {
 }
 
 ASSET_FILE_IN_SUBDIR = {
-    'source_location': 'subdir',
+    'source_location': os.path.join(TEST_SOURCE_DIR, 'subdir'),
     'source_name': 'file_in_subdir',
     'target_location': 'subdir',
     'target_name': 'file_in_subdir',
@@ -88,7 +89,7 @@ ASSET_FILE_IN_SUBDIR = {
 
 ASSET_LIST_EMPTY = []
 ASSET_LIST_ONE_FILE_IN_ROOT = [ASSET_FILE_IN_ROOT_DIR]
-ASSET_LIST_WITH_SUBDIR = [ASSET_FILE_IN_ROOT_DIR, ASSET_FILE_IN_SUBDIR]
+ASSET_LIST_WITH_SUBDIR = [ASSET_FILE_IN_SUBDIR, ASSET_FILE_IN_ROOT_DIR]
 
 
 class WorkDirectory(object):
@@ -165,33 +166,23 @@ class AssetListTests(unittest.TestCase):
         asset_list = asset_list_from_local_dir(workdir)
         self.assertEqual(asset_list, ASSET_LIST_EMPTY)
 
-    def test_asset_list_from_local_dir_one_item(self):
-        workdir = self.make_work_directory('workdir_one_item')
-        self.make_empty_files(workdir, FILELIST_ONE_FILE_IN_ROOT)
-        asset_list = asset_list_from_local_dir(workdir)
-        # necessary to have full path for source location in test assets
-        for asset in ASSET_LIST_ONE_FILE_IN_ROOT:
-            asset['source_location'] = os.path.join(workdir, asset['source_location'])
-        self.assertEqual(asset_list, ASSET_LIST_ONE_FILE_IN_ROOT)
-
     def test_asset_list_from_local_dir_with_subdir(self):
-        workdir = self.make_work_directory('workdir_with_subdir')
-        print(workdir)
-        self.make_empty_files(workdir, FILELIST_WITH_SUBDIR)
-        asset_list = asset_list_from_local_dir(workdir)
+        workdir = self.make_work_directory('workdir_with_files')
+        self.make_empty_files(os.path.join(workdir, TEST_SOURCE_DIR), FILELIST_WITH_SUBDIR)
+        asset_list = asset_list_from_local_dir(os.path.join(workdir, TEST_SOURCE_DIR))
         # necessary to have full path for source location in test assets
         for asset in ASSET_LIST_WITH_SUBDIR:
             asset['source_location'] = os.path.join(workdir, asset['source_location'])
         self.assertEqual(asset_list, ASSET_LIST_WITH_SUBDIR)
 
-    def make_empty_files(self, directory, filelist):
+    @staticmethod
+    def make_empty_files(directory, filelist):
         for path in filelist:
             full_path = os.path.join(directory, path)
             head, tail = os.path.split(full_path)
             if not os.path.exists(head):
                 os.makedirs(head)
             open(full_path, 'a').close()
-
 
 if __name__ == '__main__':
     unittest.main()
