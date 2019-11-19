@@ -13,3 +13,4 @@ appdirs>=1.4.0
 requests
 sphinx_rtd_theme
 gsutil
+pytest
