@@ -39,24 +39,31 @@ def _copy(src, dest):
         subprocess.check_call(['cp', '-r', src, dest])
 
 
-def _remote_path_is_filename(remote_path, src):
-    return remote_path.strip('gs://') == src.strip('gs://')
+def _src_is_file(src, fs):
+    remote_path_list = fs.ls(src)
+    if len(remote_path_list) == 0:
+        raise ValueError(f'remote source {src} does not exist - is there a typo?')
+    if len(remote_path_list) == 1 and remote_path_list[0].strip('gs://') == src.strip('gs://'):
+        return True
+    else:
+        return False
 
 
 def _google_cloud_copy(src, dest, fs=None):
     if fs is None:
         fs = gcsfs.GCSFileSystem(project=GOOGLE_PROJECT)
     remote_path_list = fs.ls(src)
-    if len(remote_path_list) == 0:
-        raise ValueError(f'remote source {src} does not exist - is there a typo?')
-    for remote_path in remote_path_list:
-        basename = os.path.basename(remote_path)
-        if _remote_path_is_filename(remote_path, src):
-            fs.get(remote_path, dest)
-        else:  # remote path is directory
-            subdir = os.path.join(dest, basename)
-            os.makedirs(subdir, exist_ok=True)
-            _google_cloud_copy(remote_path, subdir, fs=fs)
+    if _src_is_file(src, fs):
+        fs.get(remote_path_list[0], dest)
+    else:
+        for remote_path in remote_path_list:
+            basename = os.path.basename(remote_path)
+            if remote_path.strip('gs://') == src.strip('gs://'):
+                fs.get(remote_path, dest)
+            else:  # remote path is directory
+                subdir = os.path.join(dest, basename)
+                os.makedirs(subdir, exist_ok=True)
+                _google_cloud_copy(remote_path, subdir, fs=fs)
 
 
 def _credentials_args(keyfile):
@@ -152,7 +159,7 @@ def _write_config_dict(config, config_out_filename):
 def _copy_and_load_config_dict(config_location, config_target_location):
     _copy(config_location, config_target_location)
     with open(config_target_location, 'r') as infile:
-        config_dict = yaml.load(infile)
+        config_dict = yaml.load(infile, Loader=yaml.SafeLoader)
     return config_dict
 
 
