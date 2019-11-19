@@ -24,7 +24,7 @@ def ensure_is_list(asset):
 
 def get_orographic_forcing_asset_list(config):
     source_directory = get_orographic_forcing_directory(config)
-    return asset_list_from_path(source_directory, 'INPUT', copy_method='symlink')
+    return asset_list_from_path(source_directory, 'INPUT', copy_method='link')
 
 
 def get_base_forcing_asset_list(config):
@@ -32,7 +32,7 @@ def get_base_forcing_asset_list(config):
         return ensure_is_list(config['forcing'])
     else:
         source_directory = get_base_forcing_directory(config)
-        return asset_list_from_path(source_directory, '', copy_method='symlink')
+        return asset_list_from_path(source_directory, '', copy_method='link')
 
 
 def get_initial_conditions_asset_list(config):
