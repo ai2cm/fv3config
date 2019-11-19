@@ -5,8 +5,7 @@ import tempfile
 import fv3config
 from fv3config._datastore import (
     get_base_forcing_directory, get_orographic_forcing_directory,
-    link_directory, get_initial_conditions_directory, ensure_data_is_downloaded,
-    resolve_option, is_gsbucket_url
+    get_initial_conditions_directory, resolve_option, is_gsbucket_url
 )
 
 test_directory = os.path.dirname(os.path.realpath(__file__))
@@ -121,22 +120,6 @@ class ForcingTests(unittest.TestCase):
         self._run_directory_list.append(RunDirectory(full_path))
         return full_path
 
-    def test_link_default_base_forcing_directory(self):
-        rundir = self.make_run_directory('test_rundir')
-        config = fv3config.get_default_config()
-        forcing_dir = get_base_forcing_directory(config)
-        self.assertTrue(os.path.isdir(forcing_dir))
-        link_directory(forcing_dir, rundir)
-        self.assert_subpaths_present(rundir, required_base_forcing_filenames)
-
-    def test_link_default_orographic_forcing_directory(self):
-        rundir = self.make_run_directory('test_rundir')
-        config = fv3config.get_default_config()
-        orographic_forcing_dir = get_orographic_forcing_directory(config)
-        self.assertTrue(os.path.isdir(orographic_forcing_dir))
-        link_directory(orographic_forcing_dir, os.path.join(rundir, 'INPUT'))
-        self.assert_subpaths_present(rundir, required_orographic_forcing_filenames)
-
     def test_zero_resolution_orographic_forcing_directory(self):
         config = {
             'namelist': {
@@ -160,32 +143,6 @@ class ForcingTests(unittest.TestCase):
         }
         with self.assertRaises(fv3config.ConfigError):
             get_orographic_forcing_directory(config)
-
-    def test_link_default_initial_conditions_directory(self):
-        rundir = self.make_run_directory('test_rundir')
-        config = fv3config.get_default_config()
-        initial_conditions_dir = get_initial_conditions_directory(config)
-        self.assertTrue(os.path.isdir(initial_conditions_dir))
-        link_directory(initial_conditions_dir, os.path.join(rundir, 'INPUT'))
-        self.assert_subpaths_present(rundir, required_default_initial_conditions_filenames)
-
-    def test_link_gfs_initial_conditions_directory(self):
-        rundir = self.make_run_directory('test_rundir')
-        config = fv3config.get_default_config()
-        config['initial_conditions'] = 'gfs_example'
-        initial_conditions_dir = get_initial_conditions_directory(config)
-        self.assertTrue(os.path.isdir(initial_conditions_dir))
-        link_directory(initial_conditions_dir, os.path.join(rundir, 'INPUT'))
-        self.assert_subpaths_present(rundir, required_default_initial_conditions_filenames)
-
-    def test_link_restart_initial_conditions_directory(self):
-        rundir = self.make_run_directory('test_rundir')
-        config = fv3config.get_default_config()
-        config['initial_conditions'] = 'restart_example'
-        initial_conditions_dir = get_initial_conditions_directory(config)
-        self.assertTrue(os.path.isdir(initial_conditions_dir))
-        link_directory(initial_conditions_dir, os.path.join(rundir, 'INPUT'))
-        self.assert_subpaths_present(rundir, required_restart_initial_conditions_filenames)
 
     def test_get_specified_initial_conditions_directory(self):
         source_rundir = self.make_run_directory('source_rundir')
@@ -223,6 +180,20 @@ class ForcingTests(unittest.TestCase):
             rundir,
             required_run_directory_subdirectories +
             required_default_initial_conditions_filenames +
+            required_base_forcing_filenames +
+            required_orographic_forcing_filenames +
+            additional_required_filenames
+        )
+
+    def test_write_restart_run_directory(self):
+        rundir = self.make_run_directory('test_rundir')
+        config = fv3config.get_default_config()
+        config['initial_conditions'] = 'restart_example'
+        fv3config.write_run_directory(config, rundir)
+        self.assert_subpaths_present(
+            rundir,
+            required_run_directory_subdirectories +
+            required_restart_initial_conditions_filenames +
             required_base_forcing_filenames +
             required_orographic_forcing_filenames +
             additional_required_filenames

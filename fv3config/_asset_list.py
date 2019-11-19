@@ -1,7 +1,10 @@
+import logging
 import os
+import shutil
+from subprocess import check_call
 from ._datastore import (
     get_initial_conditions_directory, get_orographic_forcing_directory,
-    get_base_forcing_directory, is_gsbucket_url, copy_file, link_file
+    get_base_forcing_directory, is_gsbucket_url
 )
 from ._tables import (
     get_data_table_filename, get_diag_table_filename, get_field_table_filename
@@ -117,7 +120,7 @@ def write_asset(asset, target_directory):
         os.makedirs(os.path.dirname(target_path))
     if copy_method == 'copy':
         copy_file(source_path, target_path)
-    elif copy_method == 'symlink':
+    elif copy_method == 'link':
         link_file(source_path, target_path)
     else:
         raise ConfigError(
@@ -150,3 +153,26 @@ def config_to_asset_list(config):
         else:
             raise ConfigError('patch_files item in config dictionary must be a dict or list')
     return asset_list
+
+
+def link_file(source_item, target_item):
+    if os.path.exists(target_item):
+        os.remove(target_item)
+    os.link(source_item, target_item)
+
+
+def copy_file(source_path, target_path):
+    if is_gsbucket_url(source_path):
+        if gsutil_is_installed():
+            check_call(['gsutil', 'cp', source_path, target_path])
+        else:
+            logging.warning(f'Optional dependency gsutil not found. File {source_path} will not be copied to {target_path}')
+    else:
+        shutil.copy(source_path, target_path)
+
+
+def gsutil_is_installed():
+    if shutil.which('gsutil') is None:
+        return False
+    else:
+        return True
