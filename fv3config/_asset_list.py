@@ -134,10 +134,11 @@ def write_asset_list(asset_list, target_directory):
 
 
 def check_asset_valid(asset):
-    asset_properties = ['source_location', 'source_name', 'target_location',
-                        'target_name', 'copy_method']
-    for asset_property in asset_properties:
-        assert asset_property in asset, f'Asset must have a {asset_property}'
+    required_asset_properties = ['source_location', 'source_name', 'target_location',
+                                 'target_name', 'copy_method']
+    for required_asset_property in required_asset_properties:
+        if required_asset_property not in asset:
+            raise ConfigError(f'Assets must have a {required_asset_property}')
 
 
 def config_to_asset_list(config):
