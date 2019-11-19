@@ -1,6 +1,6 @@
 import unittest
 import os
-import appdirs
+import tempfile
 import fv3config
 from fv3config._asset_list import (
     is_dict_or_list, get_orographic_forcing_asset_list, get_base_forcing_asset_list,
@@ -8,13 +8,11 @@ from fv3config._asset_list import (
     get_field_table_asset, generate_asset, asset_list_from_path, ensure_is_list,
     asset_list_from_local_dir, asset_list_from_gs_bucket, write_asset, write_asset_list,
 )
-from fv3config._datastore import get_cache_dir()
+from fv3config._datastore import get_cache_dir
 
 
 TEST_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
 DATA_DIRECTORY = os.path.join(os.path.dirname(TEST_DIRECTORY), 'fv3config', 'data')
-LOCAL_ARCHIVE_DIR = os.path.join(appdirs.user_data_dir('fv3gfs', 'vulcan'),
-                                 'archive')
 
 DEFAULT_DATA_TABLE_ASSET = {
     'source_location': os.path.join(DATA_DIRECTORY, 'data_table'),
@@ -40,25 +38,31 @@ DEFAULT_FIELD_TABLE_ASSET = {
     'copy_method': 'copy'
 }
 
-TILES = range(1, 7)
+SAMPLE_SOURCE_LOCATION = 'source/dir'
+SAMPLE_SOURCE_NAME = 'filename'
+SAMPLE_TARGET_LOCATION = 'target/dir'
+SAMPLE_TARGET_NAME = 'target_filename'
+SAMPLE_COPY_METHOD = 'link'
 
-DEFAULT_OROGRAPHIC_FORCING_ASSET_LIST = [
-    generate_asset()
+SAMPLE_ASSET_DEFAULT_OPTS = {
+    'source_location': SAMPLE_SOURCE_LOCATION,
+    'source_name': SAMPLE_SOURCE_NAME,
+    'target_location': '',
+    'target_name': SAMPLE_SOURCE_NAME,
+    'copy_method': 'copy',
+}
 
-DEFAULT_BASE_FORCING_ASSET_LIST = [
-    {
-
-    }
-]
-
-DEFAULT_INITIAL_CONDITIONS_ASSET_LIST = [
-    {
-
-    }
-]
+SAMPLE_ASSET_CUSTOM_OPTS = {
+    'source_location': SAMPLE_SOURCE_LOCATION,
+    'source_name': SAMPLE_SOURCE_NAME,
+    'target_location': SAMPLE_TARGET_LOCATION,
+    'target_name': SAMPLE_TARGET_NAME,
+    'copy_method': SAMPLE_COPY_METHOD,
+}
 
 
 class AssetListTests(unittest.TestCase):
+
 
     def test_is_dict_or_list(self):
         empty_dict = {}
@@ -93,7 +97,16 @@ class AssetListTests(unittest.TestCase):
         with self.assertRaises(fv3config.ConfigError):
             ensure_is_list(sample_float)
 
+    def test_generate_asset_default_options(self):
+        test_asset = generate_asset(SAMPLE_SOURCE_LOCATION, SAMPLE_SOURCE_NAME)
+        self.assertEqual(test_asset, SAMPLE_ASSET_DEFAULT_OPTS)
 
+    def test_generate_asset_custom_options(self):
+        test_asset = generate_asset(SAMPLE_SOURCE_LOCATION, SAMPLE_SOURCE_NAME,
+                                    target_location=SAMPLE_TARGET_LOCATION,
+                                    target_name=SAMPLE_TARGET_NAME,
+                                    copy_method=SAMPLE_COPY_METHOD)
+        self.assertEqual(test_asset, SAMPLE_ASSET_CUSTOM_OPTS)
 
 if __name__ == '__main__':
     unittest.main()
