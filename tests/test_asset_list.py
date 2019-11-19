@@ -186,11 +186,11 @@ class AssetListTests(unittest.TestCase):
 
     def make_empty_files(self, directory, filelist):
         for path in filelist:
-            dir, basename = os.path.split(path)
-            if dir != '':
-                os.makedirs(dir)
-            open(os.path.join(directory, path), 'a').close()
-
+            full_path = os.path.join(directory, path)
+            head, tail = os.path.split(full_path)
+            if not os.path.exists(head):
+                os.makedirs(head)
+            open(full_path, 'a').close()
 
 
 if __name__ == '__main__':
