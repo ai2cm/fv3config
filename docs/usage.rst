@@ -85,6 +85,18 @@ The ``namelist`` item is special in that it is explicitly stored in the ``config
 fv3gfs model, individual namelists are specified for various components of the model. As an example, the
 vertical resolution can be accessed via ``config['namelist']['fv_core_nml']['npz']``.
 
+
+Fine-grained control of files
+-----------------------------
+
+More fine-grained control of the files that are copied or linked to the run-directory is possible. Particular files
+are defined as assets which know about their source location, target filename, target path within the run directory
+and whether they are copied or linked. Asset ``dict`` structures can be generated with the helper function ``generate_asset``.
+For example::
+
+    extra_file = generate_asset('/home/datadir', 'forcing_file', target_location='INPUT')
+
+
 Restart runs
 ------------
 
