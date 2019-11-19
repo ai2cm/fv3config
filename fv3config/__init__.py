@@ -7,14 +7,11 @@ from ._config import (
     write_run_directory, enable_restart
 )
 from ._exceptions import InvalidFileError, ConfigError
-from ._datastore import ensure_data_is_downloaded
+from ._datastore import (
+    ensure_data_is_downloaded, set_cache_dir, get_cache_dir
+)
 
-__all__ = [
-    'config_to_namelist', 'config_from_namelist', 'get_default_config',
-    'write_run_directory',
-    'InvalidFileError', 'ConfigError'
-]
 
-__author__ = """Vulcan Technologies, LLC"""
+__author__ = """Vulcan Technologies LLC"""
 __email__ = 'jeremym@vulcan.com'
 __version__ = '0.1.0'
