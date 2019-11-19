@@ -19,6 +19,11 @@ namelist_options_dict = {
     'default': os.path.join(package_directory, 'data/namelist/default.nml')
 }
 
+_DEFAULTS = {
+    'ntiles': 6,
+    'layout': (1, 1),
+}
+
 
 def get_default_config():
     """Returns a default model configuration dictionary."""
@@ -31,6 +36,16 @@ def get_default_config():
     config['experiment_name'] = 'default_experiment'
 
     return config
+
+
+def get_n_processes(config_dict):
+    """Return the number of processes required to run the model based on the
+    configured processor layout.
+    """
+    n_tiles = config_dict['namelist']['fv_core_nml'].get('ntiles', _DEFAULTS['ntiles'])
+    layout = config_dict['namelist']['fv_core_nml'].get('layout', _DEFAULTS['layout'])
+    processors_per_tile = layout[0] * layout[1]
+    return n_tiles * processors_per_tile
 
 
 def config_to_namelist(config, namelist_filename):

@@ -4,7 +4,7 @@
 
 from ._config import (
     config_to_namelist, config_from_namelist, get_default_config,
-    write_run_directory, enable_restart
+    write_run_directory, enable_restart, get_n_processes
 )
 from ._exceptions import InvalidFileError, ConfigError
 from ._datastore import ensure_data_is_downloaded
