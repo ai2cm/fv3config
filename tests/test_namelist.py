@@ -175,6 +175,17 @@ class ConfigDictTests(unittest.TestCase):
         for name, value in config.items():
             self.assertIsInstance(name, str, f'key {name} is not a string')
 
+
+class EnableRestartTests(unittest.TestCase):
+
+    def assert_dict_in_and_equal(self, source_dict, target_dict):
+        for name, item in source_dict.items():
+            self.assertIn(name, target_dict)
+            if isinstance(item, dict):
+                self.assert_dict_in_and_equal(item, target_dict[name])
+            else:
+                self.assertEqual(item, target_dict[name])
+
     def test_enable_restart_from_default(self):
         config = get_default_config()
         restart_config = enable_restart(config)
@@ -194,14 +205,6 @@ class ConfigDictTests(unittest.TestCase):
         with self.assertRaises(ConfigError):
             enable_restart(empty_dict)
 
-    def assert_dict_in_and_equal(self, source_dict, target_dict):
-        for name, item in source_dict.items():
-            self.assertIn(name, target_dict)
-            if isinstance(item, dict):
-                self.assert_dict_in_and_equal(item, target_dict[name])
-            else:
-                self.assertEqual(item, target_dict[name])
-
     def test_enable_restart_makes_copy(self):
         config = get_default_config()
         restart_config = enable_restart(config)
@@ -209,6 +212,7 @@ class ConfigDictTests(unittest.TestCase):
         restart_config['initial_conditions'] = 'changed item'
         restart_config['namelist']['fv_core_nml']['npx'] = 0
         self.assertEqual(config, get_default_config())
+
 
 if __name__ == '__main__':
     unittest.main()

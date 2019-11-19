@@ -34,10 +34,7 @@ Or from inside Python::
 
 It is also possible to delete and re-download the data archive, in case something goes wrong::
 
-    from fv3config import refresh_downloaded_data
-
-    refresh_downloaded_data()
-
+    $ python -m fv3config.refresh_data
 
 Cache Location
 --------------
@@ -81,7 +78,6 @@ The ``namelist`` item is special in that it is explicitly stored in the ``config
 fv3gfs model, individual namelists are specified for various components of the model. As an example, the
 vertical resolution can be accessed via ``config['namelist']['fv_core_nml']['npz']``.
 
-
 Running the model with fv3run
 -----------------------------
 
@@ -119,3 +115,20 @@ container based on the given image name. This assumes the `fv3config` package an
 `fv3gfs` python wrapper are installed inside the container, along with any
 dependencies.
 
+Restart runs
+------------
+
+The required namelist settings for a restart run (as opposed to a run initialized from an observational
+analysis) can be applied to a configuration dictionary as follows::
+
+    config = enable_restart(config)
+
+A set of restart files is provided in the cached data files. Thus, an example run directory with model
+restart initial conditions can be created with::
+
+    from fv3config import get_default_config, write_run_directory, enable_restart
+
+    config = get_default_config()
+    config['initial_conditions'] = 'restart_example'
+    config = enable_restart(config)
+    write_run_directory(config, './rundir')
