@@ -86,16 +86,23 @@ fv3gfs model, individual namelists are specified for various components of the m
 vertical resolution can be accessed via ``config['namelist']['fv_core_nml']['npz']``.
 
 
-Fine-grained control of files
------------------------------
+Patch files
+-----------
 
-More fine-grained control of the files that are copied or linked to the run-directory is possible. Particular files
-are defined as assets which know about their source location, target filename, target path within the run directory
-and whether they are copied or linked. Asset ``dict`` structures can be generated with the helper function ``generate_asset``.
-For example::
+More fine-grained control of the files that are copied or linked to the run-directory is possible using the optional
+``config['patch_files']``. Particular files are defined as assets which know about their source location, target
+filename, target path within the run directory and whether they are copied or linked. Asset ``dict`` structures can be
+generated with the helper function ``generate_asset``. For example::
 
-    extra_file = generate_asset('/home/datadir', 'forcing_file', target_location='INPUT')
+    asset = generate_asset('/path/to/sourcedir/', 'initial_condition_file.nc', target_location='INPUT')
+    config['patch_files] = asset
 
+One can also set ``config['patch_files]`` to a list of assets. All assets defined in the ``'patch_files'`` will
+overwrite files specified in the initial conditions or forcing if they have the same name and location within the run
+directory.
+
+It is also possible to set ``config['initial_conditions']`` or ``config['forcing']`` to a list of assets if you wish
+to specify every initial condition or forcing file individually.
 
 Restart runs
 ------------
