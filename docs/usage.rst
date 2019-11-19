@@ -80,3 +80,42 @@ must be installed and authorized to download from the specified bucket.
 The ``namelist`` item is special in that it is explicitly stored in the ``config`` dictionary. For the
 fv3gfs model, individual namelists are specified for various components of the model. As an example, the
 vertical resolution can be accessed via ``config['namelist']['fv_core_nml']['npz']``.
+
+
+Running the model with fv3run
+-----------------------------
+
+`fv3config` provides a tool for running the python-wrapped model called `fv3run`.
+
+.. code-block:: bash
+
+    $ fv3run --help
+    usage: fv3run [-h] [--runfile RUNFILE] [--dockerimage DOCKERIMAGE]
+                  [--keyfile KEYFILE]
+                  config outdir
+
+    Run the FV3GFS model. Will use google cloud storage key at
+    $GOOGLE_APPLICATION_CREDENTIALS by default.
+
+    positional arguments:
+      config                location of fv3config yaml file
+      outdir                location to copy final run directory
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      --runfile RUNFILE     location of python script to execute with mpirun
+      --dockerimage DOCKERIMAGE
+                            if passed, execute inside a docker image with the
+                            given name
+      --keyfile KEYFILE     google cloud storage key to use for cloud copy
+                            commands
+
+The only required inputs are `config`, which specifies a yaml file containing the
+`fv3config` run directory configuration, and a final location to copy the run directory.
+A keyfile can be specified to authenticate google cloud storage for any data sources
+located in google cloud buckets, or the key is taken from an environment variable
+by default. If `dockerimage` is specified, the command will run inside a Docker
+container based on the given image name. This assumes the `fv3config` package and
+`fv3gfs` python wrapper are installed inside the container, along with any
+dependencies.
+
