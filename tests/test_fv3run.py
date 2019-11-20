@@ -127,7 +127,7 @@ def test_fv3run_with_mpi(runner):
         ],
         [
             'relative.py',
-            ['-v', f"{os.path.join(TEST_DIR, 'relative.py')}:/runfile.py"],
+            ['-v', f"{os.path.join(os.getcwd(), 'relative.py')}:/runfile.py"],
             ['--runfile', '/runfile.py']
         ],
         [
@@ -181,7 +181,7 @@ def test_get_config_args(
         [
             'relative/',
             ['--user', USER_UID_GID],
-            ['-v', f"{os.path.join(TEST_DIR, 'relative')}:/outdir"],
+            ['-v', f"{os.path.join(os.getcwd(), 'relative')}:/outdir"],
         ],
         [
             '/abs/path/',
@@ -210,7 +210,7 @@ def test_get_docker_args(
         [
             'relative_key.json',
             ['-e', 'GOOGLE_APPLICATION_CREDENTIALS=/gcs_key.json'],
-            ['-v', f"{os.path.join(TEST_DIR, 'relative_key.json')}:/gcs_key.json"],
+            ['-v', f"{os.path.join(os.getcwd(), 'relative_key.json')}:/gcs_key.json"],
         ],
         [
             '/abs/key.json',
