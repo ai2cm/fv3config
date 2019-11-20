@@ -21,7 +21,7 @@ try:
     subprocess.check_call(
         ['mpirun', '--version'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     MPI_ENABLED = True
-except subprocess.CalledProcessError:
+except (subprocess.CalledProcessError, FileNotFoundError):
     MPI_ENABLED = False
 
 
