@@ -11,10 +11,10 @@ import gcsfs
 from .._config import write_run_directory, _get_n_processes
 
 
-MODULE_NAME = 'fv3config.run'
+MODULE_NAME = 'fv3config.fv3run'
 STDOUT_FILENAME = 'stdout.log'
 STDERR_FILENAME = 'stderr.log'
-DOCKER_FLAGS = '-it'
+DOCKER_FLAGS = ''  # can put flags like '-it' here
 CONFIG_OUT_FILENAME = 'fv3config.yaml'
 GOOGLE_PROJECT = 'VCM-ML'
 DOCKER_OUTDIR = '/outdir'
@@ -141,8 +141,10 @@ def _run_native(config_dict_or_location, outdir, runfile=None):
     _set_stacksize_unlimited()
     with _temporary_directory(outdir) as localdir:
         config_out_filename = os.path.join(localdir, CONFIG_OUT_FILENAME)
+        print(config_dict_or_location, config_out_filename)
         config_dict = _get_config_dict_and_write(
             config_dict_or_location, config_out_filename)
+        print(config_dict)
         write_run_directory(config_dict, localdir)
         if runfile is not None:
             _copy(runfile, localdir)
@@ -169,7 +171,8 @@ def _write_config_dict(config, config_out_filename):
 def _copy_and_load_config_dict(config_location, config_target_location):
     _copy(config_location, config_target_location)
     with open(config_target_location, 'r') as infile:
-        config_dict = yaml.load(infile, Loader=yaml.SafeLoader)
+        config_dict = yaml.load(infile.read(), Loader=yaml.SafeLoader)
+        print(config_dict)
     return config_dict
 
 

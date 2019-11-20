@@ -41,7 +41,7 @@ setup(
     entry_points={
         'console_scripts': [
             'fv3config=fv3config.cli:main',
-            'fv3run=fv3config.run.__main__:main',
+            'fv3run=fv3config.fv3run.__main__:main',
         ],
     },
     install_requires=requirements,

@@ -1,6 +1,6 @@
 import sys
 import argparse
-from ._run import run_experiment
+from ._run import run
 
 MODULE_NAME = 'fv3config.run'
 # RESTART_DIR_PATTERN = "gs://vcm-ml-data/2019-10-28-X-SHiELD-2019-10-05-multiresolution-extracted/restart/C48/{time}/rundir"
@@ -35,7 +35,7 @@ def main():
 
     """
     args = _parse_args()
-    run_experiment(args.config, args.outdir, args.runfile, args.dockerimage, args.keyfile)
+    run(args.config, args.outdir, args.runfile, args.dockerimage, args.keyfile)
 
 
 if __name__ == '__main__':

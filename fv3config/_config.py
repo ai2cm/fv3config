@@ -1,5 +1,6 @@
 import copy
 import os
+import collections
 import f90nml
 from ._exceptions import InvalidFileError, ConfigError
 from ._datastore import (
@@ -35,7 +36,7 @@ def _get_n_processes(config_dict):
 def get_default_config():
     """Returns a default model configuration dictionary."""
     config = {}
-    config['namelist'] = f90nml.read(namelist_options_dict['default'])
+    config['namelist'] = config_from_namelist(namelist_options_dict['default'])
     config['diag_table'] = 'default'
     config['data_table'] = 'default'
     config['forcing'] = 'default'
@@ -72,10 +73,18 @@ def config_from_namelist(namelist_filename):
         InvalidFileError: if the specified filename does not exist
     """
     try:
-        return_dict = f90nml.read(namelist_filename)
+        return_dict = _to_nested_dict(f90nml.read(namelist_filename).items())
     except FileNotFoundError:
         raise InvalidFileError(f'namelist {namelist_filename} does not exist')
     return return_dict
+
+
+def _to_nested_dict(source):
+    return_value = dict(source)
+    for name, value in return_value.items():
+        if isinstance(value, f90nml.Namelist):
+            return_value[name] = _to_nested_dict(value)
+    return return_value
 
 
 def enable_restart(config):
