@@ -86,23 +86,29 @@ fv3gfs model, individual namelists are specified for various components of the m
 vertical resolution can be accessed via ``config['namelist']['fv_core_nml']['npz']``.
 
 
-Patch files
------------
+Specifying individual files
+---------------------------
 
-More fine-grained control of the files that are copied or linked to the run-directory is possible using the optional
-``config['patch_files']``. Particular files are defined as assets which know about their source location, target
-filename, target path within the run directory and whether they are copied or linked. Asset ``dict`` structures can be
-generated with the helper function ``generate_asset``. For example::
+More fine-grained control of the files that are written to the run-directory is possible using the "asset"
+representation of run-directory files. An asset is a dictionary that knows about one files's source
+location/filename, target filename, target location within the run directory and whether that file is copied or linked.
+Asset dicts can be generated with the helper function ``generate_asset``. For example::
 
-    asset = generate_asset('/path/to/sourcedir/', 'initial_condition_file.nc', target_location='INPUT')
-    config['patch_files] = asset
+    >>> generate_asset('/path/to/filedir', 'sample_file.nc', target_location='INPUT')
+    {'source_location': '/path/to/filedir',
+    'source_name': 'sample_file.nc',
+    'target_location': 'INPUT',
+    'target_name': 'sample_file.nc',
+    'copy_method': 'copy'}
 
-One can also set ``config['patch_files]`` to a list of assets. All assets defined in the ``'patch_files'`` will
-overwrite files specified in the initial conditions or forcing if they have the same name and location within the run
-directory.
+One can set ``config['initial_conditions']`` or ``config['forcing']`` to a list of assets in order to specify every
+initial condition or forcing file individually.
 
-It is also possible to set ``config['initial_conditions']`` or ``config['forcing']`` to a list of assets if you wish
-to specify every initial condition or forcing file individually.
+One can use a directory to specify the initial conditions or forcing files and replace only a
+subset of the files within the that directory with the optional ``config['patch_files']`` item.
+All assets defined in ``config['patch_files']`` will overwrite any files specified in the
+initial conditions or forcing if they have the same target location and name.
+
 
 Restart runs
 ------------
@@ -121,3 +127,4 @@ restart initial conditions can be created with::
     config['initial_conditions'] = 'restart_example'
     config = enable_restart(config)
     write_run_directory(config, './rundir')
+
