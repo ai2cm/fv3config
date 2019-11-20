@@ -62,4 +62,4 @@ def test_fv3run(runner):
         assert count_executed_ranks(outdir) == 6
     finally:
         if os.path.isdir(outdir):
-            pass#shutil.rmtree(outdir)
+            shutil.rmtree(outdir)
