@@ -84,6 +84,6 @@ class DatastoreFileTests(unittest.TestCase):
         fv3config.ensure_data_is_downloaded()
         assert MockResponse.times_called == 1
         assert len(os.listdir(self.cachedir)) == 1
-        fv3config.refresh_downloaded_data()
+        fv3config._datastore.refresh_downloaded_data()
         assert MockResponse.times_called == 2
         assert len(os.listdir(self.cachedir)) == 1
