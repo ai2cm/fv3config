@@ -14,3 +14,4 @@ requests
 sphinx_rtd_theme
 gsutil
 pytest
+gcsfs>=0.4.0
