@@ -17,4 +17,5 @@ __author__ = """Vulcan Technologies LLC"""
 __email__ = 'jeremym@vulcan.com'
 __version__ = '0.1.0'
 
-__all__ = list(locals().keys())
+# necessary for auto-doc generation of API for public methods
+__all__ = dir()
