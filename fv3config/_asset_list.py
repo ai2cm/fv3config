@@ -113,18 +113,17 @@ def asset_list_from_local_dir(source_directory, target_directory='', copy_method
     subdirectories if they exist.
     """
     asset_list = []
-    for base_filename in os.listdir(source_directory):
-        source_item = os.path.join(source_directory, base_filename)
-        if os.path.isfile(source_item):
-            asset_list.append(generate_asset(source_directory,
-                                             base_filename,
-                                             target_location=target_directory,
+    for root, dirs, files in os.walk(source_directory):
+        if root == source_directory:
+            target_location = target_directory
+        else:
+            target_location = os.path.join(target_directory, os.path.basename(root))
+        for file in files:
+            asset_list.append(generate_asset(os.path.join(source_directory, root),
+                                             file,
+                                             target_location=target_location,
                                              copy_method=copy_method))
-        elif os.path.isdir(source_item):
-            target_subdirectory = os.path.join(target_directory, base_filename)
-            asset_list += asset_list_from_local_dir(source_item,
-                                                    target_directory=target_subdirectory,
-                                                    copy_method=copy_method)
+
     return asset_list
 
 
