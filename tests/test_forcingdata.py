@@ -278,6 +278,29 @@ class ForcingTests(unittest.TestCase):
             additional_required_filenames
         )
 
+    def test_write_run_directory_with_patch_file(self):
+        sourcedir = self.make_run_directory('sourcedir')
+        rundir = self.make_run_directory('test_rundir')
+        config = fv3config.get_default_config()
+        open(os.path.join(sourcedir, 'empty_file'), 'a').close()
+        config['patch_files'] = {
+            'source_location': sourcedir,
+            'source_name': 'empty_file',
+            'target_location': '',
+            'target_name': 'empty_file',
+            'copy_method': 'copy',
+        }
+        fv3config.write_run_directory(config, rundir)
+        self.assert_subpaths_present(
+            rundir,
+            required_run_directory_subdirectories +
+            required_default_initial_conditions_filenames +
+            required_base_forcing_filenames +
+            required_orographic_forcing_filenames +
+            additional_required_filenames +
+            ['empty_file']
+        )
+
     def test_restart_directory_exists_and_empty(self):
         rundir = self.make_run_directory('test_rundir')
         restart_directory = os.path.join(rundir, 'RESTART')
