@@ -2,6 +2,8 @@
 #
 # Check https://circleci.com/docs/2.0/language-python/ for more details
 #
+orbs:
+  gcp-gcr: circleci/gcp-gcr@0.6.1
 version: 2
 jobs:
   build:
