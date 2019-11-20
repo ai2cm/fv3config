@@ -14,10 +14,13 @@ from .._config import write_run_directory, _get_n_processes
 MODULE_NAME = 'fv3config.fv3run'
 STDOUT_FILENAME = 'stdout.log'
 STDERR_FILENAME = 'stderr.log'
-DOCKER_FLAGS = ''  # can put flags like '-it' here
 CONFIG_OUT_FILENAME = 'fv3config.yaml'
 GOOGLE_PROJECT = 'VCM-ML'
 DOCKER_OUTDIR = '/outdir'
+DOCKER_CONFIG_LOCATION = '/fv3config.yaml'
+DOCKER_RUNFILE = '/runfile.py'
+DOCKER_COMMAND = ['docker', 'run']
+DOCKER_KEYFILE = '/gcs_key.json'
 
 
 @contextlib.contextmanager
@@ -67,51 +70,70 @@ def _google_cloud_copy(src, dest, fs=None):
                 _google_cloud_copy(remote_path, subdir, fs=fs)
 
 
-def _credentials_args(keyfile):
+def _get_credentials_args(keyfile, docker_args, bind_mount_args):
     if keyfile is not None:
-        return_list = [
-            '-v', f'{keyfile}:{keyfile}',
-            '-e', f'GOOGLE_APPLICATION_CREDENTIALS={keyfile}'
-        ]
-    else:
-        return_list = []
-    return return_list
+        bind_mount_args += ['-v', f'{os.path.abspath(keyfile)}:{DOCKER_KEYFILE}']
+        docker_args += ['-e', f'GOOGLE_APPLICATION_CREDENTIALS={DOCKER_KEYFILE}']
 
 
 def run(config_dict_or_location, outdir, runfile=None, dockerimage=None, keyfile=None):
     if keyfile is None:
         keyfile = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', None)
     if dockerimage is not None:
-        _run_in_docker(config_dict_or_location, outdir, dockerimage, runfile=runfile, keyfile=keyfile)
+        _run_in_docker(
+            config_dict_or_location, outdir, dockerimage,
+            runfile=runfile, keyfile=keyfile
+        )
     else:
         _run_native(config_dict_or_location, outdir, runfile=runfile)
 
 
-def _run_in_docker(config_dict_or_location, outdir, dockerimage, runfile=None, keyfile=None):
-    with tempfile.TemporaryFile() as temp_file:
-        bind_mount_args = []
-        if isinstance(config_dict_or_location, str):
+def _is_google_cloud_path(path):
+    return path[:5] == 'gs://'
+
+
+def _get_runfile_args(runfile, bind_mount_args, python_args):
+    if runfile is not None:
+        if _is_google_cloud_path(runfile):
+            python_args += ['--runfile', runfile]
+        else:
+            bind_mount_args += ['-v', f'{os.path.abspath(runfile)}:{DOCKER_RUNFILE}']
+            python_args += ['--runfile', DOCKER_RUNFILE]
+
+
+def _get_config_args(config_dict_or_location, config_tempfile, bind_mount_args):
+    if isinstance(config_dict_or_location, str):
+        if _is_google_cloud_path(config_dict_or_location):
             config_location = config_dict_or_location
         else:
-            _write_config_dict(config_dict_or_location, temp_file.name)
-            bind_mount_args += ['-v', f"{temp_file.name}:{temp_file.name}"]
-            config_location = temp_file.name
-        bind_mount_args += ['-v', f"{os.path.abspath(outdir)}:{DOCKER_OUTDIR}"]
-        user_args = ['--user', f'{os.getuid()}:{os.getgid()}']
-        docker_command = (
-            ['docker', 'run'] +
-            _credentials_args(keyfile) + 
-            user_args +
-            bind_mount_args
-        )
-        if DOCKER_FLAGS:
-            docker_command.append(DOCKER_FLAGS)
-        docker_command.append(dockerimage)
-        python_command = ['python3', '-m', MODULE_NAME]
-        python_args = [config_location, DOCKER_OUTDIR]
-        if runfile:
-            python_args += ['--runfile', runfile]
-        subprocess.check_call(docker_command + python_command + python_args)
+            bind_mount_args += [
+                '-v', f'{os.path.abspath(config_dict_or_location)}:{DOCKER_CONFIG_LOCATION}']
+            config_location = DOCKER_CONFIG_LOCATION
+    else:
+        _write_config_dict(config_dict_or_location, config_tempfile.name)
+        bind_mount_args += ['-v', f"{config_tempfile.name}:{DOCKER_CONFIG_LOCATION}"]
+        config_location = DOCKER_CONFIG_LOCATION
+    return config_location
+
+
+def _get_docker_args(docker_args, bind_mount_args, outdir):
+    bind_mount_args += ['-v', f"{os.path.abspath(outdir)}:{DOCKER_OUTDIR}"]
+    docker_args += ['--user', f'{os.getuid()}:{os.getgid()}']
+
+
+def _run_in_docker(config_dict_or_location, outdir, dockerimage, runfile=None, keyfile=None):
+    with tempfile.NamedTemporaryFile(suffix='.yaml') as config_tempfile:
+        bind_mount_args = []
+        python_args = []
+        docker_args = []
+        config_location = _get_config_args(config_dict_or_location, config_tempfile, bind_mount_args)
+        _get_docker_args(docker_args, bind_mount_args, outdir)
+        _get_credentials_args(keyfile, docker_args, bind_mount_args)
+        _get_runfile_args(runfile, bind_mount_args, python_args)
+        python_command = [
+            'python3', '-m', MODULE_NAME, config_location, DOCKER_OUTDIR]
+        subprocess.check_call(
+            DOCKER_COMMAND + bind_mount_args + docker_args + [dockerimage] + python_command + python_args)
 
 
 @contextlib.contextmanager
