@@ -1,7 +1,7 @@
 import logging
 import os
 import shutil
-from subprocess import check_call
+from subprocess import check_call, Popen, PIPE
 from ._datastore import (
     get_initial_conditions_directory, get_orographic_forcing_directory,
     get_base_forcing_directory, is_gsbucket_url
@@ -127,10 +127,18 @@ def asset_list_from_local_dir(source_directory, target_directory='', copy_method
     return asset_list
 
 
-def asset_list_from_gs_bucket(source_directory, target_directory='/'):
+def asset_list_from_gs_bucket(source_directory, target_directory=''):
     """Return asset_list from all files in source_directory (which is assumed to be
     a google cloud storage url) with target location equal to target_directory"""
-    #TODO: return asset_list given google storage bucket path
+    asset_list = []
+    stdout_str = Popen(['gsutil', 'ls', source_directory], stdout=PIPE).stdout.read()
+    path_list = stdout_str.decode().split('\n')[:-1]
+    for path in path_list:
+        dirname, basename = os.path.split(path)
+        asset_list.append(generate_asset(dirname,
+                                         basename,
+                                         target_location=target_directory))
+    return asset_list
 
 
 def write_asset(asset, target_directory):
