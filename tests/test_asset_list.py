@@ -212,5 +212,6 @@ class AssetListTests(unittest.TestCase):
         except fv3config.ConfigError:
             self.fail("check_asset_valid raise ConfigError unexpectedly")
 
+
 if __name__ == '__main__':
     unittest.main()

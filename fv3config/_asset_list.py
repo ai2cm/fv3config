@@ -104,9 +104,10 @@ def generate_asset(source_location, source_name, target_location='',
 def asset_list_from_path(path, target_location='', copy_method='copy'):
     """Return an asset_list corresponding to all files within path"""
     if is_gsbucket_url(path):
-        return asset_list_from_gs_bucket(path, target_location)
+        return asset_list_from_gs_bucket(path, target_location=target_location)
     else:
-        return asset_list_from_local_dir(path, target_location,
+        return asset_list_from_local_dir(path,
+                                         target_location=target_location,
                                          copy_method=copy_method)
 
 
@@ -127,12 +128,15 @@ def asset_list_from_local_dir(source_directory, target_location='', copy_method=
     """
     asset_list = []
     for root, dirs, files in os.walk(source_directory):
-        if root != source_directory:
-            target_location = os.path.join(target_location, os.path.basename(root))
+        if root == source_directory:
+            file_target_location = target_location
+        else:
+            file_target_location = os.path.join(target_location,
+                                                os.path.basename(root))
         for file in files:
             asset_list.append(generate_asset(os.path.join(source_directory, root),
                                              file,
-                                             target_location=target_location,
+                                             target_location=file_target_location,
                                              copy_method=copy_method))
     return asset_list
 
