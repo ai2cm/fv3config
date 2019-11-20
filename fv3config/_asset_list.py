@@ -85,6 +85,9 @@ def generate_asset(source_location, source_name, target_location='',
             Defaults to None, in which case source_name is used.
         copy_method (str, optional): flag to determine whether file is
             copied ('copy') or hard-linked ('link'). Defaults to 'copy'.
+
+    Returns:
+        dict: an asset dictionary
     """
     if target_name is None:
         target_name = source_name
@@ -98,46 +101,63 @@ def generate_asset(source_location, source_name, target_location='',
     return asset
 
 
-def asset_list_from_path(source_directory, target_directory='', copy_method='copy'):
-    """Return an asset_list given either a local path or remote google storage url"""
-    if is_gsbucket_url(source_directory):
-        return asset_list_from_gs_bucket(source_directory, target_directory)
+def asset_list_from_path(path, target_location='', copy_method='copy'):
+    """Return an asset_list corresponding to all files within path"""
+    if is_gsbucket_url(path):
+        return asset_list_from_gs_bucket(path, target_location)
     else:
-        return asset_list_from_local_dir(source_directory, target_directory,
+        return asset_list_from_local_dir(path, target_location,
                                          copy_method=copy_method)
 
 
-def asset_list_from_local_dir(source_directory, target_directory='', copy_method='copy'):
-    """Return asset_list from all files in source_directory (which is assumed to be
-    local) with target location equal to target_directory. Will recurse to
-    subdirectories if they exist.
+def asset_list_from_local_dir(source_directory, target_location='', copy_method='copy'):
+    """Return asset_list from all files in the local path source_directory. Will
+    recurse to subdirectories within source_directory.
+
+    Args:
+        source_directory (str): path to local directory from which to generate
+            asset_list.
+        target_location (str, optional): target_location used for generated assets.
+            Defaults to '' which is root of run-directory.
+        copy_method (str, optional): copy_method used for generated assets. Defaults
+            to 'copy'.
+
+    Returns:
+        list: a list of asset dictionaries
     """
     asset_list = []
     for root, dirs, files in os.walk(source_directory):
-        if root == source_directory:
-            target_location = target_directory
-        else:
-            target_location = os.path.join(target_directory, os.path.basename(root))
+        if root != source_directory:
+            target_location = os.path.join(target_location, os.path.basename(root))
         for file in files:
             asset_list.append(generate_asset(os.path.join(source_directory, root),
                                              file,
                                              target_location=target_location,
                                              copy_method=copy_method))
-
     return asset_list
 
 
-def asset_list_from_gs_bucket(source_directory, target_directory=''):
-    """Return asset_list from all files in source_directory (which is assumed to be
-    a google cloud storage url) with target location equal to target_directory"""
+def asset_list_from_gs_bucket(url, target_location=''):
+    """Return asset_list from all files that begin with a google cloud storage url.
+    Will not recurse to files that are in "sub-directories" of the url.
+
+    Args:
+        url (str): google cloud storage url from which to generate asset_list.
+        target_location (str, optional): target_location used for generated assets.
+            Defaults to '' which is root of run-directory.
+
+    Returns:
+        list: a list of asset dictionaries
+        """
     asset_list = []
-    stdout_str = Popen(['gsutil', 'ls', source_directory], stdout=PIPE).stdout.read()
+    stdout_str = Popen(['gsutil', 'ls', url], stdout=PIPE).stdout.read()
     path_list = stdout_str.decode().split('\n')[:-1]
     for path in path_list:
         dirname, basename = os.path.split(path)
-        asset_list.append(generate_asset(dirname,
-                                         basename,
-                                         target_location=target_directory))
+        if basename != '':
+            asset_list.append(generate_asset(dirname,
+                                             basename,
+                                             target_location=target_location))
     return asset_list
 
 
