@@ -52,7 +52,7 @@ def count_executed_ranks(rundir):
 
 @pytest.mark.parametrize(
     "runner",
-    [docker_run],#[subprocess_run, docker_run, config_dict_module_run, config_dict_filename_run]
+    [subprocess_run, docker_run, config_dict_module_run, config_dict_filename_run]
 )
 def test_fv3run(runner):
     fv3config.ensure_data_is_downloaded()
