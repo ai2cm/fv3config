@@ -4,6 +4,7 @@ import logging
 import contextlib
 import subprocess
 import glob
+import warnings
 import resource
 import yaml
 import gcsfs
@@ -77,7 +78,7 @@ def _credentials_args(keyfile):
     return return_list
 
 
-def run_experiment(config_dict_or_location, outdir, runfile=None, dockerimage=None, keyfile=None):
+def run(config_dict_or_location, outdir, runfile=None, dockerimage=None, keyfile=None):
     if keyfile is None:
         keyfile = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', None)
     if dockerimage is not None:
@@ -125,10 +126,19 @@ def _temporary_directory(outdir):
                 _copy(source, outdir)
 
 
+def _set_stacksize_unlimited():
+    try:
+        resource.setrlimit(
+            resource.RLIMIT_STACK, (resource.RLIM_INFINITY, resource.RLIM_INFINITY)
+        )
+    except ValueError:
+        warnings.warn(
+            'could not remove stacksize limit, may run out of memory as a result'
+        )
+
+
 def _run_native(config_dict_or_location, outdir, runfile=None):
-    resource.setrlimit(
-        resource.RLIMIT_STACK, (resource.RLIM_INFINITY, resource.RLIM_INFINITY)
-    )
+    _set_stacksize_unlimited()
     with _temporary_directory(outdir) as localdir:
         config_out_filename = os.path.join(localdir, CONFIG_OUT_FILENAME)
         config_dict = _get_config_dict_and_write(
@@ -153,7 +163,7 @@ def _get_config_dict_and_write(config_dict_or_location, config_out_filename):
 
 def _write_config_dict(config, config_out_filename):
     with open(config_out_filename, 'w') as outfile:
-        yaml.write(config, outfile)
+        outfile.write(yaml.dump(config))
 
 
 def _copy_and_load_config_dict(config_location, config_target_location):
