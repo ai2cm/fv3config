@@ -22,8 +22,8 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
-      - docker_pull:
-          name: pull fv3gfs-python docker image
+      - run:
+          name: docker pull fv3gfs-python
           command: |
             docker login -u $DOCKER_USER -p $DOCKER_PASS
             docker pull us.gcr.io/vcm-ml/fv3gfs-python:latest
