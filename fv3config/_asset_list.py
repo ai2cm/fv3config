@@ -174,7 +174,7 @@ def write_asset(asset, target_directory):
         asset (dict): an asset dict
         target_directory (str): path to a directory in which all files will be written
     """
-    check_asset_valid(asset)
+    check_asset_has_required_keys(asset)
     source_path = os.path.join(asset['source_location'], asset['source_name'])
     target_path = os.path.join(target_directory, asset['target_location'], asset['target_name'])
     copy_method = asset['copy_method']
@@ -196,13 +196,13 @@ def write_asset_list(asset_list, target_directory):
         write_asset(asset, target_directory)
 
 
-def check_asset_valid(asset):
+def check_asset_has_required_keys(asset):
     """Check asset has all of its required keys"""
-    required_asset_properties = ['source_location', 'source_name', 'target_location',
-                                 'target_name', 'copy_method']
-    for required_asset_property in required_asset_properties:
-        if required_asset_property not in asset:
-            raise ConfigError(f'Assets must have a {required_asset_property}')
+    required_asset_keys = ['source_location', 'source_name', 'target_location',
+                           'target_name', 'copy_method']
+    for required_asset_key in required_asset_keys:
+        if required_asset_key not in asset:
+            raise ConfigError(f'Assets must have a {required_asset_key}')
 
 
 def config_to_asset_list(config):

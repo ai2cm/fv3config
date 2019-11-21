@@ -5,7 +5,7 @@ import fv3config
 from fv3config._asset_list import (
     is_dict_or_list, get_data_table_asset, get_diag_table_asset,
     get_field_table_asset, generate_asset, ensure_is_list,
-    asset_list_from_local_dir, check_asset_valid, write_asset
+    asset_list_from_local_dir, check_asset_has_required_keys, write_asset
 )
 
 
@@ -194,12 +194,12 @@ class AssetListTests(unittest.TestCase):
                 os.makedirs(head)
             open(full_path, 'a').close()
 
-    def test_check_asset_valid_bad_asset(self):
+    def test_check_asset_has_required_keys_bad_asset(self):
         bad_asset_dict = {'irrelevant_key': ''}
         with self.assertRaises(fv3config.ConfigError):
-            check_asset_valid(bad_asset_dict)
+            check_asset_has_required_keys(bad_asset_dict)
 
-    def test_check_asset_valid_proper_asset(self):
+    def test_check_asset_has_required_keys_proper_asset(self):
         proper_asset_dict = {
             'source_location': '',
             'source_name': '',
@@ -208,9 +208,9 @@ class AssetListTests(unittest.TestCase):
             'copy_method': '',
         }
         try:
-            check_asset_valid(proper_asset_dict)
+            check_asset_has_required_keys(proper_asset_dict)
         except fv3config.ConfigError:
-            self.fail("check_asset_valid raise ConfigError unexpectedly")
+            self.fail("check_asset_valid raised ConfigError unexpectedly")
 
     def test_write_asset(self):
         source_workdir = self.make_work_directory('source_workdir')
