@@ -9,7 +9,7 @@ from ._datastore import (
 from ._tables import (
     get_data_table_filename, get_diag_table_filename, get_field_table_filename
 )
-from ._exceptions import ConfigError
+from ._exceptions import ConfigError, DependencyError
 
 
 def is_dict_or_list(option):
@@ -105,7 +105,10 @@ def generate_asset(source_location, source_name, target_location='',
 def asset_list_from_path(path, target_location='', copy_method='copy'):
     """Return an asset_list corresponding to all files within path"""
     if is_gsbucket_url(path):
-        return asset_list_from_gs_bucket(path, target_location=target_location)
+        if gsutil_is_installed():
+            return asset_list_from_gs_bucket(path, target_location=target_location)
+        else:
+            raise DependencyError(f'Optional dependency gsutil not found. Files in {path} will not be copied to {target_location}.')
     else:
         return asset_list_from_local_dir(path,
                                          target_location=target_location,
@@ -233,7 +236,7 @@ def copy_file(source_path, target_path):
         if gsutil_is_installed():
             check_call(['gsutil', 'cp', source_path, target_path])
         else:
-            logging.warning(f'Optional dependency gsutil not found. File {source_path} will not be copied to {target_path}')
+            raise DependencyError(f'Optional dependency gsutil not found. File {source_path} will not be copied to {target_path}')
     else:
         shutil.copy(source_path, target_path)
 

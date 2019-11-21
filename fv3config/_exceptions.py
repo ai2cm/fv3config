@@ -10,3 +10,8 @@ class InvalidFileError(FileNotFoundError):
 
 class ConfigError(ValueError):
     pass
+
+
+class DependencyError(Exception):
+    """Raised when code tries to use an optional dependency that is not installed"""
+    pass
