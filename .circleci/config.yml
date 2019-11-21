@@ -22,7 +22,7 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
-      - gcp-gcr/gcr-auth
+      - gcr-auth
       - run:
           name: docker pull fv3gfs-python
           command: |
