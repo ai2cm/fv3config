@@ -5,7 +5,7 @@ import fv3config
 from fv3config._asset_list import (
     is_dict_or_list, get_data_table_asset, get_diag_table_asset,
     get_field_table_asset, generate_asset, ensure_is_list,
-    asset_list_from_local_dir, write_asset, check_asset_valid
+    asset_list_from_local_dir, check_asset_valid, write_asset
 )
 
 
@@ -211,6 +211,21 @@ class AssetListTests(unittest.TestCase):
             check_asset_valid(proper_asset_dict)
         except fv3config.ConfigError:
             self.fail("check_asset_valid raise ConfigError unexpectedly")
+
+    def test_write_asset(self):
+        source_workdir = self.make_work_directory('source_workdir')
+        target_workdir = self.make_work_directory('target_workdir')
+        test_filename = 'test_file'
+        test_asset = {
+            'source_location': source_workdir,
+            'source_name': test_filename,
+            'target_location': '',
+            'target_name': test_filename,
+            'copy_method': 'copy',
+        }
+        self.make_empty_files(source_workdir, [test_filename])
+        write_asset(test_asset, target_workdir)
+        self.assertTrue(os.path.exists(os.path.join(target_workdir, test_filename)))
 
 
 if __name__ == '__main__':
