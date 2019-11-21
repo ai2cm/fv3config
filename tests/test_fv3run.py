@@ -18,7 +18,14 @@ USER_UID_GID = f'{os.getuid()}:{os.getgid()}'
 MockTempfile = collections.namedtuple('MockTempfile', ['name'])
 
 MPI_ENABLED = (shutil.which('mpirun') is not None)
-DOCKER_ENABLED = (shutil.which('docker') is not None)
+try:
+    subprocess.check_call(
+        ['docker', 'image', 'inspect', DOCKER_IMAGE_NAME],
+        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+    )
+    DOCKER_ENABLED = True
+except subprocess.CalledProcessError:
+    DOCKER_ENABLED = False
 
 
 def subprocess_run(config_dict, outdir):
@@ -93,7 +100,7 @@ def test_fv3run_without_mpi(runner):
     # the test for docker_run *will* use MPI inside the docker container
     # we're only making it so subprocess calls of mpirun don't execute
     if runner == docker_run and not DOCKER_ENABLED:
-        pytest.skip('docker is not enabled')
+        pytest.skip(f'docker or docker image {DOCKER_IMAGE_NAME} is not available')
     fv3config.ensure_data_is_downloaded()
     outdir = os.path.join(TEST_DIR, 'outdir')
     with mocked_check_call(), cleaned_up_directory(outdir):
