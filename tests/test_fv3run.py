@@ -19,12 +19,13 @@ MockTempfile = collections.namedtuple('MockTempfile', ['name'])
 
 MPI_ENABLED = (shutil.which('mpirun') is not None)
 try:
+
     subprocess.check_call(
         ['docker', 'image', 'inspect', DOCKER_IMAGE_NAME],
         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
     )
     DOCKER_ENABLED = True
-except subprocess.CalledProcessError:
+except (subprocess.CalledProcessError, FileNotFoundError):
     DOCKER_ENABLED = False
 
 
@@ -41,10 +42,19 @@ def docker_run(config_dict, outdir):
     with tempfile.NamedTemporaryFile(mode='w') as config_file:
         config_file.write(yaml.dump(config_dict))
         config_file.flush()
-        subprocess.check_call(
-            ['fv3run', config_file.name, outdir, '--runfile', MOCK_RUNSCRIPT,
-             '--dockerimage', DOCKER_IMAGE_NAME]
-        )
+        try:
+            subprocess.check_call(
+                ['fv3run', config_file.name, outdir, '--runfile', MOCK_RUNSCRIPT,
+                 '--dockerimage', DOCKER_IMAGE_NAME]
+            )
+        except subprocess.CalledProcessError as err:
+            if os.path.isfile(os.path.join(outdir, 'stdout.log')):
+                with open(os.path.join(outdir, 'stdout.log')) as stdout:
+                    print(f'STDOUT: {stdout.read()}')
+            if os.path.isfile(os.path.join(outdir, 'stderr.log')):
+                with open(os.path.join(outdir, 'stderr.log')) as stderr:
+                    print(f'STDERR: {stderr.read()}')
+            raise err
 
 
 def config_dict_module_run(config_dict, outdir):
@@ -144,7 +154,7 @@ def test_fv3run_with_mpi(runner):
 def test_get_runfile_args(runfile, expected_bind_mount_args, expected_python_args):
     bind_mount_args = []
     python_args = []
-    fv3config.fv3run._run._get_runfile_args(runfile, bind_mount_args, python_args)
+    fv3config.fv3run._docker._get_runfile_args(runfile, bind_mount_args, python_args)
     assert bind_mount_args == expected_bind_mount_args
     assert python_args == expected_python_args
 
@@ -155,13 +165,13 @@ def test_get_runfile_args(runfile, expected_bind_mount_args, expected_python_arg
         [
             fv3config.get_default_config(),
             MockTempfile(name='/tmp/file'),
-            fv3config.fv3run._run.DOCKER_CONFIG_LOCATION,
+            fv3config.fv3run._docker.DOCKER_CONFIG_LOCATION,
             ['-v', '/tmp/file:/fv3config.yaml']
         ],
         [
             '/absolute/path/fv3config.yaml',
             MockTempfile(name='/tmp/file'),
-            fv3config.fv3run._run.DOCKER_CONFIG_LOCATION,
+            fv3config.fv3run._docker.DOCKER_CONFIG_LOCATION,
             ['-v', '/absolute/path/fv3config.yaml:/fv3config.yaml']
         ],
         [
@@ -174,7 +184,7 @@ def test_get_runfile_args(runfile, expected_bind_mount_args, expected_python_arg
 def test_get_config_args(
         config, tempfile, expected_config_location, expected_bind_mount_args):
     bind_mount_args = []
-    config_location = fv3config.fv3run._run._get_config_args(
+    config_location = fv3config.fv3run._docker._get_config_args(
         config, tempfile, bind_mount_args)
     assert config_location == expected_config_location
     assert bind_mount_args == expected_bind_mount_args
@@ -198,7 +208,7 @@ def test_get_docker_args(
         outdir, expected_docker_args, expected_bind_mount_args):
     docker_args = []
     bind_mount_args = []
-    fv3config.fv3run._run._get_docker_args(
+    fv3config.fv3run._docker._get_docker_args(
         docker_args, bind_mount_args, outdir)
     assert docker_args == expected_docker_args
     assert bind_mount_args == expected_bind_mount_args
@@ -227,7 +237,7 @@ def test_get_credentials_args(
         keyfile, expected_docker_args, expected_bind_mount_args):
     docker_args = []
     bind_mount_args = []
-    fv3config.fv3run._run._get_credentials_args(
+    fv3config.fv3run._docker._get_credentials_args(
         keyfile, docker_args, bind_mount_args)
     assert docker_args == expected_docker_args
     assert bind_mount_args == expected_bind_mount_args

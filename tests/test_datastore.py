@@ -44,7 +44,7 @@ class DatastoreTests(unittest.TestCase):
                 fv3config.set_cache_dir(tempdir)
                 new = fv3config.get_cache_dir()
                 assert new != original
-                assert new == os.path.join(tempdir, 'fv3config-cache')
+                assert new == tempdir
             finally:
                 fv3config.set_cache_dir(original)
 
@@ -54,9 +54,9 @@ class DatastoreFileTests(unittest.TestCase):
     def setUp(self):
         self._original_get = requests.get
         requests.get = mock_requests_get
+        self.original_cachedir = fv3config.get_cache_dir()
         self._cachedir_obj = tempfile.TemporaryDirectory()
         fv3config.set_cache_dir(self._cachedir_obj.name)
-        self.original_cachedir = fv3config.get_cache_dir()
         self.cachedir = os.path.join(self._cachedir_obj.name, 'fv3config-cache')
         MockResponse.times_called = 0
 

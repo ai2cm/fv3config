@@ -1,7 +1,7 @@
 import copy
 import os
-import collections
 import f90nml
+import yaml
 from ._exceptions import InvalidFileError, ConfigError
 from ._datastore import (
     get_base_forcing_directory, get_orographic_forcing_directory,
@@ -31,6 +31,11 @@ def _get_n_processes(config_dict):
     layout = config_dict['namelist']['fv_core_nml'].get('layout', _NAMELIST_DEFAULTS['layout'])
     processors_per_tile = layout[0] * layout[1]
     return n_tiles * processors_per_tile
+
+
+def _write_config_dict(config, config_out_filename):
+    with open(config_out_filename, 'w') as outfile:
+        outfile.write(yaml.dump(config))
 
 
 def get_default_config():

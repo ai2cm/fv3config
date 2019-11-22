@@ -40,6 +40,10 @@ def set_cache_dir(parent_dirname):
 
 
 def get_cache_dir():
+    return USER_CACHE_DIR
+
+
+def _get_cache_subdir():
     return os.path.join(USER_CACHE_DIR, CACHE_PREFIX)
 
 
@@ -58,24 +62,29 @@ def get_resolution(config):
     npx = config['namelist']['fv_core_nml']['npx']
     npy = config['namelist']['fv_core_nml']['npy']
     if npx != npy:
-        raise ConfigError(f'npx and npy in fv_core_nml must be equal, but are {npx} and {npy}')
+        raise ConfigError(
+            f'npx and npy in fv_core_nml must be equal, but are {npx} and {npy}')
     resolution = f'C{npx-1}'
     return resolution
 
 
 def get_orographic_forcing_directory(config):
-    """Return the string path of the orographic forcing directory specified by a config dictionary.
+    """Return the string path of the orographic forcing directory
+    specified by a config dictionary.
     """
     resolution = get_resolution(config)
-    dirname = os.path.join(get_cache_dir(), f'orographic_data/{resolution}')
+    dirname = os.path.join(_get_cache_subdir(), f'orographic_data/{resolution}')
     if not os.path.isdir(dirname):
-        valid_options = os.listdir(os.path.join(get_cache_dir(), 'orographic_data'))
-        raise ConfigError(f'resolution {resolution} is unsupported; valid options are {valid_options}')
+        valid_options = os.listdir(os.path.join(_get_cache_subdir(), 'orographic_data'))
+        raise ConfigError(
+            f'resolution {resolution} is unsupported; valid options are {valid_options}'
+        )
     return dirname
 
 
 def get_base_forcing_directory(config):
-    """Return the string path of the base forcing directory specified by a config dictionary.
+    """Return the string path of the base forcing directory
+    specified by a config dictionary.
     """
     if 'forcing' not in config:
         raise ConfigError('config dictionary must have a \'forcing\' key')
@@ -83,7 +92,8 @@ def get_base_forcing_directory(config):
 
 
 def get_initial_conditions_directory(config):
-    """Return the string path of the initial conditions directory specified by a config dictionary.
+    """Return the string path of the initial conditions directory
+    specified by a config dictionary.
     """
     if 'initial_conditions' not in config:
         raise ConfigError('config dictionary must have an \'initial_conditions\' key')
@@ -94,9 +104,12 @@ def link_or_copy_directory(source_path, target_path):
     """Symbolically link or gsutil copy files in a source path to a target path"""
     if is_gsbucket_url(source_path):
         if gsutil_is_installed():
-            check_call(['gsutil', '-m', 'cp', '-r', os.path.join(source_path, '*'), target_path])
+            check_call([
+                'gsutil', '-m', 'cp', '-r', os.path.join(source_path, '*'), target_path])
         else:
-            logging.warning(f'Optional dependency gsutil not found. Files in {source_path} will not be copied to {target_path}')
+            logging.warning(
+                f'Optional dependency gsutil not found. Files in '
+                f'{source_path} will not be copied to {target_path}')
     else:
         link_directory(source_path, target_path)
 
@@ -122,7 +135,8 @@ def copy_file(source_path, target_path):
         if gsutil_is_installed():
             check_call(['gsutil', 'cp', source_path, target_path])
         else:
-            logging.warning(f'Optional dependency gsutil not found. File {source_path} will not be copied to {target_path}')
+            logging.warning(f'Optional dependency gsutil not found. File '
+                f'{source_path} will not be copied to {target_path}')
     else:
         shutil.copy(source_path, target_path)
 
@@ -135,16 +149,17 @@ def gsutil_is_installed():
 
 
 def check_if_data_is_downloaded():
-    if not os.path.isdir(get_cache_dir()) or len(os.listdir(get_cache_dir())) == 0:
+    if not os.path.isdir(_get_cache_subdir()) or len(os.listdir(_get_cache_subdir())) == 0:
         raise DataMissingError(
-            f'Required data for running fv3gfs not available. Try python -m fv3config.download_data or ensure_data_is_downloaded()'
+            'Required data for running fv3gfs not available. Try '
+            'python -m fv3config.download_data or ensure_data_is_downloaded()'
         )
 
 
 def ensure_data_is_downloaded():
     """Check of the cached data is present, and if not, download it."""
-    os.makedirs(get_cache_dir(), exist_ok=True)
-    if len(os.listdir(get_cache_dir())) == 0:
+    os.makedirs(_get_cache_subdir(), exist_ok=True)
+    if len(os.listdir(_get_cache_subdir())) == 0:
         with tempfile.NamedTemporaryFile(mode='wb') as archive_file:
             download_data_archive(archive_file)
             archive_file.flush()
@@ -153,7 +168,7 @@ def ensure_data_is_downloaded():
 
 def refresh_downloaded_data():
     """Delete the cached data (if present) and re-download it."""
-    shutil.rmtree(get_cache_dir())
+    shutil.rmtree(_get_cache_subdir())
     ensure_data_is_downloaded()
 
 
@@ -166,14 +181,14 @@ def download_data_archive(target_file):
 
 def extract_data(archive_filename):
     """Extract the downloaded archive, over-writing any data already present."""
-    logging.info('Extracting required data for running fv3gfs to %s', get_cache_dir())
+    logging.info('Extracting required data for running fv3gfs to %s', _get_cache_subdir())
     with tarfile.open(archive_filename, mode='r:gz') as f:
         with tempfile.TemporaryDirectory() as tempdir:
             f.extractall(tempdir)
             for name in os.listdir(os.path.join(tempdir, ARCHIVE_FILENAME_ROOT)):
                 shutil.move(
                     os.path.join(tempdir, ARCHIVE_FILENAME_ROOT, name),
-                    get_cache_dir()
+                    _get_cache_subdir()
                 )
 
 
@@ -208,9 +223,10 @@ def resolve_option(option, built_in_options_dict):
         return option
     else:
         if option in built_in_options_dict:
-            return os.path.join(get_cache_dir(), built_in_options_dict[option])
+            return os.path.join(_get_cache_subdir(), built_in_options_dict[option])
         else:
             raise ConfigError(
                 f'The provided option {option} is not one of the built in options: '
-                f'{list(built_in_options_dict.keys())}. Paths to local files or directories must be absolute.'
+                f'{list(built_in_options_dict.keys())}. '
+                'Paths to local files or directories must be absolute.'
             )
