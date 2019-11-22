@@ -106,8 +106,8 @@ class ForcingTests(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        cls.cache_dir.cleanup()
         fv3config.set_cache_dir(cls.original_cache_dir)
+        cls.cache_dir.cleanup()
 
     def setUp(self):
         self._run_directory_list = []

@@ -40,10 +40,13 @@ class DatastoreTests(unittest.TestCase):
     def test_set_then_get_archive_dir(self):
         with tempfile.TemporaryDirectory() as tempdir:
             original = fv3config.get_cache_dir()
-            fv3config.set_cache_dir(tempdir)
-            new = fv3config.get_cache_dir()
-            assert new != original
-            assert new == tempdir
+            try:
+                fv3config.set_cache_dir(tempdir)
+                new = fv3config.get_cache_dir()
+                assert new != original
+                assert new == tempdir
+            finally:
+                fv3config.set_cache_dir(original)
 
 
 class DatastoreFileTests(unittest.TestCase):
@@ -53,11 +56,13 @@ class DatastoreFileTests(unittest.TestCase):
         requests.get = mock_requests_get
         self._cachedir_obj = tempfile.TemporaryDirectory()
         self.cachedir = self._cachedir_obj.name
+        self.original_cachedir = fv3config.get_cache_dir()
         fv3config.set_cache_dir(self.cachedir)
         MockResponse.times_called = 0
 
     def tearDown(self):
         requests.get = self._original_get
+        fv3config.set_cache_dir(self.original_cachedir)
         self._cachedir_obj.cleanup()
 
     def test_ensure_data_is_downloaded_when_empty(self):
