@@ -94,7 +94,7 @@ def cleaned_up_directory(dirname):
 
 @pytest.mark.parametrize(
     "runner",
-    [subprocess_run, docker_run, config_dict_module_run, config_dict_filename_run]
+    [docker_run, config_dict_module_run, config_dict_filename_run]
 )
 def test_fv3run_without_mpi(runner):
     # the test for docker_run *will* use MPI inside the docker container
