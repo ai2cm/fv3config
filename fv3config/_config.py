@@ -20,15 +20,15 @@ namelist_options_dict = {
     'default': os.path.join(package_directory, 'data/namelist/default.nml')
 }
 
-_DEFAULTS = {
+_NAMELIST_DEFAULTS = {
     'ntiles': 6,
     'layout': (1, 1),
 }
 
 
 def _get_n_processes(config_dict):
-    n_tiles = config_dict['namelist']['fv_core_nml'].get('ntiles', _DEFAULTS['ntiles'])
-    layout = config_dict['namelist']['fv_core_nml'].get('layout', _DEFAULTS['layout'])
+    n_tiles = config_dict['namelist']['fv_core_nml'].get('ntiles', _NAMELIST_DEFAULTS['ntiles'])
+    layout = config_dict['namelist']['fv_core_nml'].get('layout', _NAMELIST_DEFAULTS['layout'])
     processors_per_tile = layout[0] * layout[1]
     return n_tiles * processors_per_tile
 
