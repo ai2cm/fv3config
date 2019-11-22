@@ -12,6 +12,8 @@ if 'FV3CONFIG_CACHE_DIR' in os.environ:
     USER_CACHE_DIR = os.environ['FV3CONFIG_CACHE_DIR']
 else:
     USER_CACHE_DIR = appdirs.user_cache_dir('fv3gfs', 'vulcan')
+    if not os.path.isdir(USER_CACHE_DIR):
+        os.makedirs(USER_CACHE_DIR)
 
 
 ARCHIVE_FILENAME = '2019-10-23-data-for-running-fv3gfs.tar.gz'
