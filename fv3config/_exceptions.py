@@ -10,3 +10,12 @@ class InvalidFileError(FileNotFoundError):
 
 class ConfigError(ValueError):
     pass
+
+
+class DelayedImportError(object):
+
+    def __init__(self, message):
+        self.message = message
+
+    def __getattr__(self):
+        raise ImportError(self.message)

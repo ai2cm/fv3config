@@ -14,6 +14,11 @@ FV3RUN_MODULE = 'fv3config.fv3run'
 
 def _run_in_docker(
         config_dict_or_location, outdir, dockerimage, runfile=None, keyfile=None):
+    if _is_gcloud_path(outdir):
+        raise NotImplementedError(
+            'running in a local docker container and uploading the output to '
+            'Google cloud is not yet implemented'
+        )
     with tempfile.NamedTemporaryFile(suffix='.yaml') as config_tempfile:
         bind_mount_args = []
         python_args = []
@@ -23,8 +28,7 @@ def _run_in_docker(
         _get_docker_args(docker_args, bind_mount_args, outdir)
         _get_credentials_args(keyfile, docker_args, bind_mount_args)
         _get_runfile_args(runfile, bind_mount_args, python_args)
-        python_command = [
-            'python3', '-m', FV3RUN_MODULE, config_location, DOCKER_OUTDIR]
+        python_command = _get_python_command(config_location, DOCKER_OUTDIR)
         subprocess.check_call(
             DOCKER_COMMAND + bind_mount_args + docker_args + [dockerimage] +
             python_command + python_args)
@@ -37,6 +41,10 @@ def _get_runfile_args(runfile, bind_mount_args, python_args):
         else:
             bind_mount_args += ['-v', f'{os.path.abspath(runfile)}:{DOCKER_RUNFILE}']
             python_args += ['--runfile', DOCKER_RUNFILE]
+
+
+def _get_python_command(config_location, outdir=None):
+    return ['python3', '-m', FV3RUN_MODULE, config_location, outdir]
 
 
 def _get_config_args(config_dict_or_location, config_tempfile, bind_mount_args):
