@@ -87,17 +87,12 @@ def write_run_directory(config, target_directory):
 
     Args:
         config (dict): a configuration dictionary
-        target_directory (str): target directory, will be created if it already exists
+        target_directory (str): target directory, will be created if it does not exist
     """
     check_if_data_is_downloaded()
-    input_directory = os.path.join(target_directory, 'INPUT')
-    restart_directory = os.path.join(target_directory, 'RESTART')
     asset_list = config_to_asset_list(config)
-    for directory in [target_directory, input_directory, restart_directory]:
-        if not os.path.isdir(directory):
-            os.mkdir(directory)
     write_asset_list(asset_list, target_directory)
-    current_date = get_current_date_from_config(config, input_directory)
+    current_date = get_current_date_from_config(config, os.path.join(target_directory, 'INPUT'))
     update_diag_table_for_config(config, current_date, os.path.join(target_directory, 'diag_table'))
     config_to_namelist(config, os.path.join(target_directory, 'input.nml'))
 
