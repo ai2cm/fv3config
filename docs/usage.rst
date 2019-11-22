@@ -94,7 +94,7 @@ representation of run-directory files. An asset is a dictionary that knows about
 location/filename, target filename, target location within the run directory and whether that file is copied or linked.
 Asset dicts can be generated with the helper function :meth:`fv3config.get_asset_dict`. For example::
 
-    >>> gen_asset_dict('/path/to/filedir/', 'sample_file.nc', target_location='INPUT/')
+    >>> get_asset_dict('/path/to/filedir/', 'sample_file.nc', target_location='INPUT/')
     {'source_location': '/path/to/filedir/',
     'source_name': 'sample_file.nc',
     'target_location': 'INPUT/',
