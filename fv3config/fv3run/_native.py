@@ -18,6 +18,8 @@ def _run_native(config_dict_or_location, outdir, runfile=None):
     _set_stacksize_unlimited()
     with _temporary_directory(outdir) as localdir:
         config_out_filename = os.path.join(localdir, CONFIG_OUT_FILENAME)
+        # we need to write the dict to the run directory for archival and also load
+        # the dict, it ends up being convenient to do both at once
         config_dict = _get_config_dict_and_write(
             config_dict_or_location, config_out_filename)
         write_run_directory(config_dict, localdir)
