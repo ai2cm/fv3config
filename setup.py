@@ -40,12 +40,14 @@ setup(
     description="FV3Config is used to configure and manipulate run directories for FV3GFS.",
     entry_points={
         'console_scripts': [
-            'fv3config=fv3config.cli:main',
             'fv3run=fv3config.fv3run.__main__:main',
         ],
     },
     install_requires=requirements,
-    extras_require={'bucket-access': 'gsutil'},
+    extras_require={
+        'bucket-access': 'gsutil',
+        'fv3run': 'fv3gfs-python',
+    },
     license="BSD license",
     long_description=readme + '\n\n' + history,
     include_package_data=True,
