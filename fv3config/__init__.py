@@ -10,7 +10,7 @@ from ._exceptions import InvalidFileError, ConfigError
 from ._datastore import (
     ensure_data_is_downloaded, set_cache_dir, get_cache_dir
 )
-from ._asset_list import generate_asset
+from ._asset_list import get_asset_dict
 
 
 __author__ = """Vulcan Technologies LLC"""

@@ -4,7 +4,7 @@ import shutil
 import fv3config
 from fv3config._asset_list import (
     is_dict_or_list, get_data_table_asset, get_diag_table_asset,
-    get_field_table_asset, generate_asset, ensure_is_list,
+    get_field_table_asset, get_asset_dict, ensure_is_list,
     asset_list_from_local_dir, check_asset_has_required_keys, write_asset
 )
 
@@ -149,12 +149,12 @@ class AssetListTests(unittest.TestCase):
         with self.assertRaises(fv3config.ConfigError):
             ensure_is_list(sample_float)
 
-    def test_generate_asset_default_options(self):
-        test_asset = generate_asset(SAMPLE_SOURCE_LOCATION, SAMPLE_SOURCE_NAME)
+    def test_get_asset_dict_default_options(self):
+        test_asset = get_asset_dict(SAMPLE_SOURCE_LOCATION, SAMPLE_SOURCE_NAME)
         self.assertEqual(test_asset, SAMPLE_ASSET_NO_KWARGS)
 
-    def test_generate_asset_custom_options(self):
-        test_asset = generate_asset(SAMPLE_SOURCE_LOCATION, SAMPLE_SOURCE_NAME,
+    def test_get_asset_dict_custom_options(self):
+        test_asset = get_asset_dict(SAMPLE_SOURCE_LOCATION, SAMPLE_SOURCE_NAME,
                                     target_location=SAMPLE_TARGET_LOCATION,
                                     target_name=SAMPLE_TARGET_NAME,
                                     copy_method=SAMPLE_COPY_METHOD)

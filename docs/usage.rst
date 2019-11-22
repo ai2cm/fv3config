@@ -92,9 +92,9 @@ Specifying individual files
 More fine-grained control of the files that are written to the run-directory is possible using the "asset"
 representation of run-directory files. An asset is a dictionary that knows about one files's source
 location/filename, target filename, target location within the run directory and whether that file is copied or linked.
-Asset dicts can be generated with the helper function :meth:`fv3config.generate_asset`. For example::
+Asset dicts can be generated with the helper function :meth:`fv3config.get_asset_dict`. For example::
 
-    >>> generate_asset('/path/to/filedir/', 'sample_file.nc', target_location='INPUT/')
+    >>> gen_asset_dict('/path/to/filedir/', 'sample_file.nc', target_location='INPUT/')
     {'source_location': '/path/to/filedir/',
     'source_name': 'sample_file.nc',
     'target_location': 'INPUT/',

@@ -55,24 +55,24 @@ def get_data_table_asset(config):
     """Return asset for data_table"""
     data_table_filename = get_data_table_filename(config)
     location, name = os.path.split(data_table_filename)
-    return generate_asset(location, name, target_name='data_table')
+    return get_asset_dict(location, name, target_name='data_table')
 
 
 def get_diag_table_asset(config):
     """Return asset for diag_table"""
     diag_table_filename = get_diag_table_filename(config)
     location, name = os.path.split(diag_table_filename)
-    return generate_asset(location, name, target_name='diag_table')
+    return get_asset_dict(location, name, target_name='diag_table')
 
 
 def get_field_table_asset(config):
     """Return asset for field_table"""
     field_table_filename = get_field_table_filename(config)
     location, name = os.path.split(field_table_filename)
-    return generate_asset(location, name, target_name='field_table')
+    return get_asset_dict(location, name, target_name='field_table')
 
 
-def generate_asset(source_location, source_name, target_location='',
+def get_asset_dict(source_location, source_name, target_location='',
                    target_name=None, copy_method='copy'):
     """Helper function to generate asset for a particular file
 
@@ -138,7 +138,7 @@ def asset_list_from_local_dir(source_directory, target_location='', copy_method=
             file_target_location = os.path.join(target_location,
                                                 os.path.basename(root))
         for file in files:
-            asset_list.append(generate_asset(os.path.join(source_directory, root),
+            asset_list.append(get_asset_dict(os.path.join(source_directory, root),
                                              file,
                                              target_location=file_target_location,
                                              copy_method=copy_method))
@@ -164,7 +164,7 @@ def asset_list_from_gs_bucket(url, target_location=''):
     for path in path_list:
         dirname, basename = os.path.split(path)
         if basename != '':
-            asset_list.append(generate_asset(dirname,
+            asset_list.append(get_asset_dict(dirname,
                                              basename,
                                              target_location=target_location))
     return asset_list
