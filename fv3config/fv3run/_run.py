@@ -7,7 +7,7 @@ def run(config_dict_or_location, outdir, runfile=None, docker_image=None, keyfil
     """Run the FV3GFS model with the given configuration.
 
     Copies the resulting directory to a target location. Will use the Google cloud
-    storage key at $GOOGLE_APPLICATION_CREDENTIALS by default. Requires the
+    storage key at ``$GOOGLE_APPLICATION_CREDENTIALS`` by default. Requires the
     fv3gfs-python package.
 
     Args:

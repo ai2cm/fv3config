@@ -111,17 +111,17 @@ Running the model with fv3run
       --keyfile KEYFILE     google cloud storage key to use for cloud copy
                             commands
 
-The only required inputs are `config`, which specifies a yaml file containing the
-`fv3config` run directory configuration, and a final location to copy the run directory.
-A keyfile can be specified to authenticate google cloud storage for any data sources
-located in google cloud buckets, or the key is taken from an environment variable
-by default. If `dockerimage` is specified, the command will run inside a Docker
-container based on the given image name. This assumes the `fv3config` package and
-`fv3gfs` python wrapper are installed inside the container, along with any
+The only required inputs are ``config``, which specifies a yaml file containing the
+``fv3config`` run directory configuration, and a final location to copy the run directory.
+A keyfile can be specified to authenticate Google cloud storage for any data sources
+located in Google cloud buckets, or the key is taken from an environment variable
+by default. If ``dockerimage`` is specified, the command will run inside a Docker
+container based on the given image name. This assumes the ``fv3config`` package and
+``fv3gfs`` python wrapper are installed inside the container, along with any
 dependencies.
 
-`fv3run` can also be accessed from within Python, using `fv3config.run`. This has the
-same interface as the command-line `fv3run`, but also gives the option of using
+``fv3run`` can also be accessed from within Python, using :py:func:`fv3config.run`. This has the
+same interface as the command-line ``fv3run``, but also gives the option of using
 a config dictionary instead of a yaml file location.
 
 .. autofunction:: fv3config.run
