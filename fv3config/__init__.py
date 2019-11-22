@@ -13,6 +13,6 @@ from ._datastore import (
 from .fv3run import run
 
 
-__author__ = """Vulcan Technologies, LLC"""
+__author__ = """Vulcan Technologies LLC"""
 __email__ = 'jeremym@vulcan.com'
 __version__ = '0.1.0'

@@ -40,16 +40,21 @@ Cache Location
 --------------
 
 If the FV3CONFIG_CACHE_DIR environment variable is set, the package will download
-and store data into this folder. If unset, by default the package will use a
-subdirectory of the user's home folder.
+and store data into `$(FV3CONFIG_CACHE_DIR)/fv3config-cache`.
+If unset, by default the package will use the "user cache" directory for the user's
+operating system.
 
 The download location can be retrieved using `fv3config.get_cache_dir()`, and set
-manually using `fv3config.set_cache_dir()`. If the target is set to a directory
+manually using `fv3config.set_cache_dir()`. Note that the "fv3config-cache" subdirectory
+will be appended to the cache directory you set. If the target is set to a directory
 that already contains the archive download, it will automatically start using those
 files. Conversely, if the target is set to an empty directory, it will be necessary
-to re-download the cache files. Do not set the cache directory to a location
-that already contains non-cache files, or the files will not download until you
-call `refresh_downloaded_data` (which will delete any files in the directory).
+to re-download the cache files.
+
+It's unlikely, but do not set the cache directory to a location that already contains
+a "fv3config-cache" subdirectory with unrelated files, or the cache files will not
+download until you call `refresh_downloaded_data` (which will delete any files
+in the subdirectory).
 
 Configuration
 -------------

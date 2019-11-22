@@ -9,18 +9,16 @@ import appdirs
 from ._exceptions import ConfigError, DataMissingError
 
 if 'FV3CONFIG_CACHE_DIR' in os.environ:
-    LOCAL_ARCHIVE_DIR = os.environ['FV3CONFIG_CACHE_DIR']
+    USER_CACHE_DIR = os.environ['FV3CONFIG_CACHE_DIR']
 else:
-    LOCAL_ARCHIVE_DIR = os.path.join(
-        appdirs.user_data_dir('fv3gfs', 'vulcan'),
-        'archive'
-    )
+    USER_CACHE_DIR = appdirs.user_cache_dir('fv3gfs', 'vulcan')
 
 
 ARCHIVE_FILENAME = '2019-10-23-data-for-running-fv3gfs.tar.gz'
 ARCHIVE_FILENAME_ROOT = '2019-10-23-data-for-running-fv3gfs'
 ARCHIVE_URL = f'http://storage.googleapis.com/vcm-ml-public/{ARCHIVE_FILENAME}'
 GS_BUCKET_PREFIX = 'gs://'
+CACHE_PREFIX = 'fv3config-cache'
 
 FORCING_OPTIONS_DICT = {
     'default': 'base_forcing',
@@ -32,13 +30,17 @@ INITIAL_CONDITIONS_OPTIONS_DICT = {
 }
 
 
-def set_cache_dir(dirname):
-    global LOCAL_ARCHIVE_DIR
-    LOCAL_ARCHIVE_DIR = dirname
+def set_cache_dir(parent_dirname):
+    if not os.path.isdir(parent_dirname):
+        raise ValueError(f'{parent_dirname} does not exist')
+    elif not os.path.isdir(os.path.join(parent_dirname, CACHE_PREFIX)):
+        os.mkdir(os.path.join(parent_dirname, CACHE_PREFIX))
+    global USER_CACHE_DIR
+    USER_CACHE_DIR = parent_dirname
 
 
 def get_cache_dir():
-    return LOCAL_ARCHIVE_DIR
+    return os.path.join(USER_CACHE_DIR, CACHE_PREFIX)
 
 
 def get_resolution(config):
@@ -65,7 +67,7 @@ def get_orographic_forcing_directory(config):
     """Return the string path of the orographic forcing directory specified by a config dictionary.
     """
     resolution = get_resolution(config)
-    dirname = os.path.join(LOCAL_ARCHIVE_DIR, f'orographic_data/{resolution}')
+    dirname = os.path.join(get_cache_dir(), f'orographic_data/{resolution}')
     if not os.path.isdir(dirname):
         valid_options = os.listdir(os.path.join(get_cache_dir(), 'orographic_data'))
         raise ConfigError(f'resolution {resolution} is unsupported; valid options are {valid_options}')
