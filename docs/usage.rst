@@ -120,6 +120,12 @@ container based on the given image name. This assumes the `fv3config` package an
 `fv3gfs` python wrapper are installed inside the container, along with any
 dependencies.
 
+`fv3run` can also be accessed from within Python, using `fv3config.run`. This has the
+same interface as the command-line `fv3run`, but also gives the option of using
+a config dictionary instead of a yaml file location.
+
+.. autofunction:: fv3config.run
+
 Restart runs
 ------------
 
