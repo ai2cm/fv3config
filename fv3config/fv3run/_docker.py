@@ -1,11 +1,12 @@
 import tempfile
 import subprocess
 import os
-from ._gcloud import _is_gcloud_path
+from .gcloud import _is_gcloud_path
 from .._config import _write_config_dict
+from ._native import CONFIG_OUT_FILENAME
 
 DOCKER_OUTDIR = '/outdir'
-DOCKER_CONFIG_LOCATION = '/fv3config.yaml'
+DOCKER_CONFIG_LOCATION = os.path.join('/', CONFIG_OUT_FILENAME)
 DOCKER_RUNFILE = '/runfile.py'
 DOCKER_COMMAND = ['docker', 'run']
 DOCKER_KEYFILE = '/gcs_key.json'

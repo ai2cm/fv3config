@@ -7,11 +7,11 @@ import tempfile
 import warnings
 import yaml
 from .._config import write_run_directory, _get_n_processes, _write_config_dict
-from ._gcloud import _copy_directory, _copy_file
+from .gcloud import _copy_directory, _copy_file
 
 STDOUT_FILENAME = 'stdout.log'
 STDERR_FILENAME = 'stderr.log'
-CONFIG_OUT_FILENAME = 'fv3config.yaml'
+CONFIG_OUT_FILENAME = 'fv3config.yml'
 
 
 def _run_native(config_dict_or_location, outdir, runfile=None):
