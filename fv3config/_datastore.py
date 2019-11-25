@@ -3,7 +3,6 @@ import tarfile
 import shutil
 import logging
 import tempfile
-from subprocess import check_call
 import requests
 import appdirs
 from ._exceptions import ConfigError, DataMissingError
@@ -88,50 +87,6 @@ def get_initial_conditions_directory(config):
     if 'initial_conditions' not in config:
         raise ConfigError('config dictionary must have an \'initial_conditions\' key')
     return resolve_option(config['initial_conditions'], INITIAL_CONDITIONS_OPTIONS_DICT)
-
-
-def link_or_copy_directory(source_path, target_path):
-    """Symbolically link or gsutil copy files in a source path to a target path"""
-    if is_gsbucket_url(source_path):
-        if gsutil_is_installed():
-            check_call(['gsutil', '-m', 'cp', '-r', os.path.join(source_path, '*'), target_path])
-        else:
-            logging.warning(f'Optional dependency gsutil not found. Files in {source_path} will not be copied to {target_path}')
-    else:
-        link_directory(source_path, target_path)
-
-
-def link_directory(source_path, target_path):
-    """Recursively symbolic link the files in a source path into a target path.
-    """
-    for base_filename in os.listdir(source_path):
-        source_item = os.path.join(source_path, base_filename)
-        target_item = os.path.join(target_path, base_filename)
-        if os.path.isfile(source_item):
-            if os.path.exists(target_item):
-                os.remove(target_item)
-            os.symlink(source_item, target_item)
-        elif os.path.isdir(source_item):
-            if not os.path.isdir(target_item):
-                os.mkdir(target_item)
-            link_directory(source_item, target_item)
-
-
-def copy_file(source_path, target_path):
-    if is_gsbucket_url(source_path):
-        if gsutil_is_installed():
-            check_call(['gsutil', 'cp', source_path, target_path])
-        else:
-            logging.warning(f'Optional dependency gsutil not found. File {source_path} will not be copied to {target_path}')
-    else:
-        shutil.copy(source_path, target_path)
-
-
-def gsutil_is_installed():
-    if shutil.which('gsutil') is None:
-        return False
-    else:
-        return True
 
 
 def check_if_data_is_downloaded():
