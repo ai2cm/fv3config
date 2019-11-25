@@ -87,6 +87,18 @@ Running the model with fv3run
 -----------------------------
 
 `fv3config` provides a tool for running the python-wrapped model called `fv3run`.
+For example, you can run the default configuration using first::
+
+    $ docker pull us.gcr.io/vcm-ml/fv3gfs-python
+
+to acquire the docker image for the python wrapper, followed by::
+
+    >>> import fv3config
+    >>> config = fv3config.get_default_config
+    >>> fv3config.run(config, 'outdir', docker_image='us.gcr.io/vcm-ml/fv3gfs-python')
+
+The python config can be passed as either a configuration dictionary, or the name of
+a yaml file. There is also a bash interface for running from yaml configuration.
 
 .. code-block:: bash
 
@@ -120,9 +132,7 @@ container based on the given image name. This assumes the ``fv3config`` package 
 ``fv3gfs`` python wrapper are installed inside the container, along with any
 dependencies.
 
-``fv3run`` can also be accessed from within Python, using :py:func:`fv3config.run`. This has the
-same interface as the command-line ``fv3run``, but also gives the option of using
-a config dictionary instead of a yaml file location.
+The python interface is very similar to the command-line interface.
 
 .. autofunction:: fv3config.run
 
