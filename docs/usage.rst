@@ -94,7 +94,7 @@ For example, you can run the default configuration using first::
 to acquire the docker image for the python wrapper, followed by::
 
     >>> import fv3config
-    >>> config = fv3config.get_default_config
+    >>> config = fv3config.get_default_config()
     >>> fv3config.run(config, 'outdir', docker_image='us.gcr.io/vcm-ml/fv3gfs-python')
 
 The python config can be passed as either a configuration dictionary, or the name of
