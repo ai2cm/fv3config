@@ -13,44 +13,6 @@ JOB_NAMESPACE = "fv3run"
 ACTIVE_JOB_LIST = []
 COMPLETED_JOB_LIST = []
 
-    """
-apiVersion: 'batch/v1'
-kind: 'Job'
-metadata:
-  name: '$JOBNAME'
-  labels:
-    run: '$ITERATION'
-spec:
-  ttlSecondsAfterFinished: 100
-  backoffLimit: 0
-  completions: 1
-  template:
-    metadata:
-      labels:
-        run: '$ITERATION'
-    spec:
-      volumes:
-      - name: my-secret-vol
-        secret:
-          secretName: my-secret
-      containers:
-      - name: 'snakemake'
-        image: 'us.gcr.io/vcm-ml/fv3net'
-        env:
-          - name: GOOGLE_APPLICATION_CREDENTIALS
-            value: /secret/key.json
-        command: ["python3",  "-m", "fv3net.pipelines.rerun-fv3", "$TIMESTEP"]
-        resources:
-          requests:
-            memory: "3.6G"
-          limits:
-            memory: "3.6G"
-        volumeMounts:
-          - name: my-secret-vol
-            mountPath: "/secret/"
-      restartPolicy: 'Never'
-      """
-
 
 def _ensure_is_remote(location, description):
     if not _is_gcloud_path(location):
