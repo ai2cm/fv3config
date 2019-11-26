@@ -14,7 +14,20 @@ STDERR_FILENAME = 'stderr.log'
 CONFIG_OUT_FILENAME = 'fv3config.yml'
 
 
-def _run_native(config_dict_or_location, outdir, runfile=None):
+def run_native(config_dict_or_location, outdir, runfile=None):
+    """Run the FV3GFS model with the given configuration.
+
+    Copies the resulting directory to a target location. Will use the Google cloud
+    storage key at ``$GOOGLE_APPLICATION_CREDENTIALS`` by default. Requires the
+    fv3gfs-python package.
+
+    Args:
+        config_dict_or_location (dict or str): a configuration dictionary, or a
+            location (local or on Google cloud storage) of a yaml file containing
+            a configuration dictionary
+        outdir (str): location to copy the resulting run directory
+        runfile (str, optional): Python model script to use in place of the default.
+    """
     _set_stacksize_unlimited()
     with _temporary_directory(outdir) as localdir:
         config_out_filename = os.path.join(localdir, CONFIG_OUT_FILENAME)

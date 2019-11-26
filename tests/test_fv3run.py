@@ -58,14 +58,14 @@ def docker_run(config_dict, outdir):
 
 
 def config_dict_module_run(config_dict, outdir):
-    fv3config.run(config_dict, outdir, runfile=MOCK_RUNSCRIPT)
+    fv3config.run_native(config_dict, outdir, runfile=MOCK_RUNSCRIPT)
 
 
 def config_dict_filename_run(config_dict, outdir):
     with tempfile.NamedTemporaryFile(mode='w') as config_file:
         config_file.write(yaml.dump(config_dict))
         config_file.flush()
-        fv3config.run(config_file.name, outdir, runfile=MOCK_RUNSCRIPT)
+        fv3config.run_native(config_file.name, outdir, runfile=MOCK_RUNSCRIPT)
 
 
 def count_executed_ranks(rundir):
@@ -121,9 +121,9 @@ def test_fv3run_docker():
     outdir = os.path.join(TEST_DIR, 'outdir')
 
     with cleaned_up_directory(outdir):
-        fv3config.run(
-            fv3config.get_default_config(), outdir,
-            runfile=MOCK_RUNSCRIPT, docker_image=DOCKER_IMAGE_NAME
+        fv3config.run_docker(
+            fv3config.get_default_config(), outdir, DOCKER_IMAGE_NAME,
+            runfile=MOCK_RUNSCRIPT
         )
         check_run_directory(outdir)
 

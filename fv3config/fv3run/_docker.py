@@ -13,8 +13,28 @@ DOCKER_KEYFILE = '/gcs_key.json'
 FV3RUN_MODULE = 'fv3config.fv3run'
 
 
-def _run_in_docker(
-        config_dict_or_location, outdir, dockerimage, runfile=None, keyfile=None):
+def run_docker(
+        config_dict_or_location, outdir, docker_image, runfile=None, keyfile=None):
+    """Run the FV3GFS model in a docker container with the given configuration.
+
+    Copies the resulting directory to a target location. Will use the Google cloud
+    storage key at ``$GOOGLE_APPLICATION_CREDENTIALS`` by default. Requires the
+    fv3gfs-python package and fv3config to be installed in the docker image.
+
+    Args:
+        config_dict_or_location (dict or str): a configuration dictionary, or a
+            location (local or on Google cloud storage) of a yaml file containing
+            a configuration dictionary
+        outdir (str): location to copy the resulting run directory
+        runfile (str, optional): Python model script to use in place of the default.
+        docker_image (str, optional): If given, run this command inside a container
+            using this docker image. Image must have this package and fv3gfs-python
+            installed.
+        keyfile (str, optional): location of a Google cloud storage key to use
+            inside the docker container
+    """
+    if keyfile is None:
+        keyfile = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', None)
     if not _is_gcloud_path(outdir):
         os.makedirs(outdir, exist_ok=True)
     with tempfile.NamedTemporaryFile(suffix='.yaml') as config_tempfile:
@@ -29,7 +49,7 @@ def _run_in_docker(
         python_command = [
             'python3', '-m', FV3RUN_MODULE, config_location, DOCKER_OUTDIR]
         subprocess.check_call(
-            DOCKER_COMMAND + bind_mount_args + docker_args + [dockerimage] +
+            DOCKER_COMMAND + bind_mount_args + docker_args + [docker_image] +
             python_command + python_args)
 
 

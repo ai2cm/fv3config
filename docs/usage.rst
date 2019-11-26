@@ -95,7 +95,11 @@ to acquire the docker image for the python wrapper, followed by::
 
     >>> import fv3config
     >>> config = fv3config.get_default_config()
-    >>> fv3config.run(config, 'outdir', docker_image='us.gcr.io/vcm-ml/fv3gfs-python')
+    >>> fv3config.run_docker(config, 'outdir', docker_image='us.gcr.io/vcm-ml/fv3gfs-python')
+
+If the ``fv3gfs-python`` package is installed natively, the model could be run using::
+
+    >>> fv3config.run_native(config, 'outdir')
 
 The python config can be passed as either a configuration dictionary, or the name of
 a yaml file. There is also a bash interface for running from yaml configuration.
@@ -132,9 +136,11 @@ container based on the given image name. This assumes the ``fv3config`` package 
 ``fv3gfs`` python wrapper are installed inside the container, along with any
 dependencies.
 
-The python interface is very similar to the command-line interface.
+The python interface is very similar to the command-line interface, but is split into
+separate functions based on where the model is being run.
 
-.. autofunction:: fv3config.run
+.. autofunction:: fv3config.run_native
+.. autofunction:: fv3config.run_docker
 
 Specifying individual files
 ---------------------------
