@@ -99,8 +99,6 @@ def check_run_directory(dirname):
     [config_dict_module_run, config_dict_filename_run]
 )
 def test_fv3run_with_mocked_subprocess(runner):
-    if runner == docker_run and not DOCKER_ENABLED:
-        pytest.skip(f'docker or docker image {DOCKER_IMAGE_NAME} is not available')
     fv3config.ensure_data_is_downloaded()
     outdir = os.path.join(TEST_DIR, 'outdir')
 
@@ -113,11 +111,13 @@ def test_fv3run_with_mocked_subprocess(runner):
         assert config == fv3config.get_default_config()
 
 
+@pytest.mark.skipif(
+    not DOCKER_ENABLED,
+    reason=f'docker or docker image {DOCKER_IMAGE_NAME} is not available'
+)
 def test_fv3run_docker():
     """End-to-end test of running a mock runscript inside a docker container.
     """
-    if not DOCKER_ENABLED:
-        pytest.skip(f'docker or docker image {DOCKER_IMAGE_NAME} is not available')
     outdir = os.path.join(TEST_DIR, 'outdir')
 
     with cleaned_up_directory(outdir):
@@ -204,12 +204,12 @@ def test_get_config_args(
     [
         [
             'relative/',
-            ['--user', USER_UID_GID],
+            ['--rm', '--user', USER_UID_GID],
             ['-v', f"{os.path.join(os.getcwd(), 'relative')}:/outdir"],
         ],
         [
             '/abs/path/',
-            ['--user', USER_UID_GID],
+            ['--rm', '--user', USER_UID_GID],
             ['-v', f"/abs/path:/outdir"],
         ],
     ])

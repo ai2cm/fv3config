@@ -60,7 +60,7 @@ def _get_config_args(config_dict_or_location, config_tempfile, bind_mount_args):
 
 def _get_docker_args(docker_args, bind_mount_args, outdir):
     bind_mount_args += ['-v', f"{os.path.abspath(outdir)}:{DOCKER_OUTDIR}"]
-    docker_args += ['--user', f'{os.getuid()}:{os.getgid()}']
+    docker_args += ['--rm', '--user', f'{os.getuid()}:{os.getgid()}']
 
 
 def _get_credentials_args(keyfile, docker_args, bind_mount_args):
