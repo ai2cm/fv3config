@@ -66,7 +66,7 @@ def _get_runfile_args(runfile, bind_mount_args, python_args):
             python_args += ['--runfile', DOCKER_RUNFILE]
 
 
-def _get_python_command(config_location, outdir=None):
+def _get_python_command(config_location, outdir):
     return ['python3', '-m', FV3RUN_MODULE, config_location, outdir]
 
 

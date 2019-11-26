@@ -1,17 +1,15 @@
 import os
 import copy
 from .._exceptions import DelayedImportError
-from ._gcloud import _is_gcloud_path
+from .gcloud import _is_gcloud_path
 from ._docker import _get_runfile_args, _get_python_command
 
 try:
     import kubernetes as kube
-except ImportError:
-    kube = DelayedImportError('kubernetes is not installed')
+except ImportError as err:
+    kube = DelayedImportError(err)
 
-JOB_NAMESPACE = "fv3run"
-ACTIVE_JOB_LIST = []
-COMPLETED_JOB_LIST = []
+JOB_NAMESPACE = "kubeflow"
 
 
 def _ensure_is_remote(location, description):
@@ -22,27 +20,14 @@ def _ensure_is_remote(location, description):
         )
 
 
-def get_active_jobs():
-    _update_job_lists()
-    return copy.copy(ACTIVE_JOB_LIST)
-
-
-def get_completed_jobs():
-    _update_job_lists()
-    return copy.copy(COMPLETED_JOB_LIST)
-
-
-def _update_job_lists():
-    completed_jobs = [job for job in ACTIVE_JOB_LIST if job.active == 0]
-    completed_jobs.sort(key=lambda x: x.completion_time)
-    COMPLETED_JOB_LIST.extend(completed_jobs)
-    for job in completed_jobs:
-        ACTIVE_JOB_LIST.remove(job)
-
-
 def run_kubernetes(
         config_location, outdir, docker_image, runfile=None, jobname=None,
-        memory_gb=3.6, memory_gb_limit=None, cpu_count=1, secret_name='my-secret'):
+        memory_gb=3.6, memory_gb_limit=None, cpu_count=1, gcp_secret=None):
+    """[summary]
+
+    [description]
+    gcp_secret (str, optional): the name of a secret containing a GCP key named user-gcp-sa.json
+    """
     for location, description in (
             (config_location, 'yaml configuration'),
             (outdir, 'output directory'),
@@ -52,23 +37,24 @@ def run_kubernetes(
         memory_gb_limit = memory_gb
     kube.config.load_kube_config()
     api = kube.client.BatchV1Api()
-    job = _create_job_object(config_location, outdir, docker_image, runfile, jobname, memory_gb, memory_gb_limit, cpu_count, secret_name)
+    job = _create_job_object(
+        config_location, outdir, docker_image, runfile, jobname,
+        memory_gb, memory_gb_limit, cpu_count, gcp_secret)
     api.create_namespaced_job(body=job, namespace=JOB_NAMESPACE)
-    ACTIVE_JOB_LIST.append(job)
 
 
-def _get_kube_command(config_location, runfile=None):
+def _get_kube_command(config_location, outdir, runfile=None):
     bind_mount_args = []
     python_args = []
     _get_runfile_args(runfile, bind_mount_args, python_args)
-    python_command = _get_python_command(config_location)
+    python_command = _get_python_command(config_location, outdir)
     assert bind_mount_args == [], bind_mount_args
     return python_command + python_args
 
 
 def _create_job_object(
         config_location, outdir, docker_image, runfile, jobname,
-        memory_gb, memory_gb_limit, cpu_count, secret_name):
+        memory_gb, memory_gb_limit, cpu_count, gcp_secret=None):
     resource_requirements = kube.client.V1ResourceRequirements(
         limits={
             'memory': f'{memory_gb_limit:.1f}G',
@@ -84,22 +70,34 @@ def _create_job_object(
         command=_get_kube_command(config_location, outdir, runfile),
         resources=resource_requirements,
         volume_mounts=[
-            kube.client.V1VolumeMount(mount_path='/secret/', name='my-secret-vol'),
+            kube.client.V1VolumeMount(
+                mount_path='/secret/gcp-credentials',
+                name='gcp-credentials-user-gcp-sa'
+            ),
         ],
-        env=[
+    )
+    if gcp_secret is not None:
+        container.env = [
             kube.client.V1EnvVar(
-                name=GOOGLE_APPLICATION_CREDENTIALS, value='/secret/key.json'
+                name='GOOGLE_APPLICATION_CREDENTIALS',
+                value='/secret/gcp-credentials/user-gcp-sa.json',
+            ),
+            kube.client.V1EnvVar(
+                name='CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE',
+                value='/secret/gcp-credentials/user-gcp-sa.json',
             )
         ]
-    )
-    volume = kube.client.V1Volume(
-        name='my-secret-vol',
-        secret=kube.client.V1SecretVolumeSource(
-            secret_name=secret_name
+        volume = kube.client.V1Volume(
+            name='gcp-credentials-user-gcp-sa',
+            secret=kube.client.V1SecretVolumeSource(
+                secret_name=gcp_secret
+            )
         )
-    )
+        volume_list = [volume]
+    else:
+        volume_list = []
     pod_spec = kube.client.V1PodSpec(
-        restart_policy="Never", containers=[container], volumes=[volume]
+        restart_policy="Never", containers=[container], volumes=volume_list,
     )
     template_spec = kube.client.V1PodTemplateSpec(
         metadata=kube.client.V1ObjectMeta(labels={"app": 'fv3run'}),

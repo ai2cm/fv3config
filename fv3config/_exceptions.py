@@ -14,11 +14,11 @@ class ConfigError(ValueError):
 
 class DelayedImportError(object):
 
-    def __init__(self, message):
-        self.message = message
+    def __init__(self, err):
+        self.err = err
 
-    def __getattr__(self):
-        raise ImportError(self.message)
+    def __getattr__(self, name):
+        raise self.err
 
 
 class DependencyError(Exception):
