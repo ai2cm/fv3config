@@ -1,11 +1,11 @@
 import unittest
+import unittest.mock
 import os
 import shutil
 import tempfile
 import contextlib
 import collections
 import subprocess
-from subprocess import check_call as original_check_call
 import pytest
 import yaml
 import fv3config
@@ -58,14 +58,14 @@ def docker_run(config_dict, outdir):
 
 
 def config_dict_module_run(config_dict, outdir):
-    fv3config.run(config_dict, outdir, runfile=MOCK_RUNSCRIPT)
+    fv3config.run_native(config_dict, outdir, runfile=MOCK_RUNSCRIPT)
 
 
 def config_dict_filename_run(config_dict, outdir):
     with tempfile.NamedTemporaryFile(mode='w') as config_file:
         config_file.write(yaml.dump(config_dict))
         config_file.flush()
-        fv3config.run(config_file.name, outdir, runfile=MOCK_RUNSCRIPT)
+        fv3config.run_native(config_file.name, outdir, runfile=MOCK_RUNSCRIPT)
 
 
 def count_executed_ranks(rundir):
@@ -77,23 +77,6 @@ def count_executed_ranks(rundir):
 
 
 @contextlib.contextmanager
-def mocked_check_call():
-    call_list = []
-
-    def mock_check_call(arg_list, *args, **kwargs):
-        call_list.append(arg_list)
-        if arg_list[0] == 'mpirun':
-            pass
-        else:
-            original_check_call(arg_list, *args, **kwargs)
-    subprocess.check_call = mock_check_call
-    try:
-        yield call_list
-    finally:
-        subprocess.check_call = original_check_call
-
-
-@contextlib.contextmanager
 def cleaned_up_directory(dirname):
     try:
         yield
@@ -102,19 +85,47 @@ def cleaned_up_directory(dirname):
             shutil.rmtree(dirname)
 
 
+def check_run_directory(dirname):
+    filenames = os.listdir(dirname)
+    assert 'stdout.log' in filenames
+    assert 'stderr.log' in filenames
+    assert count_executed_ranks(dirname) == 6
+    assert 'input.nml' in filenames
+    assert 'INPUT' in filenames
+
+
 @pytest.mark.parametrize(
     "runner",
-    [docker_run, config_dict_module_run, config_dict_filename_run]
+    [config_dict_module_run, config_dict_filename_run]
 )
-def test_fv3run_without_mpi(runner):
-    # the test for docker_run *will* use MPI inside the docker container
-    # we're only making it so subprocess calls of mpirun don't execute
-    if runner == docker_run and not DOCKER_ENABLED:
-        pytest.skip(f'docker or docker image {DOCKER_IMAGE_NAME} is not available')
+def test_fv3run_with_mocked_subprocess(runner):
     fv3config.ensure_data_is_downloaded()
     outdir = os.path.join(TEST_DIR, 'outdir')
-    with mocked_check_call(), cleaned_up_directory(outdir):
+
+    with unittest.mock.patch("subprocess.check_call") as mock, cleaned_up_directory(outdir):
         runner(fv3config.get_default_config(), outdir)
+        assert mock.called
+        assert mock.call_args[0] == ([
+            'mpirun', '-n', '6', 'python3', '-m', 'mpi4py', 'mock_runscript.py'],)
+        config = yaml.safe_load(open(os.path.join(outdir, 'fv3config.yml'), 'r'))
+        assert config == fv3config.get_default_config()
+
+
+@pytest.mark.skipif(
+    not DOCKER_ENABLED,
+    reason=f'docker or docker image {DOCKER_IMAGE_NAME} is not available'
+)
+def test_fv3run_docker():
+    """End-to-end test of running a mock runscript inside a docker container.
+    """
+    outdir = os.path.join(TEST_DIR, 'outdir')
+
+    with cleaned_up_directory(outdir):
+        fv3config.run_docker(
+            fv3config.get_default_config(), outdir, DOCKER_IMAGE_NAME,
+            runfile=MOCK_RUNSCRIPT
+        )
+        check_run_directory(outdir)
 
 
 @pytest.mark.skipif(not MPI_ENABLED, reason='mpirun must be available')
@@ -123,13 +134,11 @@ def test_fv3run_without_mpi(runner):
     [subprocess_run, config_dict_module_run, config_dict_filename_run]
 )
 def test_fv3run_with_mpi(runner):
-    # docker_run does not need MPI outside the docker container to test, so it's
-    # tested in the "without_mpi" tests.
     fv3config.ensure_data_is_downloaded()
     outdir = os.path.join(TEST_DIR, 'outdir')
     with cleaned_up_directory(outdir):
         runner(fv3config.get_default_config(), outdir)
-        assert count_executed_ranks(outdir) == 6
+        check_run_directory(outdir)
 
 
 @pytest.mark.parametrize(
@@ -166,18 +175,18 @@ def test_get_runfile_args(runfile, expected_bind_mount_args, expected_python_arg
             fv3config.get_default_config(),
             MockTempfile(name='/tmp/file'),
             fv3config.fv3run._docker.DOCKER_CONFIG_LOCATION,
-            ['-v', '/tmp/file:/fv3config.yaml']
+            ['-v', '/tmp/file:/fv3config.yml']
         ],
         [
-            '/absolute/path/fv3config.yaml',
+            '/absolute/path/fv3config.yml',
             MockTempfile(name='/tmp/file'),
             fv3config.fv3run._docker.DOCKER_CONFIG_LOCATION,
-            ['-v', '/absolute/path/fv3config.yaml:/fv3config.yaml']
+            ['-v', '/absolute/path/fv3config.yml:/fv3config.yml']
         ],
         [
-            'gs://bucket-name/fv3config.yaml',
+            'gs://bucket-name/fv3config.yml',
             MockTempfile(name='/tmp/file'),
-            'gs://bucket-name/fv3config.yaml',
+            'gs://bucket-name/fv3config.yml',
             []
         ]
     ])
@@ -195,12 +204,12 @@ def test_get_config_args(
     [
         [
             'relative/',
-            ['--user', USER_UID_GID],
+            ['--rm', '--user', USER_UID_GID],
             ['-v', f"{os.path.join(os.getcwd(), 'relative')}:/outdir"],
         ],
         [
             '/abs/path/',
-            ['--user', USER_UID_GID],
+            ['--rm', '--user', USER_UID_GID],
             ['-v', f"/abs/path:/outdir"],
         ],
     ])

@@ -1,2 +1,4 @@
 from ._run import run
-from ._kubernetes import run_on_kubernetes
+from ._kubernetes import run_kubernetes
+from ._docker import run_docker
+from ._native import run_native

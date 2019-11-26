@@ -19,3 +19,8 @@ class DelayedImportError(object):
 
     def __getattr__(self):
         raise ImportError(self.message)
+
+
+class DependencyError(Exception):
+    """Raised when code tries to use an optional dependency that is not installed"""
+    pass

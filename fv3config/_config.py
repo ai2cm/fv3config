@@ -3,16 +3,9 @@ import os
 import f90nml
 import yaml
 from ._exceptions import InvalidFileError, ConfigError
-from ._datastore import (
-    get_base_forcing_directory, get_orographic_forcing_directory,
-    get_initial_conditions_directory, link_or_copy_directory,
-    check_if_data_is_downloaded, copy_file
-)
-from ._tables import (
-    get_field_table_filename, get_diag_table_filename,
-    get_data_table_filename, update_diag_table_for_config,
-    get_current_date_from_config
-)
+from ._datastore import check_if_data_is_downloaded
+from ._tables import update_diag_table_for_config, get_current_date_from_config
+from ._asset_list import config_to_asset_list, write_asset_list
 
 package_directory = os.path.dirname(os.path.realpath(__file__))
 
@@ -120,27 +113,12 @@ def write_run_directory(config, target_directory):
 
     Args:
         config (dict): a configuration dictionary
-        target_directory (str): target directory, will be created if it already exists
+        target_directory (str): target directory, will be created if it does not exist
     """
     check_if_data_is_downloaded()
-    input_directory = os.path.join(target_directory, 'INPUT')
-    restart_directory = os.path.join(target_directory, 'RESTART')
-    initial_conditions_dir = get_initial_conditions_directory(config)
-    base_forcing_dir = get_base_forcing_directory(config)
-    orographic_forcing_dir = get_orographic_forcing_directory(config)
-    field_table_filename = get_field_table_filename(config)
-    diag_table_filename = get_diag_table_filename(config)
-    data_table_filename = get_data_table_filename(config)
-    for directory in [target_directory, input_directory, restart_directory]:
-        if not os.path.isdir(directory):
-            os.mkdir(directory)
-    link_or_copy_directory(base_forcing_dir, target_directory)
-    link_or_copy_directory(orographic_forcing_dir, input_directory)
-    link_or_copy_directory(initial_conditions_dir, input_directory)
-    copy_file(field_table_filename, os.path.join(target_directory, 'field_table'))
-    copy_file(diag_table_filename, os.path.join(target_directory, 'diag_table'))
-    copy_file(data_table_filename, os.path.join(target_directory, 'data_table'))
-    current_date = get_current_date_from_config(config, input_directory)
+    asset_list = config_to_asset_list(config)
+    write_asset_list(asset_list, target_directory)
+    current_date = get_current_date_from_config(config, os.path.join(target_directory, 'INPUT'))
     update_diag_table_for_config(config, current_date, os.path.join(target_directory, 'diag_table'))
     config_to_namelist(config, os.path.join(target_directory, 'input.nml'))
 

@@ -87,6 +87,22 @@ Running the model with fv3run
 -----------------------------
 
 `fv3config` provides a tool for running the python-wrapped model called `fv3run`.
+For example, you can run the default configuration using first::
+
+    $ docker pull us.gcr.io/vcm-ml/fv3gfs-python
+
+to acquire the docker image for the python wrapper, followed by::
+
+    >>> import fv3config
+    >>> config = fv3config.get_default_config()
+    >>> fv3config.run_docker(config, 'outdir', docker_image='us.gcr.io/vcm-ml/fv3gfs-python')
+
+If the ``fv3gfs-python`` package is installed natively, the model could be run using::
+
+    >>> fv3config.run_native(config, 'outdir')
+
+The python config can be passed as either a configuration dictionary, or the name of
+a yaml file. There is also a bash interface for running from yaml configuration.
 
 .. code-block:: bash
 
@@ -120,11 +136,34 @@ container based on the given image name. This assumes the ``fv3config`` package 
 ``fv3gfs`` python wrapper are installed inside the container, along with any
 dependencies.
 
-``fv3run`` can also be accessed from within Python, using :py:func:`fv3config.run`. This has the
-same interface as the command-line ``fv3run``, but also gives the option of using
-a config dictionary instead of a yaml file location.
+The python interface is very similar to the command-line interface, but is split into
+separate functions based on where the model is being run.
 
-.. autofunction:: fv3config.run
+.. autofunction:: fv3config.run_native
+.. autofunction:: fv3config.run_docker
+
+Specifying individual files
+---------------------------
+
+More fine-grained control of the files that are written to the run-directory is possible using the "asset"
+representation of run-directory files. An asset is a dictionary that knows about one files's source
+location/filename, target filename, target location within the run directory and whether that file is copied or linked.
+Asset dicts can be generated with the helper function :meth:`fv3config.get_asset_dict`. For example::
+
+    >>> get_asset_dict('/path/to/filedir/', 'sample_file.nc', target_location='INPUT/')
+    {'source_location': '/path/to/filedir/',
+    'source_name': 'sample_file.nc',
+    'target_location': 'INPUT/',
+    'target_name': 'sample_file.nc',
+    'copy_method': 'copy'}
+
+One can set ``config['initial_conditions']`` or ``config['forcing']``
+to a list of assets in order to specify every initial condition or forcing file individually.
+
+One can use a directory to specify the initial conditions or forcing files and replace only a
+subset of the files within the that directory with the optional ``config['patch_files']`` item.
+All assets defined in ``config['patch_files']`` will overwrite any files specified in the
+initial conditions or forcing if they have the same target location and name.
 
 Restart runs
 ------------
@@ -143,3 +182,4 @@ restart initial conditions can be created with::
     config['initial_conditions'] = 'restart_example'
     config = enable_restart(config)
     write_run_directory(config, './rundir')
+

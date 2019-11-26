@@ -40,10 +40,9 @@ def _update_job_lists():
         ACTIVE_JOB_LIST.remove(job)
 
 
-def run_on_kubernetes(
+def run_kubernetes(
         config_location, outdir, docker_image, runfile=None, jobname=None,
-        memory_gb=3.6, memory_gb_limit=None, cpu_count=1, secret_name='my-secret',
-    ):
+        memory_gb=3.6, memory_gb_limit=None, cpu_count=1, secret_name='my-secret'):
     for location, description in (
             (config_location, 'yaml configuration'),
             (outdir, 'output directory'),

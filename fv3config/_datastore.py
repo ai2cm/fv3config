@@ -3,17 +3,16 @@ import tarfile
 import shutil
 import logging
 import tempfile
-from subprocess import check_call
 import requests
 import appdirs
+import subprocess
 from ._exceptions import ConfigError, DataMissingError
 
 if 'FV3CONFIG_CACHE_DIR' in os.environ:
     USER_CACHE_DIR = os.environ['FV3CONFIG_CACHE_DIR']
 else:
     USER_CACHE_DIR = appdirs.user_cache_dir('fv3gfs', 'vulcan')
-    if not os.path.isdir(USER_CACHE_DIR):
-        os.makedirs(USER_CACHE_DIR)
+    os.makedirs(USER_CACHE_DIR, exist_ok=True)
 
 
 ARCHIVE_FILENAME = '2019-10-23-data-for-running-fv3gfs.tar.gz'
@@ -45,7 +44,7 @@ def get_cache_dir():
     return USER_CACHE_DIR
 
 
-def _get_cache_subdir():
+def _get_internal_cache_dir():
     return os.path.join(USER_CACHE_DIR, CACHE_PREFIX)
 
 
@@ -75,9 +74,9 @@ def get_orographic_forcing_directory(config):
     specified by a config dictionary.
     """
     resolution = get_resolution(config)
-    dirname = os.path.join(_get_cache_subdir(), f'orographic_data/{resolution}')
+    dirname = os.path.join(_get_internal_cache_dir(), f'orographic_data/{resolution}')
     if not os.path.isdir(dirname):
-        valid_options = os.listdir(os.path.join(_get_cache_subdir(), 'orographic_data'))
+        valid_options = os.listdir(os.path.join(_get_internal_cache_dir(), 'orographic_data'))
         raise ConfigError(
             f'resolution {resolution} is unsupported; valid options are {valid_options}'
         )
@@ -106,7 +105,7 @@ def link_or_copy_directory(source_path, target_path):
     """Symbolically link or gsutil copy files in a source path to a target path"""
     if is_gsbucket_url(source_path):
         if gsutil_is_installed():
-            check_call([
+            subprocess.check_call([
                 'gsutil', '-m', 'cp', '-r', os.path.join(source_path, '*'), target_path])
         else:
             logging.warning(
@@ -135,7 +134,7 @@ def link_directory(source_path, target_path):
 def copy_file(source_path, target_path):
     if is_gsbucket_url(source_path):
         if gsutil_is_installed():
-            check_call(['gsutil', 'cp', source_path, target_path])
+            subprocess.check_call(['gsutil', 'cp', source_path, target_path])
         else:
             logging.warning(f'Optional dependency gsutil not found. File '
                 f'{source_path} will not be copied to {target_path}')
@@ -149,9 +148,9 @@ def gsutil_is_installed():
     else:
         return True
 
-
 def check_if_data_is_downloaded():
-    if not os.path.isdir(_get_cache_subdir()) or len(os.listdir(_get_cache_subdir())) == 0:
+    dirname = _get_internal_cache_dir()
+    if not os.path.isdir(dirname) or len(os.listdir(dirname)) == 0:
         raise DataMissingError(
             'Required data for running fv3gfs not available. Try '
             'python -m fv3config.download_data or ensure_data_is_downloaded()'
@@ -160,8 +159,8 @@ def check_if_data_is_downloaded():
 
 def ensure_data_is_downloaded():
     """Check of the cached data is present, and if not, download it."""
-    os.makedirs(_get_cache_subdir(), exist_ok=True)
-    if len(os.listdir(_get_cache_subdir())) == 0:
+    os.makedirs(_get_internal_cache_dir(), exist_ok=True)
+    if len(os.listdir(_get_internal_cache_dir())) == 0:
         with tempfile.NamedTemporaryFile(mode='wb') as archive_file:
             download_data_archive(archive_file)
             archive_file.flush()
@@ -170,7 +169,7 @@ def ensure_data_is_downloaded():
 
 def refresh_downloaded_data():
     """Delete the cached data (if present) and re-download it."""
-    shutil.rmtree(_get_cache_subdir())
+    shutil.rmtree(_get_internal_cache_dir())
     ensure_data_is_downloaded()
 
 
@@ -183,14 +182,15 @@ def download_data_archive(target_file):
 
 def extract_data(archive_filename):
     """Extract the downloaded archive, over-writing any data already present."""
-    logging.info('Extracting required data for running fv3gfs to %s', _get_cache_subdir())
+    logging.info(
+        'Extracting required data for running fv3gfs to %s', _get_internal_cache_dir())
     with tarfile.open(archive_filename, mode='r:gz') as f:
         with tempfile.TemporaryDirectory() as tempdir:
             f.extractall(tempdir)
             for name in os.listdir(os.path.join(tempdir, ARCHIVE_FILENAME_ROOT)):
                 shutil.move(
                     os.path.join(tempdir, ARCHIVE_FILENAME_ROOT, name),
-                    _get_cache_subdir()
+                    _get_internal_cache_dir()
                 )
 
 
@@ -225,7 +225,7 @@ def resolve_option(option, built_in_options_dict):
         return option
     else:
         if option in built_in_options_dict:
-            return os.path.join(_get_cache_subdir(), built_in_options_dict[option])
+            return os.path.join(_get_internal_cache_dir(), built_in_options_dict[option])
         else:
             raise ConfigError(
                 f'The provided option {option} is not one of the built in options: '
