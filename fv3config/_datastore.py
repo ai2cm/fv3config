@@ -3,7 +3,6 @@ import tarfile
 import shutil
 import logging
 import tempfile
-from subprocess import check_call
 import requests
 import appdirs
 from ._exceptions import ConfigError, DataMissingError
@@ -147,7 +146,6 @@ def gsutil_is_installed():
         return False
     else:
         return True
-
 
 def check_if_data_is_downloaded():
     if not os.path.isdir(_get_cache_subdir()) or len(os.listdir(_get_cache_subdir())) == 0:
