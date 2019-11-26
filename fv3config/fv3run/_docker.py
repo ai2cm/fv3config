@@ -15,6 +15,8 @@ FV3RUN_MODULE = 'fv3config.fv3run'
 
 def _run_in_docker(
         config_dict_or_location, outdir, dockerimage, runfile=None, keyfile=None):
+    if not _is_gcloud_path(outdir):
+        os.makedirs(outdir, exist_ok=True)
     with tempfile.NamedTemporaryFile(suffix='.yaml') as config_tempfile:
         bind_mount_args = []
         python_args = []
