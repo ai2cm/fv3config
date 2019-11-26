@@ -1,4 +1,5 @@
 import os
+import copy
 from .._exceptions import DelayedImportError
 from ._gcloud import _is_gcloud_path
 from ._docker import _get_runfile_args, _get_python_command
@@ -7,6 +8,11 @@ try:
     import kubernetes as kube
 except ImportError:
     kube = DelayedImportError('kubernetes is not installed')
+
+JOB_NAMESPACE = "fv3run"
+ACTIVE_JOB_LIST = []
+COMPLETED_JOB_LIST = []
+
     """
 apiVersion: 'batch/v1'
 kind: 'Job'
@@ -54,7 +60,25 @@ def _ensure_is_remote(location, description):
         )
 
 
-def _run_on_kubernetes(
+def get_active_jobs():
+    _update_job_lists()
+    return copy.copy(ACTIVE_JOB_LIST)
+
+
+def get_completed_jobs():
+    _update_job_lists()
+    return copy.copy(COMPLETED_JOB_LIST)
+
+
+def _update_job_lists():
+    completed_jobs = [job for job in ACTIVE_JOB_LIST if job.active == 0]
+    completed_jobs.sort(key=lambda x: x.completion_time)
+    COMPLETED_JOB_LIST.extend(completed_jobs)
+    for job in completed_jobs:
+        ACTIVE_JOB_LIST.remove(job)
+
+
+def run_on_kubernetes(
         config_location, outdir, docker_image, runfile=None, jobname=None,
         memory_gb=3.6, memory_gb_limit=None, cpu_count=1, secret_name='my-secret',
     ):
@@ -68,21 +92,8 @@ def _run_on_kubernetes(
     kube.config.load_kube_config()
     api = kube.client.BatchV1Api()
     job = _create_job_object(config_location, outdir, docker_image, runfile, jobname, memory_gb, memory_gb_limit, cpu_count, secret_name)
-    api.create_namespaced_job(body=job, namespace="default")
-    # with tempfile.NamedTemporaryFile(suffix='.yaml') as config_tempfile:
-    #     bind_mount_args = []
-    #     python_args = []
-    #     docker_args = []
-    #     config_location = _get_config_args(
-    #         config_dict_or_location, config_tempfile, bind_mount_args)
-    #     _get_docker_args(docker_args, bind_mount_args, outdir)
-    #     _get_credentials_args(keyfile, docker_args, bind_mount_args)
-    #     _get_runfile_args(runfile, bind_mount_args, python_args)
-    #     python_command = [
-    #         'python3', '-m', FV3RUN_MODULE, config_location, DOCKER_OUTDIR]
-    #     subprocess.check_call(
-    #         DOCKER_COMMAND + bind_mount_args + docker_args + [docker_image] +
-    #         python_command + python_args)
+    api.create_namespaced_job(body=job, namespace=JOB_NAMESPACE)
+    ACTIVE_JOB_LIST.append(job)
 
 
 def _get_kube_command(config_location, runfile=None):
@@ -144,7 +155,6 @@ def _create_job_object(
         kind="Job",
         metadata=kube.client.V1ObjectMeta(
             name=jobname,
-            labels={'run': }
         ),
         spec=job_spec,
     )
