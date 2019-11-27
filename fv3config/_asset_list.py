@@ -10,20 +10,7 @@ from ._tables import (
     get_data_table_filename, get_diag_table_filename, get_field_table_filename
 )
 from ._exceptions import ConfigError, DelayedImportError
-from fsspec.implementations.local import LocalFileSystem
-
-try:
-    import gcsfs
-except ImportError as err:
-    gcsfs = DelayedImportError(err)
-
-LOCAL_FS = LocalFileSystem()
-
-
-def _get_gcloud_project():
-    # import here because this is an optional dependency
-    import google.auth
-    return os.environ.get(google.auth.environment_vars.PROJECT)
+from . import gcloud
 
 
 def is_dict_or_list(option):
@@ -116,10 +103,6 @@ def get_asset_dict(source_location, source_name, target_location='',
     return asset
 
 
-def _get_gcloud_fs():
-    return gcsfs.GCSFileSystem(project=_get_gcloud_project())
-
-
 def asset_list_from_path(location, target_location='', copy_method='copy'):
     """Return asset_list from all files within a given path.
 
@@ -134,11 +117,13 @@ def asset_list_from_path(location, target_location='', copy_method='copy'):
     Returns:
         list: a list of asset dictionaries
         """
-    if is_gsbucket_url(location):
+    fs = gcloud._get_fs(location)
+    if gcloud._is_gcloud_path(location):
         copy_method = 'copy'
-        fs = _get_gcloud_fs()
+        prefix = 'gs://'
     else:
         fs = LOCAL_FS
+        prefix = ''
     asset_list = []
     path_list = fs.walk(location)
     for dirname, _, files in path_list:
@@ -149,7 +134,7 @@ def asset_list_from_path(location, target_location='', copy_method='copy'):
         for basename in files:
             asset_list.append(
                 get_asset_dict(
-                    dirname,
+                    prefix + dirname,
                     basename,
                     target_location=subdir_target_location,
                     copy_method=copy_method,
@@ -233,6 +218,6 @@ def link_file(source_item, target_item):
 
 def copy_file(source_path, target_path):
     if is_gsbucket_url(source_path):
-        _get_gcloud_fs().get(source_path, target_path)
+        gcloud._get_gcloud_fs().get(source_path, target_path)
     else:
         LOCAL_FS.get(source_path, target_path)

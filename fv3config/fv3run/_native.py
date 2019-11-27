@@ -7,7 +7,7 @@ import tempfile
 import warnings
 import yaml
 from .._config import write_run_directory, _get_n_processes, _write_config_dict
-from .gcloud import _copy_directory, _copy_file
+from .. import gcloud
 
 STDOUT_FILENAME = 'stdout.log'
 STDERR_FILENAME = 'stderr.log'
@@ -37,7 +37,7 @@ def run_native(config_dict_or_location, outdir, runfile=None):
             config_dict_or_location, config_out_filename)
         write_run_directory(config_dict, localdir)
         if runfile is not None:
-            _copy_file(runfile, os.path.join(localdir, os.path.basename(runfile)))
+            gcloud._copy_file(runfile, os.path.join(localdir, os.path.basename(runfile)))
         with _log_exceptions(localdir):
             n_processes = _get_n_processes(config_dict)
             _run_experiment(
@@ -62,8 +62,9 @@ def _temporary_directory(outdir):
             yield tempdir
         finally:
             logging.info('Copying output to %s', outdir)
-            os.makedirs(outdir, exist_ok=True)
-            _copy_directory(tempdir, outdir)
+            if not gcloud.is_gcloud_path(outdir):
+                os.makedirs(outdir, exist_ok=True)
+            gcloud._copy_directory(tempdir, outdir)
 
 
 @contextlib.contextmanager
@@ -115,7 +116,7 @@ def _get_config_dict_and_write(config_dict_or_location, config_out_filename):
 
 
 def _copy_and_load_config_dict(config_location, config_target_location):
-    _copy_file(config_location, config_target_location)
+    gcloud._copy_file(config_location, config_target_location)
     with open(config_target_location, 'r') as infile:
         config_dict = yaml.load(infile.read(), Loader=yaml.SafeLoader)
     return config_dict
