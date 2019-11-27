@@ -76,7 +76,7 @@ In addition to one of the built-in options, a custom ``diag_table`` and ``data_t
 by supplying a path to a file. Custom ``initial_conditions`` and ``forcing`` can be specified by
 supplying a path to a directory that contains the appropriate files. Paths to files or directories on the local
 filesystem must be given as absolute paths. If paths are given that begin with ``gs://`` then ``fv3config`` will
-attempt to download the specified file or files from Google Cloud Storage. For this functionality, ``gsutil``
+attempt to download the specified file or files from Google Cloud Storage. For this functionality, ``gcsfs``
 must be installed and authorized to download from the specified bucket.
 
 The ``namelist`` item is special in that it is explicitly stored in the ``config`` dictionary. For the

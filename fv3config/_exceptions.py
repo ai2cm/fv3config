@@ -13,6 +13,11 @@ class ConfigError(ValueError):
 
 
 class DelayedImportError(object):
+    """Mock module object which raises an ImportError or other user-specified error only
+    once the module's attributes are accesssed.
+
+    Can be used to raise ImportError only if user attempts to use optional dependencies.
+    """
 
     def __init__(self, err):
         self.err = err
@@ -20,7 +25,3 @@ class DelayedImportError(object):
     def __getattr__(self, name):
         raise self.err
 
-
-class DependencyError(Exception):
-    """Raised when code tries to use an optional dependency that is not installed"""
-    pass
