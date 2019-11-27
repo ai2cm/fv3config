@@ -15,6 +15,7 @@ requirements = [
     'f90nml>=1.1.0',
     'appdirs>=1.4.0',
     'requests>=2.22.0',
+    'fsspec>=0.6.0',
 ]
 
 setup_requirements = [
@@ -42,7 +43,7 @@ setup(
         ],
     },
     install_requires=requirements,
-    extras_require={'bucket-access': 'gsutil'},
+    extras_require={'bucket-access': ['gcsfs', 'google-cloud-storage']},
     license="BSD license",
     long_description=readme + '\n\n' + history,
     include_package_data=True,
