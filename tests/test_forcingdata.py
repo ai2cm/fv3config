@@ -70,6 +70,8 @@ additional_required_filenames = [
     'diag_table',
     'field_table',
     'input.nml',
+    'RESTART',
+    'INPUT',
 ]
 
 required_config_keys = [
@@ -101,8 +103,6 @@ class RunDirectory(object):
 
     def __init__(self, directory_path):
         os.mkdir(directory_path)
-        os.mkdir(os.path.join(directory_path, 'INPUT'))
-        os.mkdir(os.path.join(directory_path, 'RESTART'))
         self.directory_path = directory_path
 
     def cleanup(self):
