@@ -74,7 +74,7 @@ FILELIST_WITH_SUBDIR = [
 ASSET_FILE_IN_ROOT_DIR = {
     'source_location': TEST_SOURCE_DIR,
     'source_name': 'file_in_root_dir',
-    'target_location': '.',
+    'target_location': '',
     'target_name': 'file_in_root_dir',
     'copy_method': 'copy',
 }

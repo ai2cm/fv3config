@@ -19,13 +19,12 @@ def _copy_directory(local_source_dir, dest_dir, fs=None):
     """Copy the contents of a local directory to a local or remote directory.
     """
     if fs is None:
-        fs = gcsfs.GCSFileSystem(project=_get_gcloud_project())
+        fs = _get_fs(dest_dir)
     for token in os.listdir(local_source_dir):
         source = os.path.join(os.path.abspath(local_source_dir), token)
-        dest = os.path.join(os.path.abspath(dest_dir), token)
+        dest = os.path.join(dest_dir, token)
         if os.path.isdir(source):
-            if not _is_gcloud_path(dest) and not os.path.isdir(dest):
-                os.mkdir(dest)
+            fs.makedirs(dest, exist_ok=True)
             _copy_directory(source, dest, fs)
         else:
             _copy_file(source, dest, fs)

@@ -62,8 +62,8 @@ def _temporary_directory(outdir):
             yield tempdir
         finally:
             logging.info('Copying output to %s', outdir)
-            if not gcloud.is_gcloud_path(outdir):
-                os.makedirs(outdir, exist_ok=True)
+            fs = gcloud._get_fs(outdir)
+            fs.makedirs(outdir, exist_ok=True)
             gcloud._copy_directory(tempdir, outdir)
 
 

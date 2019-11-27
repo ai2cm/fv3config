@@ -1,15 +1,12 @@
-import logging
 import os
-import shutil
-from subprocess import check_call, Popen, PIPE
 from ._datastore import (
     get_initial_conditions_directory, get_orographic_forcing_directory,
-    get_base_forcing_directory, is_gsbucket_url
+    get_base_forcing_directory
 )
 from ._tables import (
     get_data_table_filename, get_diag_table_filename, get_field_table_filename
 )
-from ._exceptions import ConfigError, DelayedImportError
+from ._exceptions import ConfigError
 from . import gcloud
 
 
@@ -103,6 +100,13 @@ def get_asset_dict(source_location, source_name, target_location='',
     return asset
 
 
+def _without_dot(path):
+    if path == '.':
+        return ''
+    else:
+        return path
+
+
 def asset_list_from_path(location, target_location='', copy_method='copy'):
     """Return asset_list from all files within a given path.
 
@@ -122,12 +126,10 @@ def asset_list_from_path(location, target_location='', copy_method='copy'):
         copy_method = 'copy'
         prefix = 'gs://'
     else:
-        fs = LOCAL_FS
         prefix = ''
     asset_list = []
     path_list = fs.walk(location)
     for dirname, _, files in path_list:
-        print(dirname, files, target_location)
         subdir_target_location = os.path.join(
             target_location, os.path.relpath(dirname, start=location)
         )
@@ -136,7 +138,7 @@ def asset_list_from_path(location, target_location='', copy_method='copy'):
                 get_asset_dict(
                     prefix + dirname,
                     basename,
-                    target_location=subdir_target_location,
+                    target_location=_without_dot(subdir_target_location),
                     copy_method=copy_method,
                 )
             )
@@ -157,7 +159,7 @@ def write_asset(asset, target_directory):
     if not os.path.exists(os.path.dirname(target_path)):
         os.makedirs(os.path.dirname(target_path))
     if copy_method == 'copy':
-        copy_file(source_path, target_path)
+        get_file(source_path, target_path)
     elif copy_method == 'link':
         link_file(source_path, target_path)
     else:
@@ -206,18 +208,16 @@ def config_to_asset_list(config):
 
 
 def link_file(source_item, target_item):
-    if is_gsbucket_url(source_item) or is_gsbucket_url(target_item):
+    if gcloud._is_gcloud_path(source_item) or gcloud._is_gcloud_path(target_item):
         raise NotImplementedError(
             'cannot perform linking operation involving remote urls '
             f'from {source_item} to {target_item}'
         )
     if os.path.exists(target_item):
         os.remove(target_item)
-    os.link(source_item, target_item)
+    os.symlink(source_item, target_item)
 
 
-def copy_file(source_path, target_path):
-    if is_gsbucket_url(source_path):
-        gcloud._get_gcloud_fs().get(source_path, target_path)
-    else:
-        LOCAL_FS.get(source_path, target_path)
+def get_file(source_path, target_path):
+    fs = gcloud._get_fs(source_path)
+    fs.get(source_path, target_path)

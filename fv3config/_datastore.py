@@ -7,7 +7,7 @@ import requests
 import appdirs
 import subprocess
 from ._exceptions import ConfigError, DataMissingError
-from gcloud import _is_gcloud_path
+from .gcloud import _is_gcloud_path
 
 if 'FV3CONFIG_CACHE_DIR' in os.environ:
     USER_CACHE_DIR = os.environ['FV3CONFIG_CACHE_DIR']
