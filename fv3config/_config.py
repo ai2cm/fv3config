@@ -117,6 +117,7 @@ def write_run_directory(config, target_directory):
     """
     check_if_data_is_downloaded()
     write_assets_to_directory(config, target_directory)
+    os.makedirs(os.path.join(target_directory, 'RESTART'), exist_ok=True)
     current_date = get_current_date_from_config(config, os.path.join(target_directory, 'INPUT'))
     update_diag_table_for_config(config, current_date, os.path.join(target_directory, 'diag_table'))
     config_to_namelist(config, os.path.join(target_directory, 'input.nml'))

@@ -21,7 +21,8 @@ def _ensure_is_remote(location, description):
 def run_kubernetes(
         config_location, outdir, docker_image, runfile=None, jobname=None,
         namespace="default", google_cloud_project=None,
-        memory_gb=3.6, memory_gb_limit=None, cpu_count=1, gcp_secret=None):
+        memory_gb=3.6, memory_gb_limit=None, cpu_count=1, gcp_secret=None,
+        image_pull_policy='IfNotPresent'):
     """[summary]
 
     [description]
@@ -43,7 +44,8 @@ def run_kubernetes(
     api = kube.client.BatchV1Api()
     job = _create_job_object(
         config_location, outdir, docker_image, runfile, jobname,
-        memory_gb, memory_gb_limit, cpu_count, gcp_secret, google_cloud_project)
+        memory_gb, memory_gb_limit, cpu_count, gcp_secret, google_cloud_project,
+        image_pull_policy=image_pull_policy)
     api.create_namespaced_job(body=job, namespace=namespace)
 
 
@@ -59,7 +61,7 @@ def _get_kube_command(config_location, outdir, runfile=None):
 def _create_job_object(
         config_location, outdir, docker_image, runfile, jobname,
         memory_gb, memory_gb_limit, cpu_count, gcp_secret=None,
-        google_cloud_project=None):
+        google_cloud_project=None, image_pull_policy='IfNotPresent'):
     resource_requirements = kube.client.V1ResourceRequirements(
         limits={
             'memory': f'{memory_gb_limit:.1f}G',
@@ -108,6 +110,7 @@ def _create_job_object(
     container = kube.client.V1Container(
         name=os.path.basename(docker_image),
         image=docker_image,
+        image_pull_policy=image_pull_policy,
         command=_get_kube_command(config_location, outdir, runfile),
         resources=resource_requirements,
         volume_mounts=volume_mounts_list,

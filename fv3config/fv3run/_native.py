@@ -12,6 +12,7 @@ from .. import gcloud
 STDOUT_FILENAME = 'stdout.log'
 STDERR_FILENAME = 'stderr.log'
 CONFIG_OUT_FILENAME = 'fv3config.yml'
+MPI_FLAGS = ['--allow-run-as-root', '--oversubscribe']
 
 
 def run_native(config_dict_or_location, outdir, runfile=None):
@@ -41,7 +42,8 @@ def run_native(config_dict_or_location, outdir, runfile=None):
         with _log_exceptions(localdir):
             n_processes = _get_n_processes(config_dict)
             _run_experiment(
-                localdir, n_processes, runfile_name=_get_basename_or_none(runfile))
+                localdir, n_processes, runfile_name=_get_basename_or_none(runfile),
+                mpi_flags=MPI_FLAGS)
 
 
 def _set_stacksize_unlimited():
@@ -115,8 +117,10 @@ def _get_config_dict_and_write(config_dict_or_location, config_out_filename):
     return config_dict
 
 
-def _copy_and_load_config_dict(config_location, config_target_location):
-    gcloud._copy_file(config_location, config_target_location)
+def _copy_and_load_config_dict(config_location, local_target_location):
+    fs = _get_fs(config_location)
+    fs.get(config_location, local_target_location)
+    gcloud._copy_file(config_location, local_target_location)
     with open(config_target_location, 'r') as infile:
         config_dict = yaml.load(infile.read(), Loader=yaml.SafeLoader)
     return config_dict
