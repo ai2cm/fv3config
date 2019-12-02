@@ -37,7 +37,8 @@ def run_kubernetes(
             (config_location, 'yaml configuration'),
             (outdir, 'output directory'),
             (runfile, 'runfile')):
-        _ensure_is_remote(location, description)
+        if location is not None:
+            _ensure_is_remote(location, description)
     if memory_gb_limit is None:
         memory_gb_limit = memory_gb
     kube.config.load_kube_config()

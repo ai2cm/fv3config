@@ -124,19 +124,20 @@ def asset_list_from_path(location, target_location='', copy_method='copy'):
     fs = gcloud._get_fs(location)
     if gcloud._is_gcloud_path(location):
         copy_method = 'copy'
-        prefix = 'gs://'
+        protocol_prefix = 'gs://'
     else:
-        prefix = ''
+        protocol_prefix = ''
     asset_list = []
     path_list = fs.walk(location)
     for dirname, _, files in path_list:
+        dirname = protocol_prefix + dirname
         subdir_target_location = os.path.join(
             target_location, os.path.relpath(dirname, start=location)
         )
         for basename in files:
             asset_list.append(
                 get_asset_dict(
-                    prefix + dirname,
+                    dirname,
                     basename,
                     target_location=_without_dot(subdir_target_location),
                     copy_method=copy_method,
