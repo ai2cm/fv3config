@@ -107,7 +107,7 @@ def _without_dot(path):
         return path
 
 
-def asset_list_from_path(location, target_location='', copy_method='copy'):
+def asset_list_from_path(from_location, target_location='', copy_method='copy'):
     """Return asset_list from all files within a given path.
 
     Args:
@@ -121,29 +121,33 @@ def asset_list_from_path(location, target_location='', copy_method='copy'):
     Returns:
         list: a list of asset dictionaries
         """
+    if gcloud._is_gcloud_path(from_location):
+        copy_method = 'copy'
+    asset_list = []
+    for dirname, basename, relative_target_location in _asset_walk(from_location):
+        asset_list.append(
+            get_asset_dict(
+                dirname,
+                basename,
+                target_location=os.path.join(target_location, relative_target_location),
+                copy_method=copy_method
+            )
+        )
+    return asset_list
+
+
+def _asset_walk(location):
     fs = gcloud._get_fs(location)
     if gcloud._is_gcloud_path(location):
-        copy_method = 'copy'
         protocol_prefix = 'gs://'
     else:
         protocol_prefix = ''
-    asset_list = []
     path_list = fs.walk(location)
     for dirname, _, files in path_list:
         dirname = protocol_prefix + dirname
-        subdir_target_location = os.path.join(
-            target_location, os.path.relpath(dirname, start=location)
-        )
+        subdir_target_location = os.path.relpath(dirname, start=location)
         for basename in files:
-            asset_list.append(
-                get_asset_dict(
-                    dirname,
-                    basename,
-                    target_location=_without_dot(subdir_target_location),
-                    copy_method=copy_method,
-                )
-            )
-    return asset_list
+            yield dirname, basename, _without_dot(subdir_target_location)
 
 
 def write_asset(asset, target_directory):
