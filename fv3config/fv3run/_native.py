@@ -118,10 +118,10 @@ def _get_config_dict_and_write(config_dict_or_location, config_out_filename):
 
 
 def _copy_and_load_config_dict(config_location, local_target_location):
-    fs = _get_fs(config_location)
+    fs = gcloud._get_fs(config_location)
     fs.get(config_location, local_target_location)
     gcloud._copy_file(config_location, local_target_location)
-    with open(config_target_location, 'r') as infile:
+    with open(local_target_location, 'r') as infile:
         config_dict = yaml.load(infile.read(), Loader=yaml.SafeLoader)
     return config_dict
 
