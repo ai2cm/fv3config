@@ -14,6 +14,8 @@ STDERR_FILENAME = 'stderr.log'
 CONFIG_OUT_FILENAME = 'fv3config.yml'
 MPI_FLAGS = ['--allow-run-as-root', '--oversubscribe']
 
+logger = logging.getLogger('fv3run')
+
 
 def run_native(config_dict_or_location, outdir, runfile=None):
     """Run the FV3GFS model with the given configuration.
@@ -63,7 +65,7 @@ def _temporary_directory(outdir):
         try:
             yield tempdir
         finally:
-            logging.info('Copying output to %s', outdir)
+            logger.info('Copying output to %s', outdir)
             fs = gcloud._get_fs(outdir)
             fs.makedirs(outdir, exist_ok=True)
             gcloud._copy_directory(tempdir, outdir)
@@ -71,11 +73,11 @@ def _temporary_directory(outdir):
 
 @contextlib.contextmanager
 def _log_exceptions(localdir):
-    logging.info("running experiment")
+    logger.info("running experiment")
     try:
         yield
     except subprocess.CalledProcessError as e:
-        logging.critical(
+        logger.critical(
             "Experiment failed. "
             "Check %s and %s for logs.",
             STDOUT_FILENAME, STDERR_FILENAME
@@ -93,7 +95,7 @@ def _run_experiment(dirname, n_processes, runfile_name=None, mpi_flags=None):
     out_filename = os.path.join(dirname, STDOUT_FILENAME)
     err_filename = os.path.join(dirname, STDERR_FILENAME)
     with open(out_filename, 'wb') as out_file, open(err_filename, 'wb') as err_file:
-        logging.info('Running experiment in %s', dirname)
+        logger.info('Running experiment in %s', dirname)
         subprocess.check_call(
             ["mpirun", "-n", str(n_processes)] + mpi_flags + python_args,
             cwd=dirname, stdout=out_file, stderr=err_file
