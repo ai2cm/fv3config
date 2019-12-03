@@ -1,7 +1,7 @@
 import tempfile
 import subprocess
 import os
-from ..gcloud import _is_gcloud_path
+from ..filesystem import _is_gcloud_path
 from .._config import _write_config_dict
 from ._native import CONFIG_OUT_FILENAME
 

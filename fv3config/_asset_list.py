@@ -7,7 +7,7 @@ from ._tables import (
     get_data_table_filename, get_diag_table_filename, get_field_table_filename
 )
 from ._exceptions import ConfigError
-from . import gcloud
+from . import filesystem
 
 
 def is_dict_or_list(option):
@@ -121,7 +121,7 @@ def asset_list_from_path(from_location, target_location='', copy_method='copy'):
     Returns:
         list: a list of asset dictionaries
         """
-    if gcloud._is_gcloud_path(from_location):
+    if filesystem._is_gcloud_path(from_location):
         copy_method = 'copy'
     asset_list = []
     for dirname, basename, relative_target_location in _asset_walk(from_location):
@@ -137,8 +137,8 @@ def asset_list_from_path(from_location, target_location='', copy_method='copy'):
 
 
 def _asset_walk(location):
-    fs = gcloud._get_fs(location)
-    if gcloud._is_gcloud_path(location):
+    fs = filesystem._get_fs(location)
+    if filesystem._is_gcloud_path(location):
         protocol_prefix = 'gs://'
     else:
         protocol_prefix = ''
@@ -213,7 +213,7 @@ def config_to_asset_list(config):
 
 
 def link_file(source_item, target_item):
-    if gcloud._is_gcloud_path(source_item) or gcloud._is_gcloud_path(target_item):
+    if filesystem._is_gcloud_path(source_item) or filesystem._is_gcloud_path(target_item):
         raise NotImplementedError(
             'cannot perform linking operation involving remote urls '
             f'from {source_item} to {target_item}'

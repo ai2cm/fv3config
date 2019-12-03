@@ -1,7 +1,7 @@
 import os
 import copy
 from .._exceptions import DelayedImportError
-from .. import gcloud
+from .. import filesystem
 from ._docker import _get_runfile_args, _get_python_command
 
 try:
@@ -11,7 +11,7 @@ except ImportError as err:
 
 
 def _ensure_is_remote(location, description):
-    if not gcloud._is_gcloud_path(location):
+    if not filesystem._is_gcloud_path(location):
         raise ValueError(
             f'{description} must be on Google cloud when running on kubernetes, '
             f'instead is {location}'
@@ -30,7 +30,7 @@ def run_kubernetes(
     """
     if google_cloud_project is None:
         try:
-            google_cloud_project = gcloud._get_gcloud_project()
+            google_cloud_project = filesystem._get_gcloud_project()
         except ImportError:
             google_cloud_project = None
     for location, description in (
