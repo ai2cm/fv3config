@@ -224,5 +224,5 @@ def link_file(source_item, target_item):
 
 
 def get_file(source_path, target_path):
-    fs = gcloud._get_fs(source_path)
+    fs = filesystem._get_fs(source_path)
     fs.get(source_path, target_path)
