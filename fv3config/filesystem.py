@@ -27,23 +27,17 @@ def _put_directory(local_source_dir, dest_dir, fs=None):
             fs.makedirs(dest, exist_ok=True)
             _put_directory(source, dest, fs)
         else:
-            _copy_file(source, dest, fs)
+            _put_file(source, dest, fs)
 
 
-def _copy_file(source_filename, dest_filename, fs=None):
-    """Copy a local or remote file to a local or remote target location."""
-    if fs is None and (_is_gcloud_path(source_filename) or _is_gcloud_path(dest_filename)):
-        fs = _get_gcloud_fs()
-    if not _is_gcloud_path(source_filename):
-        if not _is_gcloud_path(dest_filename):
-            shutil.copy2(source_filename, dest_filename, follow_symlinks=True)
-        else:
-            fs.put(source_filename, dest_filename)
-    else:  # source is remote
-        if not _is_gcloud_path(dest_filename):
-            fs.get(source_filename, dest_filename)
-        else:
-            raise NotImplementedError('Cannot copy from Google cloud to Google cloud')
+def _get_file(source_filename, dest_filename, fs=None):
+    fs = _get_fs(source_filename)
+    fs.get(source_filename, dest_filename)
+
+
+def _put_file(source_filename, dest_filename, fs=None):
+    fs = _get_fs(dest_filename)
+    fs.put(source_filename, dest_filename)
 
 
 def _is_gcloud_path(path):

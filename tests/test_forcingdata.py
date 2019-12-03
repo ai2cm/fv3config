@@ -11,7 +11,7 @@ from fv3config._asset_list import (
     get_orographic_forcing_asset_list, get_base_forcing_asset_list,
     get_initial_conditions_asset_list, write_asset_list
 )
-from fv3config.gcloud import _is_gcloud_path as is_gsbucket_url
+from fv3config.filesystem import _is_gcloud_path as is_gsbucket_url
 
 test_directory = os.path.dirname(os.path.realpath(__file__))
 
