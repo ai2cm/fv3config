@@ -41,12 +41,16 @@ def run_kubernetes(
             _ensure_is_remote(location, description)
     if memory_gb_limit is None:
         memory_gb_limit = memory_gb
-    kube.config.load_kube_config()
-    api = kube.client.BatchV1Api()
     job = _create_job_object(
         config_location, outdir, docker_image, runfile, jobname,
         memory_gb, memory_gb_limit, cpu_count, gcp_secret, google_cloud_project,
         image_pull_policy=image_pull_policy)
+    _submit_job(job, namespace)
+
+
+def _submit_job(job, namespace):
+    kube.config.load_kube_config()
+    api = kube.client.BatchV1Api()
     api.create_namespaced_job(body=job, namespace=namespace)
 
 
@@ -73,6 +77,10 @@ def _create_job_object(
         },
     )
     env_list = []
+    if gcp_secret is not None:
+        env_list, volume_list, volume_mounts_list = _get_secret_args(gcp_secret)
+    else:
+        env_list, volume_list, volume_mounts_list = [], [], []
     if google_cloud_project is not None:
         env_list.append(
             kube.client.V1EnvVar(
@@ -80,34 +88,6 @@ def _create_job_object(
                 value=google_cloud_project,
             )
         )
-    if gcp_secret is not None:
-        env_list.extend([
-            kube.client.V1EnvVar(
-                name='GOOGLE_APPLICATION_CREDENTIALS',
-                value='/secret/gcp-credentials/key.json',
-            ),
-            kube.client.V1EnvVar(
-                name='CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE',
-                value='/secret/gcp-credentials/key.json',
-            )
-        ])
-        volume = kube.client.V1Volume(
-            name='gcp-key-secret',
-            secret=kube.client.V1SecretVolumeSource(
-                secret_name=gcp_secret
-            )
-        )
-        volume_list = [volume]
-        volume_mounts_list = [
-            kube.client.V1VolumeMount(
-                mount_path='/secret/gcp-credentials',
-                name=volume.name,
-                read_only=True,
-            ),
-        ]
-    else:
-        volume_list = []
-        volume_mounts_list = []
     container = kube.client.V1Container(
         name=os.path.basename(docker_image),
         image=docker_image,
@@ -139,3 +119,31 @@ def _create_job_object(
         spec=job_spec,
     )
     return job
+
+
+def _get_secret_args(gcp_secret):
+    env_list = [
+        kube.client.V1EnvVar(
+            name='GOOGLE_APPLICATION_CREDENTIALS',
+            value='/secret/gcp-credentials/key.json',
+        ),
+        kube.client.V1EnvVar(
+            name='CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE',
+            value='/secret/gcp-credentials/key.json',
+        )
+    ]
+    volume = kube.client.V1Volume(
+        name='gcp-key-secret',
+        secret=kube.client.V1SecretVolumeSource(
+            secret_name=gcp_secret
+        )
+    )
+    volume_list = [volume]
+    volume_mounts_list = [
+        kube.client.V1VolumeMount(
+            mount_path='/secret/gcp-credentials',
+            name=volume.name,
+            read_only=True,
+        ),
+    ]
+    return env_list, volume_list, volume_mounts_list
