@@ -6,7 +6,7 @@ import tempfile
 import requests
 import appdirs
 from ._exceptions import ConfigError, DataMissingError
-from . import gcloud
+from . import filesystem
 
 if 'FV3CONFIG_CACHE_DIR' in os.environ:
     USER_CACHE_DIR = os.environ['FV3CONFIG_CACHE_DIR']
@@ -169,7 +169,7 @@ def resolve_option(option, built_in_options_dict):
             raise ConfigError(
                 f'The provided path {option} does not exist.'
             )
-    elif gcloud._is_gcloud_path(option):
+    elif filesystem._is_gcloud_path(option):
         return option
     else:
         if option in built_in_options_dict:

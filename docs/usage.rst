@@ -40,12 +40,12 @@ Cache Location
 --------------
 
 If the FV3CONFIG_CACHE_DIR environment variable is set, the package will download
-and store data into `$(FV3CONFIG_CACHE_DIR)/fv3config-cache`.
+and store data into ``$(FV3CONFIG_CACHE_DIR)/fv3config-cache``.
 If unset, by default the package will use the "user cache" directory for the user's
 operating system.
 
-The download location can be retrieved using `fv3config.get_cache_dir()`, and set
-manually using `fv3config.set_cache_dir()`. Note that the "fv3config-cache" subdirectory
+The download location can be retrieved using ``fv3config.get_cache_dir()``, and set
+manually using ``fv3config.set_cache_dir()``. Note that the "fv3config-cache" subdirectory
 will be appended to the cache directory you set. If the target is set to a directory
 that already contains the archive download, it will automatically start using those
 files. Conversely, if the target is set to an empty directory, it will be necessary
@@ -53,7 +53,7 @@ to re-download the cache files.
 
 It's unlikely, but do not set the cache directory to a location that already contains
 a "fv3config-cache" subdirectory with unrelated files, or the cache files will not
-download until you call `refresh_downloaded_data` (which will delete any files
+download until you call ``refresh_downloaded_data`` (which will delete any files
 in the subdirectory).
 
 Configuration
@@ -141,6 +141,38 @@ separate functions based on where the model is being run.
 
 .. autofunction:: fv3config.run_native
 .. autofunction:: fv3config.run_docker
+
+Submitting a Kubernetes job
+---------------------------
+
+A python interface is provided for submitting `fv3run` jobs to Kubernetes. Here's
+an example for submitting a job based on the default configuration dictionary::
+
+    import yaml
+    import gcsfs
+    import fv3config
+
+    config_location = 'gs://my_bucket/fv3config.yml'
+    outdir = 'gs://my_bucket/rundir'
+    docker_image = 'us.gcr.io/vcm-ml/fv3config-python'
+
+    fs = gcsfs.GCSFileSystem()  # project name is optional,
+                                # we don't use commands that depend on it
+    with fs.open(config_location, 'w') as config_file:
+        config_file.write(yaml.dump(config))
+
+    fv3config.run(
+        config_location,
+        outdir,
+        docker_image
+        gcp_secret='my-secret-name'  # kubernetes secret containing gcp key in key.json
+    )
+
+The gcp key is generally necessary to gain permissions to read and write from google
+cloud storage buckets. In the unlikely case that you are writing to a public bucket,
+it can be ommitted.
+
+.. autofunction:: fv3config.run_kubernetes
 
 Specifying individual files
 ---------------------------
