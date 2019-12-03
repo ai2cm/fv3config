@@ -10,6 +10,7 @@ from ._exceptions import InvalidFileError, ConfigError
 from ._datastore import (
     ensure_data_is_downloaded, set_cache_dir, get_cache_dir
 )
+from .fv3run import run_docker, run_native
 from ._asset_list import get_asset_dict
 
 

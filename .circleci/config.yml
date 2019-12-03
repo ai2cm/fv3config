@@ -26,13 +26,12 @@ jobs:
             - v1-dependencies-{{ checksum "requirements_dev.txt" }}
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
-
       - run:
           name: install dependencies
           command: |
             python3 -m venv venv
             . venv/bin/activate
-            pip install -r requirements_dev.txt
+            pip3 install -r requirements_dev.txt
 
       - save_cache:
           paths:
@@ -48,7 +47,8 @@ jobs:
           name: run tests
           command: |
             . venv/bin/activate
-            python setup.py test
+            pip3 install -e .
+            pytest
 
       - store_artifacts:
           path: test-reports

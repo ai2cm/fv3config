@@ -1,6 +1,7 @@
 import copy
 import os
 import f90nml
+import yaml
 from ._exceptions import InvalidFileError, ConfigError
 from ._datastore import check_if_data_is_downloaded
 from ._tables import update_diag_table_for_config, get_current_date_from_config
@@ -12,11 +13,28 @@ namelist_options_dict = {
     'default': os.path.join(package_directory, 'data/namelist/default.nml')
 }
 
+_NAMELIST_DEFAULTS = {
+    'ntiles': 6,
+    'layout': (1, 1),
+}
+
+
+def _get_n_processes(config_dict):
+    n_tiles = config_dict['namelist']['fv_core_nml'].get('ntiles', _NAMELIST_DEFAULTS['ntiles'])
+    layout = config_dict['namelist']['fv_core_nml'].get('layout', _NAMELIST_DEFAULTS['layout'])
+    processors_per_tile = layout[0] * layout[1]
+    return n_tiles * processors_per_tile
+
+
+def _write_config_dict(config, config_out_filename):
+    with open(config_out_filename, 'w') as outfile:
+        outfile.write(yaml.dump(config))
+
 
 def get_default_config():
     """Returns a default model configuration dictionary."""
     config = {}
-    config['namelist'] = f90nml.read(namelist_options_dict['default'])
+    config['namelist'] = config_from_namelist(namelist_options_dict['default'])
     config['diag_table'] = 'default'
     config['data_table'] = 'default'
     config['forcing'] = 'default'
@@ -53,10 +71,18 @@ def config_from_namelist(namelist_filename):
         InvalidFileError: if the specified filename does not exist
     """
     try:
-        return_dict = f90nml.read(namelist_filename)
+        return_dict = _to_nested_dict(f90nml.read(namelist_filename).items())
     except FileNotFoundError:
         raise InvalidFileError(f'namelist {namelist_filename} does not exist')
     return return_dict
+
+
+def _to_nested_dict(source):
+    return_value = dict(source)
+    for name, value in return_value.items():
+        if isinstance(value, f90nml.Namelist):
+            return_value[name] = _to_nested_dict(value)
+    return return_value
 
 
 def enable_restart(config):

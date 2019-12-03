@@ -36,7 +36,6 @@ It is also possible to delete and re-download the data archive, in case somethin
 
     $ python -m fv3config.refresh_data
 
-
 Cache Location
 --------------
 
@@ -56,7 +55,6 @@ It's unlikely, but do not set the cache directory to a location that already con
 a "fv3config-cache" subdirectory with unrelated files, or the cache files will not
 download until you call `refresh_downloaded_data` (which will delete any files
 in the subdirectory).
-
 
 Configuration
 -------------
@@ -85,6 +83,64 @@ The ``namelist`` item is special in that it is explicitly stored in the ``config
 fv3gfs model, individual namelists are specified for various components of the model. As an example, the
 vertical resolution can be accessed via ``config['namelist']['fv_core_nml']['npz']``.
 
+Running the model with fv3run
+-----------------------------
+
+`fv3config` provides a tool for running the python-wrapped model called `fv3run`.
+For example, you can run the default configuration using first::
+
+    $ docker pull us.gcr.io/vcm-ml/fv3gfs-python
+
+to acquire the docker image for the python wrapper, followed by::
+
+    >>> import fv3config
+    >>> config = fv3config.get_default_config()
+    >>> fv3config.run_docker(config, 'outdir', docker_image='us.gcr.io/vcm-ml/fv3gfs-python')
+
+If the ``fv3gfs-python`` package is installed natively, the model could be run using::
+
+    >>> fv3config.run_native(config, 'outdir')
+
+The python config can be passed as either a configuration dictionary, or the name of
+a yaml file. There is also a bash interface for running from yaml configuration.
+
+.. code-block:: bash
+
+    $ fv3run --help
+    usage: fv3run [-h] [--runfile RUNFILE] [--dockerimage DOCKERIMAGE]
+                  [--keyfile KEYFILE]
+                  config outdir
+
+    Run the FV3GFS model. Will use google cloud storage key at
+    $GOOGLE_APPLICATION_CREDENTIALS by default.
+
+    positional arguments:
+      config                location of fv3config yaml file
+      outdir                location to copy final run directory
+
+    optional arguments:
+      -h, --help            show this help message and exit
+      --runfile RUNFILE     location of python script to execute with mpirun
+      --dockerimage DOCKERIMAGE
+                            if passed, execute inside a docker image with the
+                            given name
+      --keyfile KEYFILE     google cloud storage key to use for cloud copy
+                            commands
+
+The only required inputs are ``config``, which specifies a yaml file containing the
+``fv3config`` run directory configuration, and a final location to copy the run directory.
+A keyfile can be specified to authenticate Google cloud storage for any data sources
+located in Google cloud buckets, or the key is taken from an environment variable
+by default. If ``dockerimage`` is specified, the command will run inside a Docker
+container based on the given image name. This assumes the ``fv3config`` package and
+``fv3gfs`` python wrapper are installed inside the container, along with any
+dependencies.
+
+The python interface is very similar to the command-line interface, but is split into
+separate functions based on where the model is being run.
+
+.. autofunction:: fv3config.run_native
+.. autofunction:: fv3config.run_docker
 
 Specifying individual files
 ---------------------------
@@ -108,7 +164,6 @@ One can use a directory to specify the initial conditions or forcing files and r
 subset of the files within the that directory with the optional ``config['patch_files']`` item.
 All assets defined in ``config['patch_files']`` will overwrite any files specified in the
 initial conditions or forcing if they have the same target location and name.
-
 
 Restart runs
 ------------

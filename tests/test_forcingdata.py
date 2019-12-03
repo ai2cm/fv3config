@@ -113,11 +113,13 @@ class ForcingTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.cache_dir = tempfile.TemporaryDirectory()
+        cls.original_cache_dir = fv3config.get_cache_dir()
         fv3config.set_cache_dir(cls.cache_dir.name)
         fv3config.ensure_data_is_downloaded()
 
     @classmethod
     def tearDownClass(cls):
+        fv3config.set_cache_dir(cls.original_cache_dir)
         cls.cache_dir.cleanup()
 
     def setUp(self):
