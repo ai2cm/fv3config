@@ -15,7 +15,7 @@ LOCAL_FS = LocalFileSystem()
 GS_BUCKET_PREFIX = 'gs://'
 
 
-def _copy_directory(local_source_dir, dest_dir, fs=None):
+def _put_directory(local_source_dir, dest_dir, fs=None):
     """Copy the contents of a local directory to a local or remote directory.
     """
     if fs is None:
@@ -25,7 +25,7 @@ def _copy_directory(local_source_dir, dest_dir, fs=None):
         dest = os.path.join(dest_dir, token)
         if os.path.isdir(source):
             fs.makedirs(dest, exist_ok=True)
-            _copy_directory(source, dest, fs)
+            _put_directory(source, dest, fs)
         else:
             _copy_file(source, dest, fs)
 

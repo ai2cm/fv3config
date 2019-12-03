@@ -68,7 +68,7 @@ def _temporary_directory(outdir):
             logger.info('Copying output to %s', outdir)
             fs = gcloud._get_fs(outdir)
             fs.makedirs(outdir, exist_ok=True)
-            gcloud._copy_directory(tempdir, outdir)
+            gcloud._put_directory(tempdir, outdir)
 
 
 @contextlib.contextmanager
