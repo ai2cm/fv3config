@@ -17,6 +17,7 @@ requirements = [
     'requests>=2.22.0',
     'pyyaml>=5.0',
     'gcsfs>=0.4.0'
+    'fsspec>=0.6.0',
 ]
 
 setup_requirements = [
@@ -45,8 +46,8 @@ setup(
     },
     install_requires=requirements,
     extras_require={
-        'bucket-access': 'gsutil',
-        'fv3run': 'fv3gfs-python',
+        'bucket-access': ['gcsfs', 'google-cloud-storage'],
+        'fv3run': 'fv3gfs-python'
     },
     license="BSD license",
     long_description=readme + '\n\n' + history,

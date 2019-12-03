@@ -1,7 +1,7 @@
 import tempfile
 import subprocess
 import os
-from .gcloud import _is_gcloud_path
+from ..gcloud import _is_gcloud_path
 from .._config import _write_config_dict
 from ._native import CONFIG_OUT_FILENAME
 
@@ -35,7 +35,12 @@ def run_docker(
     """
     if keyfile is None:
         keyfile = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', None)
-    if not _is_gcloud_path(outdir):
+    if _is_gcloud_path(outdir):
+        raise NotImplementedError(
+            'running in a local docker container and uploading the output to '
+            'Google cloud is not yet implemented'
+        )
+    else:
         os.makedirs(outdir, exist_ok=True)
     with tempfile.NamedTemporaryFile(suffix='.yaml') as config_tempfile:
         bind_mount_args = []
@@ -46,8 +51,7 @@ def run_docker(
         _get_docker_args(docker_args, bind_mount_args, outdir)
         _get_credentials_args(keyfile, docker_args, bind_mount_args)
         _get_runfile_args(runfile, bind_mount_args, python_args)
-        python_command = [
-            'python3', '-m', FV3RUN_MODULE, config_location, DOCKER_OUTDIR]
+        python_command = _get_python_command(config_location, DOCKER_OUTDIR)
         subprocess.check_call(
             DOCKER_COMMAND + bind_mount_args + docker_args + [docker_image] +
             python_command + python_args)
@@ -60,6 +64,10 @@ def _get_runfile_args(runfile, bind_mount_args, python_args):
         else:
             bind_mount_args += ['-v', f'{os.path.abspath(runfile)}:{DOCKER_RUNFILE}']
             python_args += ['--runfile', DOCKER_RUNFILE]
+
+
+def _get_python_command(config_location, outdir):
+    return ['python3', '-m', FV3RUN_MODULE, config_location, outdir]
 
 
 def _get_config_args(config_dict_or_location, config_tempfile, bind_mount_args):

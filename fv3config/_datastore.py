@@ -7,6 +7,7 @@ import requests
 import appdirs
 import subprocess
 from ._exceptions import ConfigError, DataMissingError
+from .gcloud import _is_gcloud_path
 
 if 'FV3CONFIG_CACHE_DIR' in os.environ:
     USER_CACHE_DIR = os.environ['FV3CONFIG_CACHE_DIR']
@@ -18,7 +19,6 @@ else:
 ARCHIVE_FILENAME = '2019-10-23-data-for-running-fv3gfs.tar.gz'
 ARCHIVE_FILENAME_ROOT = '2019-10-23-data-for-running-fv3gfs'
 ARCHIVE_URL = f'http://storage.googleapis.com/vcm-ml-public/{ARCHIVE_FILENAME}'
-GS_BUCKET_PREFIX = 'gs://'
 CACHE_PREFIX = 'fv3config-cache'
 
 FORCING_OPTIONS_DICT = {
@@ -194,10 +194,6 @@ def extract_data(archive_filename):
                 )
 
 
-def is_gsbucket_url(path):
-    return path.startswith(GS_BUCKET_PREFIX)
-
-
 def resolve_option(option, built_in_options_dict):
     """Determine whether a configuration dictionary option is a built-in option or
     not and return path to file or directory representing option. An option is
@@ -221,7 +217,7 @@ def resolve_option(option, built_in_options_dict):
             raise ConfigError(
                 f'The provided path {option} does not exist.'
             )
-    elif is_gsbucket_url(option):
+    elif _is_gcloud_path(option):
         return option
     else:
         if option in built_in_options_dict:
