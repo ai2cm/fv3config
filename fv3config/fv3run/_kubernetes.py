@@ -1,9 +1,8 @@
 import os
-import copy
+import uuid
 from .._exceptions import DelayedImportError
 from .. import filesystem
 from ._docker import _get_runfile_args, _get_python_command
-
 try:
     import kubernetes as kube
 except ImportError as err:
@@ -23,16 +22,48 @@ def run_kubernetes(
         namespace="default", google_cloud_project=None,
         memory_gb=3.6, memory_gb_limit=None, cpu_count=1, gcp_secret=None,
         image_pull_policy='IfNotPresent'):
-    """[summary]
+    """Submit a kubernetes job to perform a fv3run operation.
 
-    [description]
-    gcp_secret (str, optional): the name of a secret containing a GCP key named key.json
+    Much of the configuration must be first saved to google cloud storage, and then
+    supplied via paths to that configuration. The resulting run directory is copied
+    out to a google cloud storage path. This call is non-blocking, and only submits
+    a job.
+
+    Args:
+        config_location (str): google cloud storage location of a yaml file containing
+            a configuration dictionary
+        outdir (str): google cloud storage location to upload
+            the resulting run directory
+        docker_image (str): docker image name to use for execution, which has fv3config
+            installed with fv3run
+        runfile (str, optional): google cloud storage location of a python file to
+            execute as the model executable
+        jobname (str, optional): name to use for the kubernetes job, defaults to a
+            random uuid.uuid4().hex
+        namespace (str, optional): kubernetes namespace for the job,
+            defaults to "default"
+        google_cloud_project (str, optional): value for GOOGLE_CLOUD_PROJECT environment
+            variable when running the kubernetes job, which is used by gcsfs for
+            some operations. By default the environment variable is unset.
+        memory_gb (float, optional): gigabytes of memory required for the kubernetes
+            worker, defaults to 3.6GB
+        memory_gb_limit (float, optional): maximum memory allowed for the kubernetes
+            worker, defaults to the value set by memory_gb
+        cpu_count (int, optional): number of CPUs to use on the kubernetes worker
+        gcp_secret (str, optional): name of kubernetes secret to mount containing a
+            file ``key.json`` to use as the google cloud storage key.
+        image_pull_policy (str, optional): pull policy passed on to the kubernetes job.
+            if set to "Always", will always pull the latest image. When "IfNotPresent",
+            will only pull if no image has already been pulled.
+            Defaults to "IfNotPresent".
     """
     if google_cloud_project is None:
         try:
             google_cloud_project = filesystem._get_gcloud_project()
         except ImportError:
             google_cloud_project = None
+    if jobname is None:
+        jobname = uuid.uuid4().hex
     for location, description in (
             (config_location, 'yaml configuration'),
             (outdir, 'output directory'),
