@@ -33,7 +33,7 @@ def _copy_directory(local_source_dir, dest_dir, fs=None):
 def _copy_file(source_filename, dest_filename, fs=None):
     """Copy a local or remote file to a local or remote target location."""
     if fs is None and (_is_gcloud_path(source_filename) or _is_gcloud_path(dest_filename)):
-        fs = _get_gcloud_fs
+        fs = _get_gcloud_fs()
     if not _is_gcloud_path(source_filename):
         if not _is_gcloud_path(dest_filename):
             shutil.copy2(source_filename, dest_filename, follow_symlinks=True)
