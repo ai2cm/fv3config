@@ -164,7 +164,7 @@ an example for submitting a job based on the default configuration dictionary::
     fv3config.run(
         config_location,
         outdir,
-        docker_image
+        docker_image,
         gcp_secret='my-secret-name'  # kubernetes secret containing gcp key in key.json
     )
 
@@ -214,4 +214,3 @@ restart initial conditions can be created with::
     config['initial_conditions'] = 'restart_example'
     config = enable_restart(config)
     write_run_directory(config, './rundir')
-
