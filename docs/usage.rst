@@ -154,7 +154,7 @@ an example for submitting a job based on the default configuration dictionary::
 
     config_location = 'gs://my_bucket/fv3config.yml'
     outdir = 'gs://my_bucket/rundir'
-    docker_image = 'us.gcr.io/vcm-ml/fv3config-python'
+    docker_image = 'us.gcr.io/vcm-ml/fv3gfs-python'
 
     fs = gcsfs.GCSFileSystem()  # project name is optional,
                                 # we don't use commands that depend on it
