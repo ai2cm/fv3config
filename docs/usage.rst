@@ -155,17 +155,19 @@ an example for submitting a job based on the default configuration dictionary::
     config_location = 'gs://my_bucket/fv3config.yml'
     outdir = 'gs://my_bucket/rundir'
     docker_image = 'us.gcr.io/vcm-ml/fv3gfs-python'
+    config = fv3config.get_default_config()
 
     fs = gcsfs.GCSFileSystem()  # project name is optional,
                                 # we don't use commands that depend on it
     with fs.open(config_location, 'w') as config_file:
         config_file.write(yaml.dump(config))
 
-    fv3config.run(
+    fv3config.run_kubernetes(
         config_location,
         outdir,
         docker_image,
-        gcp_secret='my-secret-name'  # kubernetes secret containing gcp key in key.json
+        gcp_secret='gcp-key'  # replace with your kubernetes secret
+                              # containing gcp key in key.json
     )
 
 The gcp key is generally necessary to gain permissions to read and write from google
