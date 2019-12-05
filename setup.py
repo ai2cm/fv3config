@@ -47,7 +47,8 @@ setup(
     install_requires=requirements,
     extras_require={
         'bucket-access': ['gcsfs', 'google-cloud-storage'],
-        'fv3run': 'fv3gfs-python'
+        'fv3run': 'fv3gfs-python',
+        'run_kubernetes': 'kubernetes',
     },
     license="BSD license",
     long_description=readme + '\n\n' + history,
