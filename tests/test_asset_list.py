@@ -185,11 +185,6 @@ class AssetListTests(unittest.TestCase):
         # necessary to have full path for source location in test assets
         for asset in ASSET_LIST_WITH_SUBDIR:
             asset['source_location'] = os.path.join(workdir, asset['source_location'])
-        for item in asset_list:
-            print(item)
-        print('reference')
-        for item in ASSET_LIST_WITH_SUBDIR:
-            print(item)
         self.assertEqual(asset_list, ASSET_LIST_WITH_SUBDIR)
 
     @staticmethod
