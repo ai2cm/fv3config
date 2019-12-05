@@ -14,7 +14,9 @@ The following code would write a default run directory::
 
 :code:`config` is a configuration dictionary which contains namelists, input data specifications,
 and other options. It can be edited just like any dictionary. Namelists are specified as
-sub-dictionaries.
+sub-dictionaries. A default configuration dictionary can be retrieved with
+:py:func:`fv3config.get_default_config`, and a run directory can be written
+using :py:func:`fv3config.write_run_directory`.
 
 Data Caching
 ------------
@@ -44,8 +46,8 @@ and store data into ``$(FV3CONFIG_CACHE_DIR)/fv3config-cache``.
 If unset, by default the package will use the "user cache" directory for the user's
 operating system.
 
-The download location can be retrieved using ``fv3config.get_cache_dir()``, and set
-manually using ``fv3config.set_cache_dir()``. Note that the "fv3config-cache" subdirectory
+The download location can be retrieved using :py:func:`fv3config.get_cache_dir`, and set
+manually using :py:func:`fv3config.set_cache_dir`. Note that the "fv3config-cache" subdirectory
 will be appended to the cache directory you set. If the target is set to a directory
 that already contains the archive download, it will automatically start using those
 files. Conversely, if the target is set to an empty directory, it will be necessary
@@ -53,7 +55,7 @@ to re-download the cache files.
 
 It's unlikely, but do not set the cache directory to a location that already contains
 a "fv3config-cache" subdirectory with unrelated files, or the cache files will not
-download until you call ``refresh_downloaded_data`` (which will delete any files
+download until you call :py:func:`fv3config.refresh_downloaded_data` (which will delete any files
 in the subdirectory).
 
 Configuration
@@ -91,13 +93,19 @@ For example, you can run the default configuration using first::
 
     $ docker pull us.gcr.io/vcm-ml/fv3gfs-python
 
-to acquire the docker image for the python wrapper, followed by::
+to acquire the docker image for the python wrapper, followed by
+a call to :py:func:`fv3config.run_docker`:
+
+.. code-block:: python
 
     >>> import fv3config
     >>> config = fv3config.get_default_config()
     >>> fv3config.run_docker(config, 'outdir', docker_image='us.gcr.io/vcm-ml/fv3gfs-python')
 
-If the ``fv3gfs-python`` package is installed natively, the model could be run using::
+If the ``fv3gfs-python`` package is installed natively, the model could be run
+using :py:func:`fv3config.run_native`:
+
+.. code-block:: python
 
     >>> fv3config.run_native(config, 'outdir')
 
@@ -139,14 +147,12 @@ dependencies.
 The python interface is very similar to the command-line interface, but is split into
 separate functions based on where the model is being run.
 
-.. autofunction:: fv3config.run_native
-.. autofunction:: fv3config.run_docker
-
 Submitting a Kubernetes job
 ---------------------------
 
-A python interface is provided for submitting `fv3run` jobs to Kubernetes. Here's
-an example for submitting a job based on the default configuration dictionary::
+A python interface :py:func:`fv3config.run_kubernetes` is provided for
+submitting `fv3run` jobs to Kubernetes. Here's an example for submitting a job
+based on the default configuration dictionary::
 
     import yaml
     import gcsfs
@@ -174,15 +180,13 @@ The gcp key is generally necessary to gain permissions to read and write from go
 cloud storage buckets. In the unlikely case that you are writing to a public bucket,
 it can be ommitted.
 
-.. autofunction:: fv3config.run_kubernetes
-
 Specifying individual files
 ---------------------------
 
 More fine-grained control of the files that are written to the run-directory is possible using the "asset"
 representation of run-directory files. An asset is a dictionary that knows about one files's source
 location/filename, target filename, target location within the run directory and whether that file is copied or linked.
-Asset dicts can be generated with the helper function :meth:`fv3config.get_asset_dict`. For example::
+Asset dicts can be generated with the helper function :py:func:`fv3config.get_asset_dict`. For example::
 
     >>> get_asset_dict('/path/to/filedir/', 'sample_file.nc', target_location='INPUT/')
     {'source_location': '/path/to/filedir/',
