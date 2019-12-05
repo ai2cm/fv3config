@@ -16,7 +16,7 @@ requirements = [
     'appdirs>=1.4.0',
     'requests>=2.22.0',
     'pyyaml>=5.0',
-    'gcsfs>=0.4.0'
+    'gcsfs>=0.4.0',
     'fsspec>=0.6.0',
 ]
 
