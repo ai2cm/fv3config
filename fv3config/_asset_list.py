@@ -1,15 +1,13 @@
-import logging
 import os
-import shutil
-from subprocess import check_call, Popen, PIPE
 from ._datastore import (
     get_initial_conditions_directory, get_orographic_forcing_directory,
-    get_base_forcing_directory, is_gsbucket_url
+    get_base_forcing_directory
 )
 from ._tables import (
     get_data_table_filename, get_diag_table_filename, get_field_table_filename
 )
-from ._exceptions import ConfigError, DependencyError
+from ._exceptions import ConfigError
+from . import filesystem
 
 
 def is_dict_or_list(option):
@@ -102,72 +100,51 @@ def get_asset_dict(source_location, source_name, target_location='',
     return asset
 
 
-def asset_list_from_path(path, target_location='', copy_method='copy'):
-    """Return an asset_list corresponding to all files within path"""
-    if is_gsbucket_url(path):
-        if gsutil_is_installed():
-            return asset_list_from_gs_bucket(path, target_location=target_location)
-        else:
-            raise DependencyError(f'Optional dependency gsutil not found. Files in {path} will not be copied to {target_location}.')
+def _without_dot(path):
+    if path == '.':
+        return ''
     else:
-        return asset_list_from_local_dir(path,
-                                         target_location=target_location,
-                                         copy_method=copy_method)
+        return path
 
 
-def asset_list_from_local_dir(source_directory, target_location='', copy_method='copy'):
-    """Return asset_list from all files in the local path source_directory. Will
-    recurse to subdirectories within source_directory.
+def asset_list_from_path(from_location, target_location='', copy_method='copy'):
+    """Return asset_list from all files within a given path.
 
     Args:
-        source_directory (str): path to local directory from which to generate
-            asset_list.
+        location (str): local path or google cloud storage url.
         target_location (str, optional): target_location used for generated assets.
             Defaults to '' which is root of run-directory.
-        copy_method (str, optional): copy_method used for generated assets. Defaults
-            to 'copy'.
-
-    Returns:
-        list: a list of asset dictionaries
-    """
-    asset_list = []
-    for root, dirs, files in os.walk(source_directory):
-        if root == source_directory:
-            file_target_location = target_location
-        else:
-            file_target_location = os.path.join(target_location,
-                                                os.path.basename(root))
-        for file in files:
-            asset_list.append(get_asset_dict(os.path.join(source_directory, root),
-                                             file,
-                                             target_location=file_target_location,
-                                             copy_method=copy_method))
-    return asset_list
-
-
-def asset_list_from_gs_bucket(url, target_location=''):
-    """Return asset_list from all files that begin with a google cloud storage url.
-    Will not recurse to files that are in "sub-directories" of the url.
-
-    Args:
-        url (str): google cloud storage url from which to generate asset_list.
-        target_location (str, optional): target_location used for generated assets.
-            Defaults to '' which is root of run-directory.
+        copy_method ('copy' or 'link', optional): whether to copy or link assets,
+            defaults to 'copy'. If location is a google cloud storage url, this option
+            is ignored and files are copied.
 
     Returns:
         list: a list of asset dictionaries
         """
+    if not filesystem._is_local_path(from_location):
+        copy_method = 'copy'
     asset_list = []
-    # TODO: use gcsfs instead of gsutil for following code
-    stdout_str = Popen(['gsutil', 'ls', url], stdout=PIPE).stdout.read()
-    path_list = stdout_str.decode().split('\n')[:-1]
-    for path in path_list:
-        dirname, basename = os.path.split(path)
-        if basename != '':
-            asset_list.append(get_asset_dict(dirname,
-                                             basename,
-                                             target_location=target_location))
+    for dirname, basename, relative_target_location in _asset_walk(from_location):
+        asset_list.append(
+            get_asset_dict(
+                dirname,
+                basename,
+                target_location=os.path.join(target_location, relative_target_location),
+                copy_method=copy_method
+            )
+        )
     return asset_list
+
+
+def _asset_walk(location):
+    fs = filesystem.get_fs(location)
+    protocol_prefix = filesystem._get_protocol_prefix(location)
+    path_list = fs.walk(location)
+    for dirname, _, files in path_list:
+        dirname = protocol_prefix + dirname
+        subdir_target_location = os.path.relpath(dirname, start=location)
+        for basename in files:
+            yield dirname, basename, _without_dot(subdir_target_location)
 
 
 def write_asset(asset, target_directory):
@@ -184,13 +161,18 @@ def write_asset(asset, target_directory):
     if not os.path.exists(os.path.dirname(target_path)):
         os.makedirs(os.path.dirname(target_path))
     if copy_method == 'copy':
-        copy_file(source_path, target_path)
+        get_file(source_path, target_path)
     elif copy_method == 'link':
         link_file(source_path, target_path)
     else:
         raise ConfigError(
             f'Behavior of copy_method {copy_method} not defined for {source_path} asset'
         )
+
+
+def write_assets_to_directory(config, target_directory):
+    asset_list = config_to_asset_list(config)
+    write_asset_list(asset_list, target_directory)
 
 
 def write_asset_list(asset_list, target_directory):
@@ -221,28 +203,23 @@ def config_to_asset_list(config):
         if is_dict_or_list(config['patch_files']):
             asset_list += ensure_is_list(config['patch_files'])
         else:
-            raise ConfigError('patch_files item in config dictionary must be a dict or list')
+            raise ConfigError(
+                'patch_files item in config dictionary must be an asset dict or '
+                'list of asset dicts')
     return asset_list
 
 
 def link_file(source_item, target_item):
+    if any(not filesystem._is_local_path(item) for item in [source_item, target_item]):
+        raise NotImplementedError(
+            'cannot perform linking operation involving remote urls '
+            f'from {source_item} to {target_item}'
+        )
     if os.path.exists(target_item):
         os.remove(target_item)
-    os.link(source_item, target_item)
+    os.symlink(source_item, target_item)
 
 
-def copy_file(source_path, target_path):
-    if is_gsbucket_url(source_path):
-        if gsutil_is_installed():
-            check_call(['gsutil', 'cp', source_path, target_path])
-        else:
-            raise DependencyError(f'Optional dependency gsutil not found. File {source_path} will not be copied to {target_path}')
-    else:
-        shutil.copy(source_path, target_path)
-
-
-def gsutil_is_installed():
-    if shutil.which('gsutil') is None:
-        return False
-    else:
-        return True
+def get_file(source_path, target_path):
+    fs = filesystem.get_fs(source_path)
+    fs.get(source_path, target_path)

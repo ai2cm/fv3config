@@ -7,11 +7,14 @@ import tempfile
 import warnings
 import yaml
 from .._config import write_run_directory, _get_n_processes, _write_config_dict
-from .gcloud import _copy_directory, _copy_file
+from .. import filesystem
 
 STDOUT_FILENAME = 'stdout.log'
 STDERR_FILENAME = 'stderr.log'
 CONFIG_OUT_FILENAME = 'fv3config.yml'
+MPI_FLAGS = ['--allow-run-as-root', '--oversubscribe']
+
+logger = logging.getLogger('fv3run')
 
 
 def run_native(config_dict_or_location, outdir, runfile=None):
@@ -37,11 +40,15 @@ def run_native(config_dict_or_location, outdir, runfile=None):
             config_dict_or_location, config_out_filename)
         write_run_directory(config_dict, localdir)
         if runfile is not None:
-            _copy_file(runfile, os.path.join(localdir, os.path.basename(runfile)))
+            filesystem._get_file(
+                runfile,
+                os.path.join(localdir, os.path.basename(runfile))
+            )
         with _log_exceptions(localdir):
             n_processes = _get_n_processes(config_dict)
             _run_experiment(
-                localdir, n_processes, runfile_name=_get_basename_or_none(runfile))
+                localdir, n_processes, runfile_name=_get_basename_or_none(runfile),
+                mpi_flags=MPI_FLAGS)
 
 
 def _set_stacksize_unlimited():
@@ -61,18 +68,19 @@ def _temporary_directory(outdir):
         try:
             yield tempdir
         finally:
-            logging.info('Copying output to %s', outdir)
-            os.makedirs(outdir, exist_ok=True)
-            _copy_directory(tempdir, outdir)
+            logger.info('Copying output to %s', outdir)
+            fs = filesystem.get_fs(outdir)
+            fs.makedirs(outdir, exist_ok=True)
+            filesystem._put_directory(tempdir, outdir)
 
 
 @contextlib.contextmanager
 def _log_exceptions(localdir):
-    logging.info("running experiment")
+    logger.info("running experiment")
     try:
         yield
     except subprocess.CalledProcessError as e:
-        logging.critical(
+        logger.critical(
             "Experiment failed. "
             "Check %s and %s for logs.",
             STDOUT_FILENAME, STDERR_FILENAME
@@ -90,7 +98,7 @@ def _run_experiment(dirname, n_processes, runfile_name=None, mpi_flags=None):
     out_filename = os.path.join(dirname, STDOUT_FILENAME)
     err_filename = os.path.join(dirname, STDERR_FILENAME)
     with open(out_filename, 'wb') as out_file, open(err_filename, 'wb') as err_file:
-        logging.info('Running experiment in %s', dirname)
+        logger.info('Running experiment in %s', dirname)
         subprocess.check_call(
             ["mpirun", "-n", str(n_processes)] + mpi_flags + python_args,
             cwd=dirname, stdout=out_file, stderr=err_file
@@ -114,9 +122,9 @@ def _get_config_dict_and_write(config_dict_or_location, config_out_filename):
     return config_dict
 
 
-def _copy_and_load_config_dict(config_location, config_target_location):
-    _copy_file(config_location, config_target_location)
-    with open(config_target_location, 'r') as infile:
+def _copy_and_load_config_dict(config_location, local_target_location):
+    filesystem._get_file(config_location, local_target_location)
+    with open(local_target_location, 'r') as infile:
         config_dict = yaml.load(infile.read(), Loader=yaml.SafeLoader)
     return config_dict
 

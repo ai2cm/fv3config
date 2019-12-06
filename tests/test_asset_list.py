@@ -5,7 +5,7 @@ import fv3config
 from fv3config._asset_list import (
     is_dict_or_list, get_data_table_asset, get_diag_table_asset,
     get_field_table_asset, get_asset_dict, ensure_is_list,
-    asset_list_from_local_dir, check_asset_has_required_keys, write_asset
+    asset_list_from_path, check_asset_has_required_keys, write_asset
 )
 
 
@@ -104,6 +104,8 @@ class WorkDirectory(object):
 
 class AssetListTests(unittest.TestCase):
 
+    maxDiff = 999
+
     def setUp(self):
         self._work_directory_list = []
 
@@ -163,14 +165,14 @@ class AssetListTests(unittest.TestCase):
     def test_asset_list_from_local_dir_empty(self):
         workdir = self.make_work_directory('workdir_empty')
         self.make_empty_files(workdir, FILELIST_EMPTY)
-        asset_list = asset_list_from_local_dir(workdir)
+        asset_list = asset_list_from_path(workdir)
         self.assertEqual(asset_list, ASSET_LIST_EMPTY)
 
     def test_asset_list_from_local_dir_one_file_in_root(self):
         workdir = self.make_work_directory('workdir_with_files')
         self.make_empty_files(os.path.join(workdir, TEST_SOURCE_DIR),
                               FILELIST_ONE_FILE_IN_ROOT)
-        asset_list = asset_list_from_local_dir(os.path.join(workdir, TEST_SOURCE_DIR))
+        asset_list = asset_list_from_path(os.path.join(workdir, TEST_SOURCE_DIR))
         # necessary to have full path for source location in test assets
         for asset in ASSET_LIST_ONE_FILE_IN_ROOT:
             asset['source_location'] = os.path.join(workdir, asset['source_location'])
@@ -179,7 +181,7 @@ class AssetListTests(unittest.TestCase):
     def test_asset_list_from_local_dir_with_subdir(self):
         workdir = self.make_work_directory('workdir_with_files')
         self.make_empty_files(os.path.join(workdir, TEST_SOURCE_DIR), FILELIST_WITH_SUBDIR)
-        asset_list = asset_list_from_local_dir(os.path.join(workdir, TEST_SOURCE_DIR))
+        asset_list = asset_list_from_path(os.path.join(workdir, TEST_SOURCE_DIR))
         # necessary to have full path for source location in test assets
         for asset in ASSET_LIST_WITH_SUBDIR:
             asset['source_location'] = os.path.join(workdir, asset['source_location'])

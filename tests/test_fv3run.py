@@ -106,7 +106,7 @@ def test_fv3run_with_mocked_subprocess(runner):
         runner(fv3config.get_default_config(), outdir)
         assert mock.called
         assert mock.call_args[0] == ([
-            'mpirun', '-n', '6', 'python3', '-m', 'mpi4py', 'mock_runscript.py'],)
+            'mpirun', '-n', '6', '--allow-run-as-root', '--oversubscribe', 'python3', '-m', 'mpi4py', 'mock_runscript.py'],)
         config = yaml.safe_load(open(os.path.join(outdir, 'fv3config.yml'), 'r'))
         assert config == fv3config.get_default_config()
 

@@ -16,7 +16,8 @@ requirements = [
     'appdirs>=1.4.0',
     'requests>=2.22.0',
     'pyyaml>=5.0',
-    'gcsfs>=0.4.0'
+    'gcsfs>=0.4.0',
+    'fsspec>=0.6.0',
 ]
 
 setup_requirements = [
@@ -45,8 +46,9 @@ setup(
     },
     install_requires=requirements,
     extras_require={
-        'bucket-access': 'gsutil',
+        'bucket-access': 'gcsfs',
         'fv3run': 'fv3gfs-python',
+        'run_kubernetes': 'kubernetes',
     },
     license="BSD license",
     long_description=readme + '\n\n' + history,

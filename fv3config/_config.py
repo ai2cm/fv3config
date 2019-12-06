@@ -5,7 +5,7 @@ import yaml
 from ._exceptions import InvalidFileError, ConfigError
 from ._datastore import check_if_data_is_downloaded
 from ._tables import update_diag_table_for_config, get_current_date_from_config
-from ._asset_list import config_to_asset_list, write_asset_list
+from ._asset_list import config_to_asset_list, write_assets_to_directory
 
 package_directory = os.path.dirname(os.path.realpath(__file__))
 
@@ -116,8 +116,8 @@ def write_run_directory(config, target_directory):
         target_directory (str): target directory, will be created if it does not exist
     """
     check_if_data_is_downloaded()
-    asset_list = config_to_asset_list(config)
-    write_asset_list(asset_list, target_directory)
+    write_assets_to_directory(config, target_directory)
+    os.makedirs(os.path.join(target_directory, 'RESTART'), exist_ok=True)
     current_date = get_current_date_from_config(config, os.path.join(target_directory, 'INPUT'))
     update_diag_table_for_config(config, current_date, os.path.join(target_directory, 'diag_table'))
     config_to_namelist(config, os.path.join(target_directory, 'input.nml'))
