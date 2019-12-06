@@ -92,14 +92,14 @@ def test_get_job(
     assert pod_spec.restart_policy == 'Never'
     container = pod_spec.containers[0]
     _check_command(container.command, outdir, config_location, runfile)
-    _check_secret(container, pod_spec)
+    _check_secret(gcp_secret, container, pod_spec)
     assert container.image == docker_image
     assert container.image_pull_policy == image_pull_policy
     _check_resource_requirements(
         container, memory_args.memory_gb, memory_args.memory_gb_limit, cpu_count)
 
 
-def _check_secret(container, pod_spec):
+def _check_secret(gcp_secret, container, pod_spec):
     _check_secret_mount(gcp_secret, container, pod_spec)
     if gcp_secret is not None:
         _check_env(container.env, 'GOOGLE_APPLICATION_CREDENTIALS', '/secret/gcp-credentials/key.json')

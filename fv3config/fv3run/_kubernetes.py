@@ -96,8 +96,8 @@ def _create_job_object(
         image_pull_policy=kube_config.image_pull_policy,
         command=_get_kube_command(config_location, outdir, runfile),
         resources=kube_config.resource_requirements,
-        volume_mounts=kube_config.volume_mounts_list,
-        env=kube_config.env_list,
+        volume_mounts=kube_config.volume_mounts,
+        env=kube_config.env,
     )
     return _container_to_job(container, kube_config)
 
@@ -115,7 +115,7 @@ def _container_to_job(container, kube_config):
     pod_spec = kube.client.V1PodSpec(
         restart_policy="Never",
         containers=[container],
-        volumes=kube_config.volume_list,
+        volumes=kube_config.volumes,
     )
     template_spec = kube.client.V1PodTemplateSpec(
         metadata=kube.client.V1ObjectMeta(labels={"app": 'fv3run'}),
@@ -199,16 +199,16 @@ class KubernetesConfig(object):
             return None
     
     @property
-    def volume_list(self):
+    def volumes(self):
         if self.gcp_secret is not None:
             return [self._secret_volume]
         else:
             return []
     
     @property
-    def volume_mounts_list(self):
+    def volume_mounts(self):
         if self.gcp_secret is not None:
-            volume_mounts_list = [
+            volume_mounts = [
                 kube.client.V1VolumeMount(
                     mount_path='/secret/gcp-credentials',
                     name=self._secret_volume.name,
@@ -216,11 +216,11 @@ class KubernetesConfig(object):
                 )
             ]
         else:
-            volume_mounts_list = []
-        return volume_mounts_list
+            volume_mounts = []
+        return volume_mounts
 
     @property
-    def env_list(self):
+    def env(self):
         if self.gcp_secret is not None:
             return [
                 kube.client.V1EnvVar(
