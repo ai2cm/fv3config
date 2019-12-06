@@ -69,7 +69,7 @@ def _temporary_directory(outdir):
             yield tempdir
         finally:
             logger.info('Copying output to %s', outdir)
-            fs = filesystem._get_fs(outdir)
+            fs = filesystem.get_fs(outdir)
             fs.makedirs(outdir, exist_ok=True)
             filesystem._put_directory(tempdir, outdir)
 

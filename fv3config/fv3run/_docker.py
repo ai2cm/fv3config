@@ -1,7 +1,7 @@
 import tempfile
 import subprocess
 import os
-from ..filesystem import _is_gcloud_path
+from .. import filesystem
 from .._config import _write_config_dict
 from ._native import CONFIG_OUT_FILENAME
 
@@ -35,13 +35,7 @@ def run_docker(
     """
     if keyfile is None:
         keyfile = os.environ.get('GOOGLE_APPLICATION_CREDENTIALS', None)
-    if _is_gcloud_path(outdir):
-        raise NotImplementedError(
-            'running in a local docker container and uploading the output to '
-            'Google cloud is not yet implemented'
-        )
-    else:
-        os.makedirs(outdir, exist_ok=True)
+    filesystem.get_fs(outdir).makedirs(outdir, exist_ok=True)
     with tempfile.NamedTemporaryFile(suffix='.yaml') as config_tempfile:
         bind_mount_args = []
         python_args = []
@@ -59,11 +53,11 @@ def run_docker(
 
 def _get_runfile_args(runfile, bind_mount_args, python_args):
     if runfile is not None:
-        if _is_gcloud_path(runfile):
-            python_args += ['--runfile', runfile]
-        else:
+        if filesystem._is_local_path(runfile):
             bind_mount_args += ['-v', f'{os.path.abspath(runfile)}:{DOCKER_RUNFILE}']
             python_args += ['--runfile', DOCKER_RUNFILE]
+        else:
+            python_args += ['--runfile', runfile]
 
 
 def _get_python_command(config_location, outdir):
@@ -72,13 +66,13 @@ def _get_python_command(config_location, outdir):
 
 def _get_config_args(config_dict_or_location, config_tempfile, bind_mount_args):
     if isinstance(config_dict_or_location, str):
-        if _is_gcloud_path(config_dict_or_location):
-            config_location = config_dict_or_location
-        else:
+        if filesystem._is_local_path(config_dict_or_location):
             bind_mount_args += [
                 '-v',
                 f'{os.path.abspath(config_dict_or_location)}:{DOCKER_CONFIG_LOCATION}']
             config_location = DOCKER_CONFIG_LOCATION
+        else:
+            config_location = config_dict_or_location
     else:
         _write_config_dict(config_dict_or_location, config_tempfile.name)
         bind_mount_args += ['-v', f"{config_tempfile.name}:{DOCKER_CONFIG_LOCATION}"]

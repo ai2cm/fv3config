@@ -11,7 +11,6 @@ from fv3config._asset_list import (
     get_orographic_forcing_asset_list, get_base_forcing_asset_list,
     get_initial_conditions_asset_list, write_asset_list
 )
-from fv3config.filesystem import _is_gcloud_path as is_gsbucket_url
 
 test_directory = os.path.dirname(os.path.realpath(__file__))
 
@@ -92,7 +91,6 @@ restart_initial_conditions_dir = os.path.join('fv3config-cache',
                                               'restart_initial_conditions')
 
 option_abs_path = '/nonexistent/abs/path'
-option_gsbucket = 'gs://gsbucket-path'
 option_tag = 'custom_option'
 
 empty_built_in_options_dict = {}
@@ -333,10 +331,6 @@ class ForcingTests(unittest.TestCase):
         with self.assertRaises(fv3config.ConfigError):
             resolve_option(option_abs_path, empty_built_in_options_dict)
 
-    def test_resolve_option_gsbucket(self):
-        self.assertEqual(resolve_option(option_gsbucket, empty_built_in_options_dict),
-                         option_gsbucket)
-
     def test_resolve_option_tag_empty_built_in_options(self):
         with self.assertRaises(fv3config.ConfigError):
             resolve_option(option_tag, empty_built_in_options_dict)
@@ -345,10 +339,6 @@ class ForcingTests(unittest.TestCase):
         proper_option = one_item_built_in_options_dict[option_tag]
         self.assertEqual(resolve_option(option_tag, one_item_built_in_options_dict),
                          proper_option)
-
-    def test_is_gsbucket_url(self):
-        self.assertTrue(is_gsbucket_url(option_gsbucket))
-        self.assertFalse(is_gsbucket_url(option_abs_path))
 
 
 if __name__ == '__main__':

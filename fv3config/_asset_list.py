@@ -121,7 +121,7 @@ def asset_list_from_path(from_location, target_location='', copy_method='copy'):
     Returns:
         list: a list of asset dictionaries
         """
-    if filesystem._is_gcloud_path(from_location):
+    if not filesystem._is_local_path(from_location):
         copy_method = 'copy'
     asset_list = []
     for dirname, basename, relative_target_location in _asset_walk(from_location):
@@ -137,11 +137,8 @@ def asset_list_from_path(from_location, target_location='', copy_method='copy'):
 
 
 def _asset_walk(location):
-    fs = filesystem._get_fs(location)
-    if filesystem._is_gcloud_path(location):
-        protocol_prefix = 'gs://'
-    else:
-        protocol_prefix = ''
+    fs = filesystem.get_fs(location)
+    protocol_prefix = filesystem._get_protocol_prefix(location)
     path_list = fs.walk(location)
     for dirname, _, files in path_list:
         dirname = protocol_prefix + dirname
@@ -213,7 +210,7 @@ def config_to_asset_list(config):
 
 
 def link_file(source_item, target_item):
-    if filesystem._is_gcloud_path(source_item) or filesystem._is_gcloud_path(target_item):
+    if any(not filesystem._is_local_path(item) for item in [source_item, target_item]):
         raise NotImplementedError(
             'cannot perform linking operation involving remote urls '
             f'from {source_item} to {target_item}'
@@ -224,5 +221,5 @@ def link_file(source_item, target_item):
 
 
 def get_file(source_path, target_path):
-    fs = filesystem._get_fs(source_path)
+    fs = filesystem.get_fs(source_path)
     fs.get(source_path, target_path)

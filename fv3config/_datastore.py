@@ -162,15 +162,13 @@ def resolve_option(option, built_in_options_dict):
         ConfigError: if option is an absolute path but does not exist or if
                      option is not in default_options_dict
     """
-    if os.path.isabs(option):
-        if os.path.exists(option):
+    if filesystem.isabs(option):
+        if filesystem.get_fs(option).exists(option):
             return option
         else:
             raise ConfigError(
                 f'The provided path {option} does not exist.'
             )
-    elif filesystem._is_gcloud_path(option):
-        return option
     else:
         if option in built_in_options_dict:
             return os.path.join(_get_internal_cache_dir(), built_in_options_dict[option])
