@@ -11,7 +11,7 @@ except ImportError as err:
 
 def run_kubernetes(
         config_location, outdir, docker_image, runfile=None, jobname=None,
-        namespace="default", google_cloud_project=None,
+        namespace="default",
         memory_gb=3.6, memory_gb_limit=None, cpu_count=1, gcp_secret=None,
         image_pull_policy='IfNotPresent'):
     """Submit a kubernetes job to perform a fv3run operation.
@@ -35,9 +35,6 @@ def run_kubernetes(
             random uuid.uuid4().hex
         namespace (str, optional): kubernetes namespace for the job,
             defaults to "default"
-        google_cloud_project (str, optional): value for GOOGLE_CLOUD_PROJECT
-            environment variable when running the kubernetes job, which is used by
-            gcsfs for some operations. By default the environment variable is unset.
         memory_gb (float, optional): gigabytes of memory required for the kubernetes
             worker, defaults to 3.6GB
         memory_gb_limit (float, optional): maximum memory allowed for the kubernetes
@@ -51,7 +48,7 @@ def run_kubernetes(
             Defaults to "IfNotPresent".
     """
     job = _get_job(
-        config_location, outdir, docker_image, runfile, jobname, google_cloud_project,
+        config_location, outdir, docker_image, runfile, jobname,
         memory_gb, memory_gb_limit, cpu_count, gcp_secret,
         image_pull_policy)
     _submit_job(job, namespace)
@@ -59,18 +56,17 @@ def run_kubernetes(
 
 def _get_job(
         config_location, outdir, docker_image, runfile=None, jobname=None,
-        google_cloud_project=None,
         memory_gb=3.6, memory_gb_limit=None, cpu_count=1, gcp_secret=None,
         image_pull_policy='IfNotPresent'):
-    _ensure_locations_are_remote(config_location, outdir, runfile)
+    _ensure_locations_are_remote(config_location, outdir)
     kube_config = KubernetesConfig(
-        jobname, google_cloud_project, memory_gb, memory_gb_limit,
+        jobname, memory_gb, memory_gb_limit,
         cpu_count, gcp_secret, image_pull_policy)
     return _create_job_object(
         config_location, outdir, docker_image, runfile, kube_config)
 
 
-def _ensure_locations_are_remote(config_location, outdir, runfile):
+def _ensure_locations_are_remote(config_location, outdir):
     for location, description in (
             (config_location, 'yaml configuration'),
             (outdir, 'output directory')):
@@ -79,9 +75,9 @@ def _ensure_locations_are_remote(config_location, outdir, runfile):
 
 
 def _ensure_is_remote(location, description):
-    if not filesystem._is_gcloud_path(location):
+    if filesystem._is_local_path(location):
         raise ValueError(
-            f'{description} must be on Google cloud when running on kubernetes, '
+            f'{description} must be a remote path when running on kubernetes, '
             f'instead is {location}'
         )
 
@@ -145,7 +141,7 @@ def _container_to_job(container, kube_config):
 class KubernetesConfig(object):
 
     def __init__(
-            self, jobname=None, google_cloud_project=None,
+            self, jobname=None,
             memory_gb=3.6, memory_gb_limit=None, cpu_count=1, gcp_secret=None,
             image_pull_policy='IfNotPresent'):
         """Container for kubernetes-specific job configuration.
@@ -153,9 +149,6 @@ class KubernetesConfig(object):
         Args:
             jobname (str, optional): name to use for the kubernetes job, defaults to a
                 random uuid.uuid4().hex
-            google_cloud_project (str, optional): value for GOOGLE_CLOUD_PROJECT
-                environment variable when running the kubernetes job, which is used by
-                gcsfs for some operations. By default the environment variable is unset.
             memory_gb (float, optional): gigabytes of memory required for the kubernetes
                 worker, defaults to 3.6GB
             memory_gb_limit (float, optional): maximum memory allowed for the kubernetes
@@ -172,13 +165,6 @@ class KubernetesConfig(object):
             self.jobname = uuid.uuid4().hex
         else:
             self.jobname = jobname
-        if google_cloud_project is None:
-            try:
-                self.google_cloud_project = filesystem._get_gcloud_project()
-            except ImportError:
-                self.google_cloud_project = None
-        else:
-            self.google_cloud_project = google_cloud_project
         self.memory_gb = memory_gb
         if memory_gb_limit is None:
             self.memory_gb_limit = memory_gb
@@ -234,7 +220,7 @@ class KubernetesConfig(object):
         return volume_mounts_list
 
     @property
-    def _secret_env_list(self):
+    def env_list(self):
         if self.gcp_secret is not None:
             return [
                 kube.client.V1EnvVar(
@@ -248,19 +234,3 @@ class KubernetesConfig(object):
             ]
         else:
             return []
-
-    @property
-    def _project_env_list(self):
-        if self.google_cloud_project is not None:
-            return [
-                kube.client.V1EnvVar(
-                    name='GOOGLE_CLOUD_PROJECT',
-                    value=self.google_cloud_project,
-                )
-            ]
-        else:
-            return []
-
-    @property
-    def env_list(self):
-        return self._secret_env_list + self._project_env_list

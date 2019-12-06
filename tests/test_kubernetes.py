@@ -38,11 +38,6 @@ def jobname():
     return 'my-job-name'
 
 
-@pytest.fixture(params=['my-project', None])
-def google_cloud_project(request):
-    return request.param
-
-
 @pytest.fixture(params=["default", "manual_limit"])
 def memory_args(request):
     return {
@@ -85,10 +80,10 @@ def test_local_outdir_rejected(config_location, docker_image, runfile):
 
 def test_get_job(
         config_location, outdir, docker_image, runfile, jobname,
-        google_cloud_project, memory_args, cpu_count, gcp_secret, image_pull_policy):
+        memory_args, cpu_count, gcp_secret, image_pull_policy):
     job = fv3config.fv3run._kubernetes._get_job(
         config_location, outdir, docker_image, runfile, jobname,
-        google_cloud_project, memory_args.memory_gb, memory_args.memory_gb_limit_in,
+        memory_args.memory_gb, memory_args.memory_gb_limit_in,
         cpu_count, gcp_secret, image_pull_policy)
     _check_job(job, jobname)
     job_spec = job.spec
@@ -106,7 +101,6 @@ def test_get_job(
     else:
         _check_env(container.env, 'GOOGLE_APPLICATION_CREDENTIALS', None)
         _check_env(container.env, 'CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE', None)
-    _check_env(container.env, 'GOOGLE_CLOUD_PROJECT', google_cloud_project)
     _check_resource_requirements(
         container, memory_args.memory_gb, memory_args.memory_gb_limit, cpu_count)
 
