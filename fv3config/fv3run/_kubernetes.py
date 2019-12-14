@@ -9,6 +9,58 @@ except ImportError as err:
     kube = DelayedImportError(err)
 
 
+#### Temporary Monkey Patch to fix expiration check in kubernetes ####
+import datetime
+
+from kubernetes.config import dateutil
+
+_re_rfc3339 = dateutil._re_rfc3339
+_re_timezone = dateutil._re_timezone
+UTC = dateutil.UTC
+TimezoneInfo = dateutil.TimezoneInfo
+EXPIRY_SKEW_PREVENTION_DELAY = kube.config.kube_config.EXPIRY_SKEW_PREVENTION_DELAY
+
+def parse_rfc3339(s):
+    if isinstance(s, datetime.datetime):
+        # no need to parse it, just make sure it has a timezone.
+        if not s.tzinfo:
+            return s.replace(tzinfo=UTC)
+        return s
+    groups = _re_rfc3339.search(s).groups()
+    dt = [0] * 7
+    for x in range(6):
+        dt[x] = int(groups[x])
+    if groups[6] is not None:
+        # Failed on string "2019-12-14T00:15:18.725598937Z" couldn't handle float
+        # string casting directly to int for sub second portion. why is it not
+        # converted to microseconds?
+        dt[6] = int(float(groups[6]))
+    tz = UTC
+    if groups[7] is not None and groups[7] != 'Z' and groups[7] != 'z':
+        tz_groups = _re_timezone.search(groups[7]).groups()
+        hour = int(tz_groups[1])
+        minute = 0
+        if tz_groups[0] == "-":
+            hour *= -1
+        if tz_groups[2]:
+            minute = int(tz_groups[2])
+        tz = TimezoneInfo(hour, minute)
+    return datetime.datetime(
+        year=dt[0], month=dt[1], day=dt[2],
+        hour=dt[3], minute=dt[4], second=dt[5],
+        microsecond=dt[6], tzinfo=tz)
+
+
+def _is_expired(expiry):
+    return ((parse_rfc3339(expiry) - EXPIRY_SKEW_PREVENTION_DELAY) <=
+            datetime.datetime.utcnow().replace(tzinfo=UTC))
+
+
+kube.config.kube_config.parse_rfc3339 = parse_rfc3339
+
+#### End of monkey patch ####
+
+
 def run_kubernetes(
         config_location, outdir, docker_image, runfile=None, jobname=None,
         namespace="default",
