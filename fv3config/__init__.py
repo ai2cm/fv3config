@@ -2,9 +2,9 @@
 
 """Top-level package for fv3config."""
 
-from ._config import (
+from .config import (
     config_to_namelist, config_from_namelist, get_default_config,
-    write_run_directory, enable_restart
+    write_run_directory, enable_restart, get_run_duration, set_run_duration
 )
 from ._exceptions import InvalidFileError, ConfigError
 from ._datastore import (

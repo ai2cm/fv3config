@@ -6,7 +6,7 @@ import os
 import tempfile
 import warnings
 import yaml
-from .._config import write_run_directory, _get_n_processes, _write_config_dict
+from ..config import write_run_directory, get_n_processes, config_to_yaml
 from .. import filesystem
 
 STDOUT_FILENAME = 'stdout.log'
@@ -45,7 +45,7 @@ def run_native(config_dict_or_location, outdir, runfile=None):
                 os.path.join(localdir, os.path.basename(runfile))
             )
         with _log_exceptions(localdir):
-            n_processes = _get_n_processes(config_dict)
+            n_processes = get_n_processes(config_dict)
             _run_experiment(
                 localdir, n_processes, runfile_name=_get_basename_or_none(runfile),
                 mpi_flags=MPI_FLAGS)
@@ -115,7 +115,7 @@ def _get_basename_or_none(runfile):
 def _get_config_dict_and_write(config_dict_or_location, config_out_filename):
     if isinstance(config_dict_or_location, dict):
         config_dict = config_dict_or_location
-        _write_config_dict(config_dict, config_out_filename)
+        config_to_yaml(config_dict, config_out_filename)
     else:
         config_dict = _copy_and_load_config_dict(
             config_dict_or_location, config_out_filename)

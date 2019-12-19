@@ -2,7 +2,7 @@ import tempfile
 import subprocess
 import os
 from .. import filesystem
-from .._config import _write_config_dict
+from ..config import config_to_yaml
 from ._native import CONFIG_OUT_FILENAME
 
 DOCKER_OUTDIR = '/outdir'
@@ -74,7 +74,7 @@ def _get_config_args(config_dict_or_location, config_tempfile, bind_mount_args):
         else:
             config_location = config_dict_or_location
     else:
-        _write_config_dict(config_dict_or_location, config_tempfile.name)
+        config_to_yaml(config_dict_or_location, config_tempfile.name)
         bind_mount_args += ['-v', f"{config_tempfile.name}:{DOCKER_CONFIG_LOCATION}"]
         config_location = DOCKER_CONFIG_LOCATION
     return config_location

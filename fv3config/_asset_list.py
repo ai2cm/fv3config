@@ -3,8 +3,8 @@ from ._datastore import (
     get_initial_conditions_directory, get_orographic_forcing_directory,
     get_base_forcing_directory
 )
-from ._tables import (
-    get_data_table_filename, get_diag_table_filename, get_field_table_filename
+from fv3config.config.derive import (
+    get_field_table_filename, get_diag_table_filename, get_data_table_filename
 )
 from ._exceptions import ConfigError
 from . import filesystem
