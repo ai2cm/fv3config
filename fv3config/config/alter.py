@@ -25,6 +25,7 @@ def enable_restart(config):
     restart_config['namelist']['fv_core_nml']['warm_start'] = True
     restart_config['namelist']['fv_core_nml']['na_init'] = 0
     return restart_config
+<<<<<<< HEAD
 
 
 def set_run_duration(config: dict, duration: timedelta) -> dict:
@@ -56,3 +57,5 @@ def set_run_duration(config: dict, duration: timedelta) -> dict:
     coupler_nml["days"] = days
     coupler_nml["seconds"] = int(total_seconds - (days * SECONDS_IN_DAY))
     return return_config
+=======
+>>>>>>> refactor package structure to use directory for config routines
