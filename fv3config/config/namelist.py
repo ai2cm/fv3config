@@ -5,7 +5,7 @@ from .._exceptions import InvalidFileError
 
 
 def config_to_yaml(config, config_out_filename):
-    with open(config_out_filename, 'w') as outfile:
+    with open(config_out_filename, "w") as outfile:
         outfile.write(yaml.dump(config))
 
 
@@ -18,7 +18,7 @@ def config_to_namelist(config, namelist_filename):
     """
     if os.path.isfile(namelist_filename):
         os.remove(namelist_filename)
-    f90nml.write(config['namelist'], namelist_filename)
+    f90nml.write(config["namelist"], namelist_filename)
 
 
 def config_from_namelist(namelist_filename):
@@ -38,7 +38,7 @@ def config_from_namelist(namelist_filename):
     try:
         return_dict = _to_nested_dict(f90nml.read(namelist_filename).items())
     except FileNotFoundError:
-        raise InvalidFileError(f'namelist {namelist_filename} does not exist')
+        raise InvalidFileError(f"namelist {namelist_filename} does not exist")
     return return_dict
 
 
