@@ -85,6 +85,10 @@ The ``namelist`` item is special in that it is explicitly stored in the ``config
 fv3gfs model, individual namelists are specified for various components of the model. As an example, the
 vertical resolution can be accessed via ``config['namelist']['fv_core_nml']['npz']``.
 
+Some helper functions exist for editing and retrieving information from configuration
+dictionaries, like :py:func:`fv3config.get_run_duration` and
+:py:func:`fv3config.set_run_duration`. See the :ref:`API Reference` for more details.
+
 Running the model with fv3run
 -----------------------------
 

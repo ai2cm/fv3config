@@ -1,5 +1,7 @@
-API
-===
+.. _API Reference:
+
+API Reference
+=============
 
 .. automodule:: fv3config
    :members:
