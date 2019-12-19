@@ -2,7 +2,7 @@
 
 """Top-level package for fv3config."""
 
-from ._config import (
+from .config import (
     config_to_namelist, config_from_namelist, get_default_config,
     write_run_directory, enable_restart
 )
@@ -12,6 +12,7 @@ from ._datastore import (
 )
 from .fv3run import run_docker, run_native, run_kubernetes
 from ._asset_list import get_asset_dict
+import os as _os
 
 
 __author__ = """Vulcan Technologies LLC"""
