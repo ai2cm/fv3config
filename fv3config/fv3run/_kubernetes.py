@@ -177,6 +177,8 @@ def _container_to_job(container, kube_config):
         template=template_spec,
         backoff_limit=0,
         completions=1,
+        # ttl_seconds_after_finished is an alpha feature (as of Jan 2 2020)
+        # and it is not honored unless the cluster has alpha features enabled        
         ttl_seconds_after_finished=100,
     )
     job = kube.client.V1Job(
