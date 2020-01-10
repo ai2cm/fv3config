@@ -114,6 +114,10 @@ def test_get_job(
     _check_resource_requirements(
         container, memory_args.memory_gb, memory_args.memory_gb_limit, cpu_count
     )
+    toleration = pod_spec.tolerations[0]
+    assert toleration.effect == "NoSchedule"
+    assert toleration.key == "dedicated"
+    assert toleration.value == "climate-sim-pool"
 
 
 def _check_secret(gcp_secret, container, pod_spec):
