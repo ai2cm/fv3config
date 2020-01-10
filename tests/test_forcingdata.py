@@ -3,6 +3,7 @@ import os
 import shutil
 import tempfile
 import fv3config
+import fv3config.cache_location
 from fv3config._datastore import (
     get_base_forcing_directory,
     get_orographic_forcing_directory,
@@ -116,13 +117,13 @@ class ForcingTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.cache_dir = tempfile.TemporaryDirectory()
-        cls.original_cache_dir = fv3config.get_cache_dir()
-        fv3config.set_cache_dir(cls.cache_dir.name)
+        cls.original_cache_dir = fv3config.cache_location.get_cache_dir()
+        fv3config.cache_location.set_cache_dir(cls.cache_dir.name)
         fv3config.ensure_data_is_downloaded()
 
     @classmethod
     def tearDownClass(cls):
-        fv3config.set_cache_dir(cls.original_cache_dir)
+        fv3config.cache_location.set_cache_dir(cls.original_cache_dir)
         cls.cache_dir.cleanup()
 
     def setUp(self):

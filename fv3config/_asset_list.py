@@ -4,11 +4,7 @@ from ._datastore import (
     get_orographic_forcing_directory,
     get_base_forcing_directory,
 )
-from fv3config.config.derive import (
-    get_field_table_filename,
-    get_diag_table_filename,
-    get_data_table_filename,
-)
+from fv3config._datastore import get_field_table_filename, get_diag_table_filename, get_data_table_filename
 from ._exceptions import ConfigError
 from . import filesystem
 
@@ -172,7 +168,7 @@ def write_asset(asset, target_directory):
     if not os.path.exists(os.path.dirname(target_path)):
         os.makedirs(os.path.dirname(target_path))
     if copy_method == "copy":
-        get_file(source_path, target_path)
+        filesystem.get_file(source_path, target_path, cache=True)
     elif copy_method == "link":
         link_file(source_path, target_path)
     else:
@@ -235,8 +231,3 @@ def link_file(source_item, target_item):
     if os.path.exists(target_item):
         os.remove(target_item)
     os.symlink(source_item, target_item)
-
-
-def get_file(source_path, target_path):
-    fs = filesystem.get_fs(source_path)
-    fs.get(source_path, target_path)

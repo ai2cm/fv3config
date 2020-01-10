@@ -1,6 +1,7 @@
 import os
 import fsspec
 from ._exceptions import DelayedImportError
+from .cache_location import get_internal_cache_dir
 
 try:
     import gcsfs
@@ -39,6 +40,17 @@ def _get_protocol_prefix(location):
         return ""
 
 
+def _get_path(location):
+    """If a string starts with "<protocol>://"", return the rest of the string.
+    Otherwise, return the entire string.
+    """
+    separator = "://"
+    if separator in location:
+        return location[location.index(separator) + len(separator):]
+    else:
+        return location
+
+
 def _is_local_path(location):
     return _get_protocol_prefix(location) == ""
 
@@ -58,11 +70,54 @@ def _put_directory(local_source_dir, dest_dir, fs=None):
             fs.put(source, dest)
 
 
-def _get_file(source_filename, dest_filename):
+def get_file(source_filename, dest_filename, cache=False):
+    """Copy a file from a local or remote location to a local location.
+
+    Optionally cache remote files in the local fv3config cache.
+    
+    Args:
+        source_filename (str): the local or remote location to copy
+        dest_filename (str): the local target location
+        cache (bool, optional): if True and source is remote, copy the file from the
+            fv3config cache if it has been previously downloaded, and cache the file
+            if not. Does nothing if source_filename is local. Default is False.
+    """
+    if not cache or _is_local_path(source_filename):
+        _get_file_uncached(source_filename, dest_filename)
+    else:
+        _get_file_cached(source_filename, dest_filename)
+
+
+def _get_file_uncached(source_filename, dest_filename):
     fs = get_fs(source_filename)
     fs.get(source_filename, dest_filename)
 
 
-def _put_file(source_filename, dest_filename):
+def _get_file_cached(source_filename, dest_filename):
+    if _is_local_path(source_filename):
+        raise ValueError(f'will not cache a local path, was given {source_filename}')
+    else:
+        cache_location = _get_cache_filename(source_filename)
+        _get_file_uncached(source_filename, cache_location)
+        _get_file_uncached(cache_location, dest_filename)
+
+
+def put_file(source_filename, dest_filename):
+    """Copy a file from a local location to a local or remote location.
+    
+    Args:
+        source_filename (str): the local location to copy
+        dest_filename (str): the local or remote target location
+    """
     fs = get_fs(dest_filename)
     fs.put(source_filename, dest_filename)
+
+
+def _get_cache_filename(source_filename):
+    prefix = _get_protocol_prefix(source_filename).strip("://")
+    path = _get_path(source_filename)
+    print(prefix, path)
+    if len(path) == 0:
+        raise ValueError(f'no file path given in source filename {source_filename}')
+    cache_dir = get_internal_cache_dir()
+    return os.path.join(cache_dir, prefix, path)

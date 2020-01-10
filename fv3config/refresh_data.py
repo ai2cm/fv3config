@@ -1,4 +1,5 @@
-from ._datastore import refresh_downloaded_data, get_cache_dir
+from ._datastore import refresh_downloaded_data
+from fv3config import get_cache_dir
 
 if __name__ == "__main__":
     print(
