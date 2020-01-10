@@ -138,8 +138,15 @@ def _get_kube_command(config_location, outdir, runfile=None):
 
 
 def _container_to_job(container, kube_config):
+    # Toleration allows operation on the bigger nodes (with the specified taint)
+    toleration = kube.client.V1Toleration(
+        effect="NoSchedule", key="dedicated", value="climate-sim-pool",
+    )
     pod_spec = kube.client.V1PodSpec(
-        restart_policy="Never", containers=[container], volumes=kube_config.volumes,
+        restart_policy="Never",
+        containers=[container],
+        volumes=kube_config.volumes,
+        tolerations=[toleration],
     )
     template_spec = kube.client.V1PodTemplateSpec(
         metadata=kube.client.V1ObjectMeta(labels={"app": "fv3run"}), spec=pod_spec,
