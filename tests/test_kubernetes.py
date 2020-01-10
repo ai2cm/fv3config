@@ -114,6 +114,7 @@ def test_get_job(
     _check_resource_requirements(
         container, memory_args.memory_gb, memory_args.memory_gb_limit, cpu_count
     )
+    assert len(pod_spec.tolerations) == 1
     toleration = pod_spec.tolerations[0]
     _check_toleration(toleration)
 
