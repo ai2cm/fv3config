@@ -115,9 +115,7 @@ def test_get_job(
         container, memory_args.memory_gb, memory_args.memory_gb_limit, cpu_count
     )
     toleration = pod_spec.tolerations[0]
-    assert toleration.effect == "NoSchedule"
-    assert toleration.key == "dedicated"
-    assert toleration.value == "climate-sim-pool"
+    _check_toleration(toleration)
 
 
 def _check_secret(gcp_secret, container, pod_spec):
@@ -150,6 +148,12 @@ def _check_job_spec(job_spec):
     assert job_spec.backoff_limit == 0
     assert job_spec.completions == 1
     assert job_spec.ttl_seconds_after_finished == 100
+
+
+def _check_toleration(toleration):
+    assert toleration.effect == "NoSchedule"
+    assert toleration.key == "dedicated"
+    assert toleration.value == "climate-sim-pool"
 
 
 def _check_command(command, outdir, config_location, runfile):
