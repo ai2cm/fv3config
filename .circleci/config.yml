@@ -4,11 +4,20 @@
 #
 version: 2
 jobs:
+
+  lint:
+    docker:
+    - image: circleci/python:3.7
+    steps:
+      - checkout
+      - run: sudo pip3 install black flake8
+      - run: make lint
+
   build:
     docker:
       # specify the version you desire here
       # use `-browsers` prefix for selenium tests, e.g. `3.6.1-browsers`
-      - image: circleci/python:3.6.9
+      - image: circleci/python:3.7
 
       # Specify service dependencies here if necessary
       # CircleCI maintains a library of pre-built images
@@ -53,3 +62,10 @@ jobs:
       - store_artifacts:
           path: test-reports
           destination: test-reports
+
+workflows:
+  version: 2
+  lint_and_build:
+    jobs:
+      - lint
+      - build

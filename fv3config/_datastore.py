@@ -8,31 +8,31 @@ import appdirs
 from ._exceptions import ConfigError, DataMissingError
 from . import filesystem
 
-if 'FV3CONFIG_CACHE_DIR' in os.environ:
-    USER_CACHE_DIR = os.environ['FV3CONFIG_CACHE_DIR']
+if "FV3CONFIG_CACHE_DIR" in os.environ:
+    USER_CACHE_DIR = os.environ["FV3CONFIG_CACHE_DIR"]
 else:
-    USER_CACHE_DIR = appdirs.user_cache_dir('fv3gfs', 'vulcan')
+    USER_CACHE_DIR = appdirs.user_cache_dir("fv3gfs", "vulcan")
     os.makedirs(USER_CACHE_DIR, exist_ok=True)
 
 
-ARCHIVE_FILENAME = '2019-10-23-data-for-running-fv3gfs.tar.gz'
-ARCHIVE_FILENAME_ROOT = '2019-10-23-data-for-running-fv3gfs'
-ARCHIVE_URL = f'http://storage.googleapis.com/vcm-ml-public/{ARCHIVE_FILENAME}'
-CACHE_PREFIX = 'fv3config-cache'
+ARCHIVE_FILENAME = "2019-10-23-data-for-running-fv3gfs.tar.gz"
+ARCHIVE_FILENAME_ROOT = "2019-10-23-data-for-running-fv3gfs"
+ARCHIVE_URL = f"http://storage.googleapis.com/vcm-ml-public/{ARCHIVE_FILENAME}"
+CACHE_PREFIX = "fv3config-cache"
 
 FORCING_OPTIONS_DICT = {
-    'default': 'base_forcing',
+    "default": "base_forcing",
 }
 
 INITIAL_CONDITIONS_OPTIONS_DICT = {
-    'gfs_example': 'initial_conditions/gfs_initial_conditions',
-    'restart_example': 'initial_conditions/restart_initial_conditions',
+    "gfs_example": "initial_conditions/gfs_initial_conditions",
+    "restart_example": "initial_conditions/restart_initial_conditions",
 }
 
 
 def set_cache_dir(parent_dirname):
     if not os.path.isdir(parent_dirname):
-        raise ValueError(f'{parent_dirname} does not exist')
+        raise ValueError(f"{parent_dirname} does not exist")
     elif not os.path.isdir(os.path.join(parent_dirname, CACHE_PREFIX)):
         os.mkdir(os.path.join(parent_dirname, CACHE_PREFIX))
     global USER_CACHE_DIR
@@ -59,12 +59,13 @@ def get_resolution(config):
     Raises:
         ConfigError: if the number of processors in x and y on a tile are unequal
     """
-    npx = config['namelist']['fv_core_nml']['npx']
-    npy = config['namelist']['fv_core_nml']['npy']
+    npx = config["namelist"]["fv_core_nml"]["npx"]
+    npy = config["namelist"]["fv_core_nml"]["npy"]
     if npx != npy:
         raise ConfigError(
-            f'npx and npy in fv_core_nml must be equal, but are {npx} and {npy}')
-    resolution = f'C{npx-1}'
+            f"npx and npy in fv_core_nml must be equal, but are {npx} and {npy}"
+        )
+    resolution = f"C{npx-1}"
     return resolution
 
 
@@ -73,11 +74,13 @@ def get_orographic_forcing_directory(config):
     specified by a config dictionary.
     """
     resolution = get_resolution(config)
-    dirname = os.path.join(_get_internal_cache_dir(), f'orographic_data/{resolution}')
+    dirname = os.path.join(_get_internal_cache_dir(), f"orographic_data/{resolution}")
     if not os.path.isdir(dirname):
-        valid_options = os.listdir(os.path.join(_get_internal_cache_dir(), 'orographic_data'))
+        valid_options = os.listdir(
+            os.path.join(_get_internal_cache_dir(), "orographic_data")
+        )
         raise ConfigError(
-            f'resolution {resolution} is unsupported; valid options are {valid_options}'
+            f"resolution {resolution} is unsupported; valid options are {valid_options}"
         )
     return dirname
 
@@ -86,26 +89,26 @@ def get_base_forcing_directory(config):
     """Return the string path of the base forcing directory
     specified by a config dictionary.
     """
-    if 'forcing' not in config:
-        raise ConfigError('config dictionary must have a \'forcing\' key')
-    return resolve_option(config['forcing'], FORCING_OPTIONS_DICT)
+    if "forcing" not in config:
+        raise ConfigError("config dictionary must have a 'forcing' key")
+    return resolve_option(config["forcing"], FORCING_OPTIONS_DICT)
 
 
 def get_initial_conditions_directory(config):
     """Return the string path of the initial conditions directory
     specified by a config dictionary.
     """
-    if 'initial_conditions' not in config:
-        raise ConfigError('config dictionary must have an \'initial_conditions\' key')
-    return resolve_option(config['initial_conditions'], INITIAL_CONDITIONS_OPTIONS_DICT)
+    if "initial_conditions" not in config:
+        raise ConfigError("config dictionary must have an 'initial_conditions' key")
+    return resolve_option(config["initial_conditions"], INITIAL_CONDITIONS_OPTIONS_DICT)
 
 
 def check_if_data_is_downloaded():
     dirname = _get_internal_cache_dir()
     if not os.path.isdir(dirname) or len(os.listdir(dirname)) == 0:
         raise DataMissingError(
-            'Required data for running fv3gfs not available. Try '
-            'python -m fv3config.download_data or ensure_data_is_downloaded()'
+            "Required data for running fv3gfs not available. Try "
+            "python -m fv3config.download_data or ensure_data_is_downloaded()"
         )
 
 
@@ -113,7 +116,7 @@ def ensure_data_is_downloaded():
     """Check of the cached data is present, and if not, download it."""
     os.makedirs(_get_internal_cache_dir(), exist_ok=True)
     if len(os.listdir(_get_internal_cache_dir())) == 0:
-        with tempfile.NamedTemporaryFile(mode='wb') as archive_file:
+        with tempfile.NamedTemporaryFile(mode="wb") as archive_file:
             download_data_archive(archive_file)
             archive_file.flush()
             extract_data(archive_file.name)
@@ -127,7 +130,7 @@ def refresh_downloaded_data():
 
 def download_data_archive(target_file):
     """Download the cached data."""
-    logging.info('Downloading required data for running fv3gfs to temporary file')
+    logging.info("Downloading required data for running fv3gfs to temporary file")
     r = requests.get(ARCHIVE_URL)
     target_file.write(r.content)
 
@@ -135,14 +138,15 @@ def download_data_archive(target_file):
 def extract_data(archive_filename):
     """Extract the downloaded archive, over-writing any data already present."""
     logging.info(
-        'Extracting required data for running fv3gfs to %s', _get_internal_cache_dir())
-    with tarfile.open(archive_filename, mode='r:gz') as f:
+        "Extracting required data for running fv3gfs to %s", _get_internal_cache_dir()
+    )
+    with tarfile.open(archive_filename, mode="r:gz") as f:
         with tempfile.TemporaryDirectory() as tempdir:
             f.extractall(tempdir)
             for name in os.listdir(os.path.join(tempdir, ARCHIVE_FILENAME_ROOT)):
                 shutil.move(
                     os.path.join(tempdir, ARCHIVE_FILENAME_ROOT, name),
-                    _get_internal_cache_dir()
+                    _get_internal_cache_dir(),
                 )
 
 
@@ -166,15 +170,15 @@ def resolve_option(option, built_in_options_dict):
         if filesystem.get_fs(option).exists(option):
             return option
         else:
-            raise ConfigError(
-                f'The provided path {option} does not exist.'
-            )
+            raise ConfigError(f"The provided path {option} does not exist.")
     else:
         if option in built_in_options_dict:
-            return os.path.join(_get_internal_cache_dir(), built_in_options_dict[option])
+            return os.path.join(
+                _get_internal_cache_dir(), built_in_options_dict[option]
+            )
         else:
             raise ConfigError(
-                f'The provided option {option} is not one of the built in options: '
-                f'{list(built_in_options_dict.keys())}. '
-                'Paths to local files or directories must be absolute.'
+                f"The provided option {option} is not one of the built in options: "
+                f"{list(built_in_options_dict.keys())}. "
+                "Paths to local files or directories must be absolute."
             )

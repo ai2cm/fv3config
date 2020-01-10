@@ -8,8 +8,7 @@ import click
 @click.command()
 def main(args=None):
     """Console script for fv3config."""
-    click.echo("Replace this message by putting your code into "
-               "fv3config.cli.main")
+    click.echo("Replace this message by putting your code into " "fv3config.cli.main")
     click.echo("See click documentation at https://click.palletsprojects.com/")
     return 0
 

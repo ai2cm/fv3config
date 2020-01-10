@@ -3,10 +3,10 @@ import argparse
 from ._docker import run_docker
 from ._native import run_native
 
-MODULE_NAME = 'fv3config.run'
-STDOUT_FILENAME = 'stdout.log'
-STDERR_FILENAME = 'stderr.log'
-DOCKER_FLAGS = '-it'
+MODULE_NAME = "fv3config.run"
+STDOUT_FILENAME = "stdout.log"
+STDERR_FILENAME = "stderr.log"
+DOCKER_FLAGS = "-it"
 
 
 def _parse_args():
@@ -16,11 +16,30 @@ def _parse_args():
 Will use google cloud storage key at $GOOGLE_APPLICATION_CREDENTIALS by default.
 """
     )
-    parser.add_argument('config', type=str, action='store', help='location of fv3config yaml file')
-    parser.add_argument('outdir', type=str, action='store', help='location to copy final run directory')
-    parser.add_argument('--runfile', type=str, action='store', help='location of python script to execute with mpirun')
-    parser.add_argument('--dockerimage', type=str, action='store', help='if passed, execute inside a docker image with the given name')
-    parser.add_argument('--keyfile', type=str, action='store', help='google cloud storage key to use for cloud copy commands')
+    parser.add_argument(
+        "config", type=str, action="store", help="location of fv3config yaml file"
+    )
+    parser.add_argument(
+        "outdir", type=str, action="store", help="location to copy final run directory"
+    )
+    parser.add_argument(
+        "--runfile",
+        type=str,
+        action="store",
+        help="location of python script to execute with mpirun",
+    )
+    parser.add_argument(
+        "--dockerimage",
+        type=str,
+        action="store",
+        help="if passed, execute inside a docker image with the given name",
+    )
+    parser.add_argument(
+        "--keyfile",
+        type=str,
+        action="store",
+        help="google cloud storage key to use for cloud copy commands",
+    )
     return parser.parse_args()
 
 
@@ -52,12 +71,15 @@ def run(config_dict_or_location, outdir, runfile=None, docker_image=None, keyfil
     """
     if docker_image is not None:
         run_docker(
-            config_dict_or_location, outdir, docker_image,
-            runfile=runfile, keyfile=keyfile
+            config_dict_or_location,
+            outdir,
+            docker_image,
+            runfile=runfile,
+            keyfile=keyfile,
         )
     else:
         run_native(config_dict_or_location, outdir, runfile=runfile)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

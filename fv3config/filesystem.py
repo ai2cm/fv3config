@@ -1,6 +1,7 @@
 import os
 import fsspec
 from ._exceptions import DelayedImportError
+
 try:
     import gcsfs
 except ImportError as err:
@@ -13,10 +14,10 @@ except ImportError as err:
 
 def get_fs(path: str) -> fsspec.AbstractFileSystem:
     """Return the fsspec filesystem required to handle a given path."""
-    if path.startswith('gs://'):
-        return fsspec.filesystem('gs')
+    if path.startswith("gs://"):
+        return fsspec.filesystem("gs")
     else:
-        return fsspec.filesystem('file')
+        return fsspec.filesystem("file")
 
 
 def isabs(path: str) -> bool:
@@ -31,15 +32,15 @@ def _get_protocol_prefix(location):
     """If a string starts with "<protocol>://"", return that part of the string.
     Otherwise, return an empty string.
     """
-    separator = '://'
+    separator = "://"
     if separator in location:
-        return location[:location.index(separator) + len(separator)]
+        return location[: location.index(separator) + len(separator)]
     else:
-        return ''
+        return ""
 
 
 def _is_local_path(location):
-    return _get_protocol_prefix(location) == ''
+    return _get_protocol_prefix(location) == ""
 
 
 def _put_directory(local_source_dir, dest_dir, fs=None):
@@ -65,4 +66,3 @@ def _get_file(source_filename, dest_filename):
 def _put_file(source_filename, dest_filename):
     fs = get_fs(dest_filename)
     fs.put(source_filename, dest_filename)
-

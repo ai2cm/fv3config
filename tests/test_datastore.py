@@ -1,13 +1,12 @@
 import unittest
 import requests
 import tempfile
-import tarfile
 import fv3config
 import os
 
 TEST_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
 TAR_GZ_FILENAME = os.path.join(
-    TEST_DIRECTORY, 'testdata/2019-10-23-data-for-running-fv3gfs.tar.gz'
+    TEST_DIRECTORY, "testdata/2019-10-23-data-for-running-fv3gfs.tar.gz"
 )
 
 
@@ -18,7 +17,7 @@ class MockResponse(object):
     @property
     def content(self):
         MockResponse.times_called += 1
-        with open(TAR_GZ_FILENAME, mode='rb') as tarfile:
+        with open(TAR_GZ_FILENAME, mode="rb") as tarfile:
             return tarfile.read()
 
 
@@ -26,12 +25,11 @@ def mock_requests_get(url):
     return MockResponse()
 
 
-FILENAME = 'mock_file'
-FILE_CONTENT = 'mock_content\n'
+FILENAME = "mock_file"
+FILE_CONTENT = "mock_content\n"
 
 
 class DatastoreTests(unittest.TestCase):
-
     def test_get_archive_dir(self):
         result = fv3config.get_cache_dir()
         assert isinstance(result, str)
@@ -50,14 +48,13 @@ class DatastoreTests(unittest.TestCase):
 
 
 class DatastoreFileTests(unittest.TestCase):
-
     def setUp(self):
         self._original_get = requests.get
         requests.get = mock_requests_get
         self.original_cachedir = fv3config.get_cache_dir()
         self._cachedir_obj = tempfile.TemporaryDirectory()
         fv3config.set_cache_dir(self._cachedir_obj.name)
-        self.cachedir = os.path.join(self._cachedir_obj.name, 'fv3config-cache')
+        self.cachedir = os.path.join(self._cachedir_obj.name, "fv3config-cache")
         MockResponse.times_called = 0
 
     def tearDown(self):
@@ -71,7 +68,7 @@ class DatastoreFileTests(unittest.TestCase):
         filename_list = os.listdir(self.cachedir)
         assert len(filename_list) == 1
         assert filename_list[0] == FILENAME
-        with open(os.path.join(self.cachedir, FILENAME), 'r') as f:
+        with open(os.path.join(self.cachedir, FILENAME), "r") as f:
             assert f.read() == FILE_CONTENT
 
     def test_data_is_not_redownloaded(self):
