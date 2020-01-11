@@ -4,7 +4,6 @@ import shutil
 import logging
 import tempfile
 import requests
-import appdirs
 
 from fv3config.cache_location import get_internal_cache_dir
 from fv3config.config.derive import get_resolution
@@ -144,9 +143,7 @@ def resolve_option(option, built_in_options_dict):
             raise ConfigError(f"The provided path {option} does not exist.")
     else:
         if option in built_in_options_dict:
-            return os.path.join(
-                get_internal_cache_dir(), built_in_options_dict[option]
-            )
+            return os.path.join(get_internal_cache_dir(), built_in_options_dict[option])
         else:
             raise ConfigError(
                 f"The provided option {option} is not one of the built in options: "

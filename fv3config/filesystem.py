@@ -46,7 +46,7 @@ def _get_path(location):
     """
     separator = "://"
     if separator in location:
-        return location[location.index(separator) + len(separator):]
+        return location[location.index(separator) + len(separator) :]
     else:
         return location
 
@@ -95,9 +95,10 @@ def _get_file_uncached(source_filename, dest_filename):
 
 def _get_file_cached(source_filename, dest_filename):
     if _is_local_path(source_filename):
-        raise ValueError(f'will not cache a local path, was given {source_filename}')
+        raise ValueError(f"will not cache a local path, was given {source_filename}")
     else:
         cache_location = _get_cache_filename(source_filename)
+        os.makedirs(os.path.dirname(cache_location), exist_ok=True)
         _get_file_uncached(source_filename, cache_location)
         _get_file_uncached(cache_location, dest_filename)
 
@@ -116,8 +117,7 @@ def put_file(source_filename, dest_filename):
 def _get_cache_filename(source_filename):
     prefix = _get_protocol_prefix(source_filename).strip("://")
     path = _get_path(source_filename)
-    print(prefix, path)
     if len(path) == 0:
-        raise ValueError(f'no file path given in source filename {source_filename}')
+        raise ValueError(f"no file path given in source filename {source_filename}")
     cache_dir = get_internal_cache_dir()
     return os.path.join(cache_dir, prefix, path)

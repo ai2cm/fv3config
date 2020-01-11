@@ -8,7 +8,7 @@ import os
     [
         ("gs://my-bucket/my_filename.txt", "gs/my-bucket/my_filename.txt"),
         ("http://www.mysite.com/dir/file.nc", "http/www.mysite.com/dir/file.nc"),
-    ]
+    ],
 )
 def test_cache_filename(source_filename, cache_subpath):
     cache_dir = fv3config.filesystem.get_internal_cache_dir()

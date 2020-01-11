@@ -4,7 +4,11 @@ from ._datastore import (
     get_orographic_forcing_directory,
     get_base_forcing_directory,
 )
-from fv3config._datastore import get_field_table_filename, get_diag_table_filename, get_data_table_filename
+from fv3config._datastore import (
+    get_field_table_filename,
+    get_diag_table_filename,
+    get_data_table_filename,
+)
 from ._exceptions import ConfigError
 from . import filesystem
 
