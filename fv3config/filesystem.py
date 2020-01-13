@@ -98,8 +98,9 @@ def _get_file_cached(source_filename, dest_filename):
         raise ValueError(f"will not cache a local path, was given {source_filename}")
     else:
         cache_location = _get_cache_filename(source_filename)
-        os.makedirs(os.path.dirname(cache_location), exist_ok=True)
-        _get_file_uncached(source_filename, cache_location)
+        if not os.path.isfile(cache_location):
+            os.makedirs(os.path.dirname(cache_location), exist_ok=True)
+            _get_file_uncached(source_filename, cache_location)
         _get_file_uncached(cache_location, dest_filename)
 
 

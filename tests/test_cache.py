@@ -50,3 +50,20 @@ class CacheDirectoryTests(unittest.TestCase):
                 "fv3config-cache/gs/vcm-fv3config/config/diag_table/default/v1.0/diag_table",
             )
         )
+
+    def test_cached_diag_table_is_not_redownloaded(self):
+        config = fv3config.get_default_config()
+        config[
+            "diag_table"
+        ] = "gs://vcm-fv3config/config/diag_table/default/v1.0/diag_table"
+        with tempfile.TemporaryDirectory() as rundir:
+            fv3config.write_run_directory(config, rundir)
+        cache_filename = os.path.join(
+            fv3config.get_cache_dir(),
+            "fv3config-cache/gs/vcm-fv3config/config/diag_table/default/v1.0/diag_table",
+        )
+        assert os.path.isfile(cache_filename)
+        modification_time = os.path.getmtime(cache_filename)
+        with tempfile.TemporaryDirectory() as rundir:
+            fv3config.write_run_directory(config, rundir)
+        assert os.path.getmtime(cache_filename) == modification_time
