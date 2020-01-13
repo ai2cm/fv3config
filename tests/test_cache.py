@@ -39,12 +39,14 @@ class CacheDirectoryTests(unittest.TestCase):
 
     def test_cache_diag_table(self):
         config = fv3config.get_default_config()
-        config['diag_table'] = 'gs://vcm-fv3config/config/diag_table/default/v1.0/diag_table'
+        config[
+            "diag_table"
+        ] = "gs://vcm-fv3config/config/diag_table/default/v1.0/diag_table"
         with tempfile.TemporaryDirectory() as rundir:
             fv3config.write_run_directory(config, rundir)
         assert os.path.isfile(
             os.path.join(
                 fv3config.get_cache_dir(),
-                'fv3config-cache/gs/vcm-fv3config/config/diag_table/default/v1.0/diag_table'
+                "fv3config-cache/gs/vcm-fv3config/config/diag_table/default/v1.0/diag_table",
             )
         )
