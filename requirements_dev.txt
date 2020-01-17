@@ -18,3 +18,4 @@ gcsfs>=0.4.0
 google-cloud-storage
 fsspec==0.6.0
 kubernetes==10.0.1
+black==19.10b0

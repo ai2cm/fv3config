@@ -4,21 +4,17 @@ import shutil
 import logging
 import tempfile
 import requests
-import appdirs
+
+from fv3config.cache_location import get_internal_cache_dir
+from fv3config.config.derive import get_resolution
+from fv3config.data import DATA_DIR
 from ._exceptions import ConfigError, DataMissingError
 from . import filesystem
-
-if "FV3CONFIG_CACHE_DIR" in os.environ:
-    USER_CACHE_DIR = os.environ["FV3CONFIG_CACHE_DIR"]
-else:
-    USER_CACHE_DIR = appdirs.user_cache_dir("fv3gfs", "vulcan")
-    os.makedirs(USER_CACHE_DIR, exist_ok=True)
 
 
 ARCHIVE_FILENAME = "2019-10-23-data-for-running-fv3gfs.tar.gz"
 ARCHIVE_FILENAME_ROOT = "2019-10-23-data-for-running-fv3gfs"
 ARCHIVE_URL = f"http://storage.googleapis.com/vcm-ml-public/{ARCHIVE_FILENAME}"
-CACHE_PREFIX = "fv3config-cache"
 
 FORCING_OPTIONS_DICT = {
     "default": "base_forcing",
@@ -29,44 +25,18 @@ INITIAL_CONDITIONS_OPTIONS_DICT = {
     "restart_example": "initial_conditions/restart_initial_conditions",
 }
 
-
-def set_cache_dir(parent_dirname):
-    if not os.path.isdir(parent_dirname):
-        raise ValueError(f"{parent_dirname} does not exist")
-    elif not os.path.isdir(os.path.join(parent_dirname, CACHE_PREFIX)):
-        os.mkdir(os.path.join(parent_dirname, CACHE_PREFIX))
-    global USER_CACHE_DIR
-    USER_CACHE_DIR = parent_dirname
-
-
-def get_cache_dir():
-    return USER_CACHE_DIR
-
-
-def _get_internal_cache_dir():
-    return os.path.join(USER_CACHE_DIR, CACHE_PREFIX)
-
-
-def get_resolution(config):
-    """Get the model resolution based on a configuration dictionary.
-
-    Args:
-        config (dict): a configuration dictionary
-
-    Returns:
-        resolution (str): a model resolution (e.g. 'C48' or 'C96')
-
-    Raises:
-        ConfigError: if the number of processors in x and y on a tile are unequal
-    """
-    npx = config["namelist"]["fv_core_nml"]["npx"]
-    npy = config["namelist"]["fv_core_nml"]["npy"]
-    if npx != npy:
-        raise ConfigError(
-            f"npx and npy in fv_core_nml must be equal, but are {npx} and {npy}"
-        )
-    resolution = f"C{npx-1}"
-    return resolution
+DATA_TABLE_OPTIONS = {
+    "default": os.path.join(DATA_DIR, "data_table/data_table_default"),
+}
+DIAG_TABLE_OPTIONS = {
+    "default": os.path.join(DATA_DIR, "diag_table/diag_table_default"),
+    "no_output": os.path.join(DATA_DIR, "diag_table/diag_table_no_output"),
+    "grid_spec": os.path.join(DATA_DIR, "diag_table/diag_table_grid_spec"),
+}
+FIELD_TABLE_OPTIONS = {
+    "GFDLMP": os.path.join(DATA_DIR, "field_table/field_table_GFDLMP"),
+    "ZhaoCarr": os.path.join(DATA_DIR, "field_table/field_table_ZhaoCarr"),
+}
 
 
 def get_orographic_forcing_directory(config):
@@ -74,10 +44,10 @@ def get_orographic_forcing_directory(config):
     specified by a config dictionary.
     """
     resolution = get_resolution(config)
-    dirname = os.path.join(_get_internal_cache_dir(), f"orographic_data/{resolution}")
+    dirname = os.path.join(get_internal_cache_dir(), f"orographic_data/{resolution}")
     if not os.path.isdir(dirname):
         valid_options = os.listdir(
-            os.path.join(_get_internal_cache_dir(), "orographic_data")
+            os.path.join(get_internal_cache_dir(), "orographic_data")
         )
         raise ConfigError(
             f"resolution {resolution} is unsupported; valid options are {valid_options}"
@@ -104,7 +74,7 @@ def get_initial_conditions_directory(config):
 
 
 def check_if_data_is_downloaded():
-    dirname = _get_internal_cache_dir()
+    dirname = get_internal_cache_dir()
     if not os.path.isdir(dirname) or len(os.listdir(dirname)) == 0:
         raise DataMissingError(
             "Required data for running fv3gfs not available. Try "
@@ -114,8 +84,8 @@ def check_if_data_is_downloaded():
 
 def ensure_data_is_downloaded():
     """Check of the cached data is present, and if not, download it."""
-    os.makedirs(_get_internal_cache_dir(), exist_ok=True)
-    if len(os.listdir(_get_internal_cache_dir())) == 0:
+    os.makedirs(get_internal_cache_dir(), exist_ok=True)
+    if len(os.listdir(get_internal_cache_dir())) == 0:
         with tempfile.NamedTemporaryFile(mode="wb") as archive_file:
             download_data_archive(archive_file)
             archive_file.flush()
@@ -124,7 +94,7 @@ def ensure_data_is_downloaded():
 
 def refresh_downloaded_data():
     """Delete the cached data (if present) and re-download it."""
-    shutil.rmtree(_get_internal_cache_dir())
+    shutil.rmtree(get_internal_cache_dir())
     ensure_data_is_downloaded()
 
 
@@ -138,7 +108,7 @@ def download_data_archive(target_file):
 def extract_data(archive_filename):
     """Extract the downloaded archive, over-writing any data already present."""
     logging.info(
-        "Extracting required data for running fv3gfs to %s", _get_internal_cache_dir()
+        "Extracting required data for running fv3gfs to %s", get_internal_cache_dir()
     )
     with tarfile.open(archive_filename, mode="r:gz") as f:
         with tempfile.TemporaryDirectory() as tempdir:
@@ -146,7 +116,7 @@ def extract_data(archive_filename):
             for name in os.listdir(os.path.join(tempdir, ARCHIVE_FILENAME_ROOT)):
                 shutil.move(
                     os.path.join(tempdir, ARCHIVE_FILENAME_ROOT, name),
-                    _get_internal_cache_dir(),
+                    get_internal_cache_dir(),
                 )
 
 
@@ -173,12 +143,87 @@ def resolve_option(option, built_in_options_dict):
             raise ConfigError(f"The provided path {option} does not exist.")
     else:
         if option in built_in_options_dict:
-            return os.path.join(
-                _get_internal_cache_dir(), built_in_options_dict[option]
-            )
+            return os.path.join(get_internal_cache_dir(), built_in_options_dict[option])
         else:
             raise ConfigError(
                 f"The provided option {option} is not one of the built in options: "
                 f"{list(built_in_options_dict.keys())}. "
                 "Paths to local files or directories must be absolute."
             )
+
+
+def get_microphysics_name(config):
+    """Get name of microphysics scheme from configuration dictionary
+
+    Args:
+        config (dict): a configuration dictionary
+
+    Returns:
+        str: name of microphysics scheme
+
+    Raises:
+        NotImplementedError: no microphysics name defined for specified
+            imp_physics and ncld combination
+    """
+    imp_physics = config["namelist"]["gfs_physics_nml"].get("imp_physics")
+    ncld = config["namelist"]["gfs_physics_nml"].get("ncld")
+    if imp_physics == 11 and ncld == 5:
+        microphysics_name = "GFDLMP"
+    elif imp_physics == 99 and ncld == 1:
+        microphysics_name = "ZhaoCarr"
+    else:
+        raise NotImplementedError(
+            f"Microphysics choice imp_physics={imp_physics} and ncld={ncld} not one of the valid options"
+        )
+    return microphysics_name
+
+
+def get_field_table_filename(config):
+    """Get field_table filename given configuration dictionary
+
+    Args:
+        config (dict): a configuration dictionary
+
+    Returns:
+        str: field_table filename
+
+    Raises:
+        NotImplementedError: if field_table for microphysics option specified
+            in config has not been implemented
+    """
+    microphysics_name = get_microphysics_name(config)
+    if microphysics_name in FIELD_TABLE_OPTIONS.keys():
+        filename = FIELD_TABLE_OPTIONS[microphysics_name]
+    else:
+        raise NotImplementedError(
+            f"Field table does not exist for {microphysics_name} microphysics"
+        )
+    return filename
+
+
+def get_diag_table_filename(config):
+    """Return filename for diag_table specified in config
+
+    Args:
+        config (dict): a configuration dictionary
+
+    Returns:
+        str: diag_table filename
+    """
+    if "diag_table" not in config:
+        raise ConfigError("config dictionary must have a 'diag_table' key")
+    return resolve_option(config["diag_table"], DIAG_TABLE_OPTIONS)
+
+
+def get_data_table_filename(config):
+    """Return filename for data_table specified in config
+
+    Args:
+        config (dict): a configuration dictionary
+
+    Returns:
+        str: data_table filename
+    """
+    if "data_table" not in config:
+        raise ConfigError("config dictionary must have a 'data_table' key")
+    return resolve_option(config["data_table"], DATA_TABLE_OPTIONS)

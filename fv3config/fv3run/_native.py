@@ -41,7 +41,7 @@ def run_native(config_dict_or_location, outdir, runfile=None):
         )
         write_run_directory(config_dict, localdir)
         if runfile is not None:
-            filesystem._get_file(
+            filesystem.get_file(
                 runfile, os.path.join(localdir, os.path.basename(runfile))
             )
         with _log_exceptions(localdir):
@@ -129,7 +129,7 @@ def _get_config_dict_and_write(config_dict_or_location, config_out_filename):
 
 
 def _copy_and_load_config_dict(config_location, local_target_location):
-    filesystem._get_file(config_location, local_target_location)
+    filesystem.get_file(config_location, local_target_location)
     with open(local_target_location, "r") as infile:
         config_dict = yaml.load(infile.read(), Loader=yaml.SafeLoader)
     return config_dict

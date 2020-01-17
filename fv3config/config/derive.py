@@ -2,23 +2,7 @@ import os
 import re
 from datetime import timedelta
 from .._exceptions import ConfigError
-from .._datastore import resolve_option
-from ..data import DATA_DIR
 from .default import NAMELIST_DEFAULTS
-
-
-DATA_TABLE_OPTIONS = {
-    "default": os.path.join(DATA_DIR, "data_table/data_table_default"),
-}
-DIAG_TABLE_OPTIONS = {
-    "default": os.path.join(DATA_DIR, "diag_table/diag_table_default"),
-    "no_output": os.path.join(DATA_DIR, "diag_table/diag_table_no_output"),
-    "grid_spec": os.path.join(DATA_DIR, "diag_table/diag_table_grid_spec"),
-}
-FIELD_TABLE_OPTIONS = {
-    "GFDLMP": os.path.join(DATA_DIR, "field_table/field_table_GFDLMP"),
-    "ZhaoCarr": os.path.join(DATA_DIR, "field_table/field_table_ZhaoCarr"),
-}
 
 
 def get_n_processes(config):
@@ -88,83 +72,6 @@ def get_current_date(config, input_directory):
     return current_date
 
 
-def get_microphysics_name(config):
-    """Get name of microphysics scheme from configuration dictionary
-
-    Args:
-        config (dict): a configuration dictionary
-
-    Returns:
-        str: name of microphysics scheme
-
-    Raises:
-        NotImplementedError: no microphysics name defined for specified
-            imp_physics and ncld combination
-    """
-    imp_physics = config["namelist"]["gfs_physics_nml"].get("imp_physics")
-    ncld = config["namelist"]["gfs_physics_nml"].get("ncld")
-    if imp_physics == 11 and ncld == 5:
-        microphysics_name = "GFDLMP"
-    elif imp_physics == 99 and ncld == 1:
-        microphysics_name = "ZhaoCarr"
-    else:
-        raise NotImplementedError(
-            f"Microphysics choice imp_physics={imp_physics} and ncld={ncld} not one of the valid options"
-        )
-    return microphysics_name
-
-
-def get_field_table_filename(config):
-    """Get field_table filename given configuration dictionary
-
-    Args:
-        config (dict): a configuration dictionary
-
-    Returns:
-        str: field_table filename
-
-    Raises:
-        NotImplementedError: if field_table for microphysics option specified
-            in config has not been implemented
-    """
-    microphysics_name = get_microphysics_name(config)
-    if microphysics_name in FIELD_TABLE_OPTIONS.keys():
-        filename = FIELD_TABLE_OPTIONS[microphysics_name]
-    else:
-        raise NotImplementedError(
-            f"Field table does not exist for {microphysics_name} microphysics"
-        )
-    return filename
-
-
-def get_diag_table_filename(config):
-    """Return filename for diag_table specified in config
-
-    Args:
-        config (dict): a configuration dictionary
-
-    Returns:
-        str: diag_table filename
-    """
-    if "diag_table" not in config:
-        raise ConfigError("config dictionary must have a 'diag_table' key")
-    return resolve_option(config["diag_table"], DIAG_TABLE_OPTIONS)
-
-
-def get_data_table_filename(config):
-    """Return filename for data_table specified in config
-
-    Args:
-        config (dict): a configuration dictionary
-
-    Returns:
-        str: data_table filename
-    """
-    if "data_table" not in config:
-        raise ConfigError("config dictionary must have a 'data_table' key")
-    return resolve_option(config["data_table"], DATA_TABLE_OPTIONS)
-
-
 def _get_current_date_from_coupler_res(coupler_res_filename):
     """Return current_date specified in coupler.res file
 
@@ -182,3 +89,25 @@ def _get_current_date_from_coupler_res(coupler_res_filename):
                 f"{coupler_res_filename} does not have a valid current model time (need six integers on third line)"
             )
     return current_date
+
+
+def get_resolution(config):
+    """Get the model resolution based on a configuration dictionary.
+
+    Args:
+        config (dict): a configuration dictionary
+
+    Returns:
+        resolution (str): a model resolution (e.g. 'C48' or 'C96')
+
+    Raises:
+        ConfigError: if the number of processors in x and y on a tile are unequal
+    """
+    npx = config["namelist"]["fv_core_nml"]["npx"]
+    npy = config["namelist"]["fv_core_nml"]["npy"]
+    if npx != npy:
+        raise ConfigError(
+            f"npx and npy in fv_core_nml must be equal, but are {npx} and {npy}"
+        )
+    resolution = f"C{npx-1}"
+    return resolution

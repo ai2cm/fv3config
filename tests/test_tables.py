@@ -8,11 +8,13 @@ from fv3config import (
 from fv3config._tables import update_diag_table_for_config
 from fv3config.config.derive import (
     get_current_date,
+    _get_current_date_from_coupler_res,
+)
+from fv3config._datastore import (
     get_microphysics_name,
     get_field_table_filename,
     get_diag_table_filename,
     get_data_table_filename,
-    _get_current_date_from_coupler_res,
 )
 
 test_directory = os.path.dirname(os.path.realpath(__file__))
