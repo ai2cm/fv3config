@@ -1,4 +1,5 @@
 import os
+import re
 import uuid
 from .._exceptions import DelayedImportError
 from .. import filesystem
