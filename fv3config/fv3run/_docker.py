@@ -90,15 +90,22 @@ def _get_config_args(config_dict_or_location, config_tempfile, bind_mount_args):
     return config_location
 
 
-def _get_local_data_paths(config_dict):
-    """Return a list of all local paths referenced by the config dict."""
-    local_paths = []
-    for potential_path in [
+def _get_paths(config_dict):
+    """Return a list of all paths referenced by the config dict."""
+    return_list = [
         config_dict["diag_table"],
         config_dict["data_table"],
         config_dict["forcing"],
         config_dict["initial_conditions"],
-    ] + list(config_dict.get("patch_files", [])):
+    ]
+    return_list.extend(config_dict.get("patch_files", []))
+    return return_list
+
+
+def _get_local_data_paths(config_dict):
+    """Return a list of all local paths referenced by the config dict."""
+    local_paths = []
+    for potential_path in _get_paths(config_dict):
         if (
             isinstance(potential_path, str)
             and os.path.isabs(potential_path)
@@ -108,7 +115,6 @@ def _get_local_data_paths(config_dict):
         elif isinstance(potential_path, list):
             for asset in potential_path:
                 if filesystem._is_local_path(asset["source_location"]):
-                    print(asset.keys())
                     local_paths.append(
                         os.path.join(asset["source_location"], asset["source_name"])
                     )
