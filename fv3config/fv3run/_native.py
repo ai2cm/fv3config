@@ -12,7 +12,7 @@ from .. import filesystem
 STDOUT_FILENAME = "stdout.log"
 STDERR_FILENAME = "stderr.log"
 CONFIG_OUT_FILENAME = "fv3config.yml"
-MPI_FLAGS = ["--allow-run-as-root"]
+MPI_FLAGS = ["--allow-run-as-root", "--use-hwthread-cpus"]
 
 logger = logging.getLogger("fv3run")
 
