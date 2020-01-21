@@ -8,6 +8,7 @@ import collections
 import subprocess
 import pytest
 import yaml
+import gcsfs
 import fv3config
 
 TEST_DIR = os.path.dirname(os.path.realpath(__file__))
@@ -194,7 +195,7 @@ _original_get_file = fv3config.filesystem.get_file
 def maybe_get_file(*args, **kwargs):
     try:
         _original_get_file(*args, **kwargs)
-    except OSError:
+    except (OSError, gcsfs.utils.HttpError):
         pass
 
 
@@ -222,7 +223,8 @@ def maybe_get_file(*args, **kwargs):
     ],
 )
 def test_get_config_args(
-        config, tempfile, expected_config_location, expected_bind_mount_args):
+    config, tempfile, expected_config_location, expected_bind_mount_args
+):
     # paths don't actually exist, but that doesn't matter for this test
     # use mock to ignore the "not found" errors
     with unittest.mock.patch("fv3config.filesystem.get_file", new=maybe_get_file):
@@ -284,67 +286,75 @@ def test_get_credentials_args(keyfile, expected_docker_args, expected_bind_mount
     [
         [
             {
-                'experiment_name': 'default_experiment',
-                'initial_conditions': 'default',
-                'forcing': 'gs://bucket/forcing/default',
-                'diag_table': 'gs://bucket/diag/default',
-                'data_table': 'gs://bucket/data_table/default',
+                "experiment_name": "default_experiment",
+                "initial_conditions": "default",
+                "forcing": "gs://bucket/forcing/default",
+                "diag_table": "gs://bucket/diag/default",
+                "data_table": "gs://bucket/data_table/default",
             },
-            []
+            [],
         ],
         [
             {
-                'experiment_name': 'default_experiment',
-                'initial_conditions': '/local/initial/conditions',
-                'forcing': 'gs://bucket/forcing/default',
-                'diag_table': 'gs://bucket/diag/default',
-                'data_table': 'gs://bucket/data_table/default',
+                "experiment_name": "default_experiment",
+                "initial_conditions": "/local/initial/conditions",
+                "forcing": "gs://bucket/forcing/default",
+                "diag_table": "gs://bucket/diag/default",
+                "data_table": "gs://bucket/data_table/default",
             },
-            ["/local/initial/conditions"]
+            ["/local/initial/conditions"],
         ],
         [
             {
-                'experiment_name': 'default_experiment',
-                'initial_conditions': '/local/initial/conditions',
-                'forcing': '/local/forcing/default',
-                'diag_table': '/local/diag/default',
-                'data_table': 'gs://bucket/data_table/default',
+                "experiment_name": "default_experiment",
+                "initial_conditions": "/local/initial/conditions",
+                "forcing": "/local/forcing/default",
+                "diag_table": "/local/diag/default",
+                "data_table": "gs://bucket/data_table/default",
             },
-            ["/local/initial/conditions", "/local/forcing/default", '/local/diag/default']
+            [
+                "/local/initial/conditions",
+                "/local/forcing/default",
+                "/local/diag/default",
+            ],
         ],
         [
             {
-                'experiment_name': 'default_experiment',
-                'initial_conditions': 'gs://bucket/initial_conditions/default',
-                'forcing': 'gs://bucket/forcing/default',
-                'diag_table': [{
-                    'source_location': '/local/directory',
-                    'source_name': 'source_namename.nc',
-                    'target_location': 'INPUT/',
-                    'target_name': 'filename.nc',
-                    'copy_method': 'copy',
-                }],
-                'data_table': 'gs://bucket/data_table/default',
+                "experiment_name": "default_experiment",
+                "initial_conditions": "gs://bucket/initial_conditions/default",
+                "forcing": "gs://bucket/forcing/default",
+                "diag_table": [
+                    {
+                        "source_location": "/local/directory",
+                        "source_name": "source_namename.nc",
+                        "target_location": "INPUT/",
+                        "target_name": "filename.nc",
+                        "copy_method": "copy",
+                    }
+                ],
+                "data_table": "gs://bucket/data_table/default",
             },
-            ['/local/directory/source_namename.nc']
+            ["/local/directory/source_namename.nc"],
         ],
         [
             {
-                'experiment_name': 'default_experiment',
-                'initial_conditions': 'gs://bucket/initial_conditions/default',
-                'forcing': 'gs://bucket/forcing/default',
-                'diag_table': [{
-                    'source_location': 'gs://remote/directory',
-                    'source_name': 'source_namename.nc',
-                    'target_location': 'INPUT/',
-                    'target_name': 'filename.nc',
-                    'copy_method': 'copy',
-                }],
-                'data_table': 'gs://bucket/data_table/default',
+                "experiment_name": "default_experiment",
+                "initial_conditions": "gs://bucket/initial_conditions/default",
+                "forcing": "gs://bucket/forcing/default",
+                "diag_table": [
+                    {
+                        "source_location": "gs://remote/directory",
+                        "source_name": "source_namename.nc",
+                        "target_location": "INPUT/",
+                        "target_name": "filename.nc",
+                        "copy_method": "copy",
+                    }
+                ],
+                "data_table": "gs://bucket/data_table/default",
             },
-            []
+            [],
         ],
-    ]
+    ],
 )
 def test_get_local_paths(config_dict, local_paths):
     return_value = fv3config.fv3run._docker._get_local_data_paths(config_dict)
