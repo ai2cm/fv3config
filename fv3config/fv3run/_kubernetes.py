@@ -117,7 +117,7 @@ def _submit_job(job, namespace):
 
 def _create_job_object(config_location, outdir, docker_image, runfile, kube_config):
     container = kube.client.V1Container(
-        name=os.path.basename(docker_image),
+        name=_get_name_from_image(docker_image),
         image=docker_image,
         image_pull_policy=kube_config.image_pull_policy,
         command=_get_kube_command(config_location, outdir, runfile),
@@ -126,6 +126,11 @@ def _create_job_object(config_location, outdir, docker_image, runfile, kube_conf
         env=kube_config.env,
     )
     return _container_to_job(container, kube_config)
+
+
+def _get_name_from_image(docker_image):
+    name = os.path.basename(docker_image)
+    return re.split("\W+", name)[0]
 
 
 def _get_kube_command(config_location, outdir, runfile=None):
