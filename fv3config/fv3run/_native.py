@@ -2,6 +2,7 @@ import logging
 import contextlib
 import resource
 import subprocess
+import multiprocessing
 import os
 import tempfile
 import warnings
@@ -50,7 +51,7 @@ def run_native(config_dict_or_location, outdir, runfile=None):
                 localdir,
                 n_processes,
                 runfile_name=_get_basename_or_none(runfile),
-                mpi_flags=MPI_FLAGS,
+                mpi_flags=_add_oversubscribe_if_necessary(MPI_FLAGS, n_processes),
             )
 
 
@@ -63,6 +64,18 @@ def _set_stacksize_unlimited():
         warnings.warn(
             "could not remove stacksize limit, may run out of memory as a result"
         )
+
+
+def _add_oversubscribe_if_necessary(mpi_flags, n_processes):
+    try:
+        cpu_count = multiprocessing.cpu_count()
+        if cpu_count < n_processes:
+            mpi_flags += ['--oversubscribe']
+    except NotImplementedError:
+        warnings.warn("could not determine cpu count, using --oversubscribe in case")
+        mpi_flags += ['--oversubscribe']
+    return mpi_flags
+
 
 
 @contextlib.contextmanager
