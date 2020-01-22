@@ -369,7 +369,7 @@ def test_get_credentials_args(keyfile, expected_docker_args, expected_bind_mount
                     }
                 ],
                 "data_table": "gs://bucket/data_table/default",
-                "patch_files": []
+                "patch_files": [],
             },
             [],
         ],
@@ -413,15 +413,17 @@ def test_get_credentials_args(keyfile, expected_docker_args, expected_bind_mount
                     }
                 ],
                 "data_table": "gs://bucket/data_table/default",
-                "patch_files": [{
-                    "source_location": "/local/directory",
-                    "source_name": "source_name.nc",
-                    "target_location": "INPUT/",
-                    "target_name": "filename.nc",
-                    "copy_method": "copy",
-                }],
+                "patch_files": [
+                    {
+                        "source_location": "/local/directory",
+                        "source_name": "source_name.nc",
+                        "target_location": "INPUT/",
+                        "target_name": "filename.nc",
+                        "copy_method": "copy",
+                    }
+                ],
             },
-            ['/local/directory/source_name.nc'],
+            ["/local/directory/source_name.nc"],
         ],
     ],
 )

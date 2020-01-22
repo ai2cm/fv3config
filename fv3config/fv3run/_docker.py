@@ -103,9 +103,11 @@ def _get_paths(config_dict):
 
 
 def _is_local_path(maybe_path_or_object):
-    return (isinstance(maybe_path_or_object, str)
-            and os.path.isabs(maybe_path_or_object)
-            and filesystem._is_local_path(maybe_path_or_object))
+    return (
+        isinstance(maybe_path_or_object, str)
+        and os.path.isabs(maybe_path_or_object)
+        and filesystem._is_local_path(maybe_path_or_object)
+    )
 
 
 def _get_local_data_paths(config_dict):
