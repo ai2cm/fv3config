@@ -19,6 +19,7 @@ def get_fs(path: str) -> fsspec.AbstractFileSystem:
     if path.startswith("gs://"):
         fs = gcsfs.GCSFileSystem(token=None)
         fs.connect()
+        return fs
     else:
         return fsspec.filesystem("file")
 
