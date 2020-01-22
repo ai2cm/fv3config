@@ -89,6 +89,30 @@ Some helper functions exist for editing and retrieving information from configur
 dictionaries, like :py:func:`fv3config.get_run_duration` and
 :py:func:`fv3config.set_run_duration`. See the :ref:`API Reference` for more details.
 
+Specifying individual files
+---------------------------
+
+More fine-grained control of the files that are written to the run-directory is possible using the "asset"
+representation of run-directory files. An asset is a dictionary that knows about one files's source
+location/filename, target filename, target location within the run directory and whether that file is copied or linked.
+Asset dicts can be generated with the helper function :py:func:`fv3config.get_asset_dict`. For example::
+
+    >>> get_asset_dict('/path/to/filedir/', 'sample_file.nc', target_location='INPUT/')
+    {'source_location': '/path/to/filedir/',
+    'source_name': 'sample_file.nc',
+    'target_location': 'INPUT/',
+    'target_name': 'sample_file.nc',
+    'copy_method': 'copy'}
+
+One can set ``config['initial_conditions']`` or ``config['forcing']``
+to a list of assets in order to specify every initial condition or forcing file individually.
+
+One can use a directory to specify the initial conditions or forcing files and replace only a
+subset of the files within the that directory with the optional ``config['patch_files']`` item.
+All assets defined in ``config['patch_files']`` will overwrite any files specified in the
+initial conditions or forcing if they have the same target location and name.
+
+
 Running the model with fv3run
 -----------------------------
 
@@ -183,29 +207,6 @@ based on the default configuration dictionary::
 The gcp key is generally necessary to gain permissions to read and write from google
 cloud storage buckets. In the unlikely case that you are writing to a public bucket,
 it can be ommitted.
-
-Specifying individual files
----------------------------
-
-More fine-grained control of the files that are written to the run-directory is possible using the "asset"
-representation of run-directory files. An asset is a dictionary that knows about one files's source
-location/filename, target filename, target location within the run directory and whether that file is copied or linked.
-Asset dicts can be generated with the helper function :py:func:`fv3config.get_asset_dict`. For example::
-
-    >>> get_asset_dict('/path/to/filedir/', 'sample_file.nc', target_location='INPUT/')
-    {'source_location': '/path/to/filedir/',
-    'source_name': 'sample_file.nc',
-    'target_location': 'INPUT/',
-    'target_name': 'sample_file.nc',
-    'copy_method': 'copy'}
-
-One can set ``config['initial_conditions']`` or ``config['forcing']``
-to a list of assets in order to specify every initial condition or forcing file individually.
-
-One can use a directory to specify the initial conditions or forcing files and replace only a
-subset of the files within the that directory with the optional ``config['patch_files']`` item.
-All assets defined in ``config['patch_files']`` will overwrite any files specified in the
-initial conditions or forcing if they have the same target location and name.
 
 Restart runs
 ------------
