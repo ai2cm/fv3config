@@ -1,5 +1,6 @@
 import os
 import fsspec
+import gcsfs
 from ._exceptions import DelayedImportError
 from .cache_location import get_internal_cache_dir
 
@@ -16,7 +17,7 @@ except ImportError as err:
 def get_fs(path: str) -> fsspec.AbstractFileSystem:
     """Return the fsspec filesystem required to handle a given path."""
     if path.startswith("gs://"):
-        return fsspec.filesystem("gs")
+        return gcsfs.GCSFileSystem(token=None)
     else:
         return fsspec.filesystem("file")
 
