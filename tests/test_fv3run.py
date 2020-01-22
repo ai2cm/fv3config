@@ -322,19 +322,19 @@ def test_get_credentials_args(keyfile, expected_docker_args, expected_bind_mount
             {
                 "experiment_name": "default_experiment",
                 "initial_conditions": "gs://bucket/initial_conditions/default",
-                "forcing": "gs://bucket/forcing/default",
-                "diag_table": [
+                "forcing": [
                     {
                         "source_location": "/local/directory",
-                        "source_name": "source_namename.nc",
+                        "source_name": "source_name.nc",
                         "target_location": "INPUT/",
                         "target_name": "filename.nc",
                         "copy_method": "copy",
                     }
                 ],
+                "diag_table": "/local/diag/default",
                 "data_table": "gs://bucket/data_table/default",
             },
-            ["/local/directory/source_namename.nc"],
+            ["/local/directory/source_name.nc", "/local/diag/default"],
         ],
         [
             {
@@ -344,7 +344,7 @@ def test_get_credentials_args(keyfile, expected_docker_args, expected_bind_mount
                 "diag_table": [
                     {
                         "source_location": "gs://remote/directory",
-                        "source_name": "source_namename.nc",
+                        "source_name": "source_name.nc",
                         "target_location": "INPUT/",
                         "target_name": "filename.nc",
                         "copy_method": "copy",
@@ -353,6 +353,75 @@ def test_get_credentials_args(keyfile, expected_docker_args, expected_bind_mount
                 "data_table": "gs://bucket/data_table/default",
             },
             [],
+        ],
+        [
+            {
+                "experiment_name": "default_experiment",
+                "initial_conditions": "gs://bucket/initial_conditions/default",
+                "forcing": "gs://bucket/forcing/default",
+                "diag_table": [
+                    {
+                        "source_location": "gs://remote/directory",
+                        "source_name": "source_name.nc",
+                        "target_location": "INPUT/",
+                        "target_name": "filename.nc",
+                        "copy_method": "copy",
+                    }
+                ],
+                "data_table": "gs://bucket/data_table/default",
+                "patch_files": []
+            },
+            [],
+        ],
+        [
+            {
+                "experiment_name": "default_experiment",
+                "initial_conditions": "gs://bucket/initial_conditions/default",
+                "forcing": "gs://bucket/forcing/default",
+                "diag_table": [
+                    {
+                        "source_location": "gs://remote/directory",
+                        "source_name": "source_name.nc",
+                        "target_location": "INPUT/",
+                        "target_name": "filename.nc",
+                        "copy_method": "copy",
+                    }
+                ],
+                "data_table": "gs://bucket/data_table/default",
+                "patch_files": {
+                    "source_location": "gs://remote/directory",
+                    "source_name": "source_name.nc",
+                    "target_location": "INPUT/",
+                    "target_name": "filename.nc",
+                    "copy_method": "copy",
+                },
+            },
+            [],
+        ],
+        [
+            {
+                "experiment_name": "default_experiment",
+                "initial_conditions": "gs://bucket/initial_conditions/default",
+                "forcing": "gs://bucket/forcing/default",
+                "diag_table": [
+                    {
+                        "source_location": "gs://remote/directory",
+                        "source_name": "source_name.nc",
+                        "target_location": "INPUT/",
+                        "target_name": "filename.nc",
+                        "copy_method": "copy",
+                    }
+                ],
+                "data_table": "gs://bucket/data_table/default",
+                "patch_files": [{
+                    "source_location": "/local/directory",
+                    "source_name": "source_name.nc",
+                    "target_location": "INPUT/",
+                    "target_name": "filename.nc",
+                    "copy_method": "copy",
+                }],
+            },
+            ['/local/directory/source_name.nc'],
         ],
     ],
 )

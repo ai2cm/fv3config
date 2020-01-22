@@ -102,15 +102,17 @@ def _get_paths(config_dict):
     return return_list
 
 
+def _is_local_path(maybe_path_or_object):
+    return (isinstance(maybe_path_or_object, str)
+            and os.path.isabs(maybe_path_or_object)
+            and filesystem._is_local_path(maybe_path_or_object))
+
+
 def _get_local_data_paths(config_dict):
     """Return a list of all local paths referenced by the config dict."""
     local_paths = []
     for potential_path in _get_paths(config_dict):
-        if (
-            isinstance(potential_path, str)
-            and os.path.isabs(potential_path)
-            and filesystem._is_local_path(potential_path)
-        ):
+        if _is_local_path(potential_path):
             local_paths.append(potential_path)
         elif isinstance(potential_path, list):
             for asset in potential_path:
@@ -118,6 +120,12 @@ def _get_local_data_paths(config_dict):
                     local_paths.append(
                         os.path.join(asset["source_location"], asset["source_name"])
                     )
+        elif isinstance(potential_path, dict):
+            asset = potential_path
+            if filesystem._is_local_path(asset["source_location"]):
+                local_paths.append(
+                    os.path.join(asset["source_location"], asset["source_name"])
+                )
     return local_paths
 
 
