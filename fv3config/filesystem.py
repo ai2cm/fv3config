@@ -17,7 +17,7 @@ except ImportError as err:
 def get_fs(path: str) -> fsspec.AbstractFileSystem:
     """Return the fsspec filesystem required to handle a given path."""
     if path.startswith("gs://"):
-        fs = gcsfs.GCSFileSystem(token=None)
+        fs = gcsfs.GCSFileSystem(token="anon")
         fs.connect()
         return fs
     else:
