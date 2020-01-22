@@ -98,7 +98,11 @@ def _get_paths(config_dict):
         config_dict["forcing"],
         config_dict["initial_conditions"],
     ]
-    return_list.extend(config_dict.get("patch_files", []))
+    patch_files = config_dict.get("patch_files", [])
+    if isinstance(patch_files, list):
+        return_list.extend(patch_files)
+    else:
+        return_list.append(patch_files)
     return return_list
 
 
