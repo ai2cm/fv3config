@@ -70,11 +70,10 @@ def _add_oversubscribe_if_necessary(mpi_flags, n_processes):
     try:
         cpu_count = multiprocessing.cpu_count()
         if cpu_count < n_processes:
-            mpi_flags += ['--oversubscribe']
+            mpi_flags += ["--oversubscribe"]
     except NotImplementedError:
         warnings.warn("could not determine cpu count, assuming it is sufficient")
     return mpi_flags
-
 
 
 @contextlib.contextmanager
