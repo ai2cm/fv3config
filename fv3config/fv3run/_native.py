@@ -72,8 +72,7 @@ def _add_oversubscribe_if_necessary(mpi_flags, n_processes):
         if cpu_count < n_processes:
             mpi_flags += ['--oversubscribe']
     except NotImplementedError:
-        warnings.warn("could not determine cpu count, using --oversubscribe in case")
-        mpi_flags += ['--oversubscribe']
+        warnings.warn("could not determine cpu count, assuming it is sufficient")
     return mpi_flags
 
 
