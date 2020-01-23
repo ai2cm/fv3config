@@ -2,6 +2,7 @@ import logging
 import contextlib
 import resource
 import subprocess
+import multiprocessing
 import os
 import tempfile
 import warnings
@@ -12,7 +13,7 @@ from .. import filesystem
 STDOUT_FILENAME = "stdout.log"
 STDERR_FILENAME = "stderr.log"
 CONFIG_OUT_FILENAME = "fv3config.yml"
-MPI_FLAGS = ["--allow-run-as-root", "--oversubscribe"]
+MPI_FLAGS = ["--allow-run-as-root", "--use-hwthread-cpus"]
 
 logger = logging.getLogger("fv3run")
 
@@ -50,7 +51,7 @@ def run_native(config_dict_or_location, outdir, runfile=None):
                 localdir,
                 n_processes,
                 runfile_name=_get_basename_or_none(runfile),
-                mpi_flags=MPI_FLAGS,
+                mpi_flags=_add_oversubscribe_if_necessary(MPI_FLAGS, n_processes),
             )
 
 
@@ -63,6 +64,19 @@ def _set_stacksize_unlimited():
         warnings.warn(
             "could not remove stacksize limit, may run out of memory as a result"
         )
+
+
+def _add_oversubscribe_if_necessary(mpi_flags, n_processes):
+    try:
+        cpu_count = multiprocessing.cpu_count()
+        if cpu_count < n_processes:
+            mpi_flags += ["--oversubscribe"]
+    except NotImplementedError:
+        warnings.warn(
+            "could not determine cpu count, assuming number of processors"
+            "is at least as many as number of MPI tasks"
+        )
+    return mpi_flags
 
 
 @contextlib.contextmanager

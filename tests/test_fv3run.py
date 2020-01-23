@@ -119,7 +119,7 @@ def test_fv3run_with_mocked_subprocess(runner):
                 "-n",
                 "6",
                 "--allow-run-as-root",
-                "--oversubscribe",
+                "--use-hwthread-cpus",
                 "python3",
                 "-m",
                 "mpi4py",
