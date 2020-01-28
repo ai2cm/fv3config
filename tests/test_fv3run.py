@@ -116,7 +116,7 @@ def test_fv3run_with_mocked_subprocess(runner):
         call_args = list(mock.call_args[0])
         # ensure test does not depend on # of processors on testing system
         try:
-            call_args.remove('--oversubscribe')
+            call_args.remove("--oversubscribe")
         except ValueError:
             pass
         assert call_args == [
