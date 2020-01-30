@@ -187,14 +187,14 @@ flexibility a custom runfile can be specified as an argument to all the ``run_``
 functions.
 
 The default behavior is overriden if the environmental variable
-``FV3_PYTHON_RUNFILE`` is set in the execution environment. If set, this
-variable should contain the path of the runfile.
+ ``FV3CONFIG_DEFAULT_RUNFILE`` is set in the execution environment. If set, this
+ variable should contain the path of the runfile.
 
 .. note::
 
-  When using ``run_docker`` or ``run_kubernetes``, both ``FV3_PYTHON_RUNFILE``
-  and the file it points to must be present in the specified docker image. It
-  will have no effect if set on the host system.
+  When using ``run_docker`` or ``run_kubernetes``, both
+  ``FV3CONFIG_DEFAULT_RUNFILE`` and the file it points to must be present in the
+  specified docker image. It will have no effect if set on the host system.
    
 
 
