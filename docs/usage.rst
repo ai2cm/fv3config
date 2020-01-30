@@ -175,6 +175,27 @@ dependencies.
 The python interface is very similar to the command-line interface, but is split into
 separate functions based on where the model is being run.
 
+Customizing the model execution
+-------------------------------
+
+The ``runfile`` is the python script that will be executed by mpi, which
+typically imports the ``fv3gfs`` module, and then performs some time stepping.
+The default behavior is to use a pre-packaged runfile which reproduces the
+behavior of Fortran model identically. For additional, flexibility a custom
+runfile can be specified as an argument to all the ``run_`` functions.
+
+
+The environmental variable ``FV3CONFIG_DEFAULT_RUNFILE`` can be used to override
+the default runfile. If set, this variable should contain the path of the
+runfile.
+
+.. note::
+
+  When using ``run_docker`` or ``run_kubernetes``, the value of
+  ``FV3CONFIG_DEFAULT_RUNFILE`` and the file it points to will be read inside the
+  docker image where execution occurs. It will have no effect if set on the host
+  system outside of the docker image.
+
 Submitting a Kubernetes job
 ---------------------------
 

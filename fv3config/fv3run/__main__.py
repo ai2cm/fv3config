@@ -1,7 +1,7 @@
 import sys
 import argparse
 from ._docker import run_docker
-from ._native import run_native
+from ._native import run_native, RUNFILE_ENV_VAR
 
 MODULE_NAME = "fv3config.run"
 STDOUT_FILENAME = "stdout.log"
@@ -26,7 +26,8 @@ Will use google cloud storage key at $GOOGLE_APPLICATION_CREDENTIALS by default.
         "--runfile",
         type=str,
         action="store",
-        help="location of python script to execute with mpirun",
+        help="Location of python script to execute with mpirun. If not specified, a "
+        f"default is used, which can be overriden by setting the {RUNFILE_ENV_VAR}.",
     )
     parser.add_argument(
         "--dockerimage",

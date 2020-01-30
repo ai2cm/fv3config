@@ -14,6 +14,7 @@ STDOUT_FILENAME = "stdout.log"
 STDERR_FILENAME = "stderr.log"
 CONFIG_OUT_FILENAME = "fv3config.yml"
 MPI_FLAGS = ["--allow-run-as-root", "--use-hwthread-cpus"]
+RUNFILE_ENV_VAR = "FV3CONFIG_DEFAULT_RUNFILE"
 
 logger = logging.getLogger("fv3run")
 
@@ -50,7 +51,7 @@ def run_native(config_dict_or_location, outdir, runfile=None):
             _run_experiment(
                 localdir,
                 n_processes,
-                runfile_name=_get_basename_or_none(runfile),
+                runfile=runfile,
                 mpi_flags=_add_oversubscribe_if_necessary(MPI_FLAGS, n_processes),
             )
 
@@ -105,30 +106,32 @@ def _log_exceptions(localdir):
         raise e
 
 
-def _run_experiment(dirname, n_processes, runfile_name=None, mpi_flags=None):
+def _get_python_command(runfile):
+    python_args = ["python3", "-m", "mpi4py"]
+    if runfile is not None:
+        python_args.append(os.path.basename(runfile))
+    elif RUNFILE_ENV_VAR in os.environ:
+        python_args.append(os.environ[RUNFILE_ENV_VAR])
+    else:
+        python_args += ["-m", "fv3config.fv3run"]
+    return python_args
+
+
+def _run_experiment(dirname, n_processes, runfile, mpi_flags=None):
     if mpi_flags is None:
         mpi_flags = []
-    if runfile_name is None:
-        python_args = ["python3", "-m", "mpi4py", "-m", "fv3gfs.run"]
-    else:
-        python_args = ["python3", "-m", "mpi4py", runfile_name]
+
+    python_command = _get_python_command(runfile)
     out_filename = os.path.join(dirname, STDOUT_FILENAME)
     err_filename = os.path.join(dirname, STDERR_FILENAME)
     with open(out_filename, "wb") as out_file, open(err_filename, "wb") as err_file:
         logger.info("Running experiment in %s", dirname)
         subprocess.check_call(
-            ["mpirun", "-n", str(n_processes)] + mpi_flags + python_args,
+            ["mpirun", "-n", str(n_processes)] + mpi_flags + python_command,
             cwd=dirname,
             stdout=out_file,
             stderr=err_file,
         )
-
-
-def _get_basename_or_none(runfile):
-    if runfile is None:
-        return None
-    else:
-        return os.path.basename(runfile)
 
 
 def _get_config_dict_and_write(config_dict_or_location, config_out_filename):
