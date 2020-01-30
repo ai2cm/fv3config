@@ -172,8 +172,21 @@ container based on the given image name. This assumes the ``fv3config`` package 
 ``fv3gfs`` python wrapper are installed inside the container, along with any
 dependencies.
 
+
 The python interface is very similar to the command-line interface, but is split into
 separate functions based on where the model is being run.
+
+Customizing the model execution
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The ``runfile`` is the python script that will be executed by mpi, which
+typically imports the ``fv3gfs`` module, and then performs some time stepping.
+For maximum flexibility, a custom runfile can be specified as an argument to all the
+``run_`` functions, or by a pointing the environmental variable
+``FV3_PYTHON_RUNFILE`` to a runfile. This latter specification, is useful for
+prognostic ML runs, where the runfile will be added to a certain path inside a
+custom docker image. If no runfile is specified, a sane default is provided
+that will exactly emulate the behavior of the fortran model.
 
 Submitting a Kubernetes job
 ---------------------------
