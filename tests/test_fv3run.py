@@ -10,7 +10,7 @@ import pytest
 import yaml
 import gcsfs
 import fv3config
-from fv3config.fv3run._native import _get_python_args, RUNFILE_ENV_VAR
+from fv3config.fv3run._native import _get_python_command, RUNFILE_ENV_VAR
 
 TEST_DIR = os.path.dirname(os.path.realpath(__file__))
 MOCK_RUNSCRIPT = os.path.abspath(os.path.join(TEST_DIR, "testdata/mock_runscript.py"))
@@ -210,7 +210,7 @@ def test_get_runfile_args(runfile, expected_bind_mount_args, expected_python_arg
 def test__get_native_python_args(monkeypatch, runfile, expected, env_var):
     if env_var is not None:
         monkeypatch.setenv(RUNFILE_ENV_VAR, env_var)
-    assert _get_python_args(runfile) == expected
+    assert _get_python_command(runfile) == expected
 
 
 _original_get_file = fv3config.filesystem.get_file

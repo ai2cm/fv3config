@@ -172,7 +172,6 @@ container based on the given image name. This assumes the ``fv3config`` package 
 ``fv3gfs`` python wrapper are installed inside the container, along with any
 dependencies.
 
-
 The python interface is very similar to the command-line interface, but is split into
 separate functions based on where the model is being run.
 
@@ -181,22 +180,21 @@ Customizing the model execution
 
 The ``runfile`` is the python script that will be executed by mpi, which
 typically imports the ``fv3gfs`` module, and then performs some time stepping.
-The default behavior is to use a pre-packaged runfile ``-m fv3config.fv3run``
-which reproduces the behavior of Fortran model identically. For additional,
-flexibility a custom runfile can be specified as an argument to all the ``run_``
-functions.
+The default behavior is to use a pre-packaged runfile which reproduces the
+behavior of Fortran model identically. For additional, flexibility a custom
+runfile can be specified as an argument to all the ``run_`` functions.
 
-The default behavior is overriden if the environmental variable
- ``FV3CONFIG_DEFAULT_RUNFILE`` is set in the execution environment. If set, this
- variable should contain the path of the runfile.
+
+The environmental variable ``FV3CONFIG_DEFAULT_RUNFILE`` can be used to override
+the default runfile. If set, this variable should contain the path of the
+runfile.
 
 .. note::
 
-  When using ``run_docker`` or ``run_kubernetes``, both
-  ``FV3CONFIG_DEFAULT_RUNFILE`` and the file it points to must be present in the
-  specified docker image. It will have no effect if set on the host system.
-   
-
+  When using ``run_docker`` or ``run_kubernetes``, the value of
+  ``FV3CONFIG_DEFAULT_RUNFILE`` and the file it points to will be read inside the
+  docker image where execution occurs. It will have no effect if set on the host
+  system outside of the docker image.
 
 Submitting a Kubernetes job
 ---------------------------
