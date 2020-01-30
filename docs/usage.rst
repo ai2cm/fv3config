@@ -177,7 +177,7 @@ The python interface is very similar to the command-line interface, but is split
 separate functions based on where the model is being run.
 
 Customizing the model execution
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+-------------------------------
 
 The ``runfile`` is the python script that will be executed by mpi, which
 typically imports the ``fv3gfs`` module, and then performs some time stepping.
