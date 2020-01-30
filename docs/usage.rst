@@ -181,12 +181,22 @@ Customizing the model execution
 
 The ``runfile`` is the python script that will be executed by mpi, which
 typically imports the ``fv3gfs`` module, and then performs some time stepping.
-For maximum flexibility, a custom runfile can be specified as an argument to all the
-``run_`` functions, or by a pointing the environmental variable
-``FV3_PYTHON_RUNFILE`` to a runfile. This latter specification, is useful for
-prognostic ML runs, where the runfile will be added to a certain path inside a
-custom docker image. If no runfile is specified, a sane default is provided
-that will exactly emulate the behavior of the fortran model.
+The default behavior is to use a pre-packaged runfile ``-m fv3config.fv3run``
+which reproduces the behavior of Fortran model identically. For additional,
+flexibility a custom runfile can be specified as an argument to all the ``run_``
+functions.
+
+The default behavior is overriden if the environmental variable
+``FV3_PYTHON_RUNFILE`` is set in the execution environment. If set, this
+variable should contain the path of the runfile.
+
+.. note::
+
+  When using ``run_docker`` or ``run_kubernetes``, both ``FV3_PYTHON_RUNFILE``
+  and the file it points to must be present in the specified docker image. It
+  will have no effect if set on the host system.
+   
+
 
 Submitting a Kubernetes job
 ---------------------------

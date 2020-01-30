@@ -26,11 +26,8 @@ Will use google cloud storage key at $GOOGLE_APPLICATION_CREDENTIALS by default.
         "--runfile",
         type=str,
         action="store",
-        help="Location of python script to execute with mpirun. If this is not "
-        "provided, the file within the docker image pointed to be the "
-        "environmental "
-        f"variable {RUNFILE_ENV_VAR} will be used. If that variable is not "
-        "present, then the model will be run identically to the Fortran model.",
+        help="Location of python script to execute with mpirun. If not specified, a "
+             f"default is used, which can be overriden by setting the {RUNFILE_ENV_VAR}."
     )
     parser.add_argument(
         "--dockerimage",
