@@ -10,6 +10,7 @@ import pytest
 import yaml
 import gcsfs
 import fv3config
+from fv3config.fv3run._native import _get_python_args, RUNFILE_ENV_VAR
 
 TEST_DIR = os.path.dirname(os.path.realpath(__file__))
 MOCK_RUNSCRIPT = os.path.abspath(os.path.join(TEST_DIR, "testdata/mock_runscript.py"))
@@ -128,7 +129,7 @@ def test_fv3run_with_mocked_subprocess(runner):
                 "-m",
                 "mpi4py",
                 "mock_runscript.py",
-            ],
+            ]
         ]
         config = yaml.safe_load(open(os.path.join(outdir, "fv3config.yml"), "r"))
         assert config == fv3config.get_default_config()
@@ -191,6 +192,25 @@ def test_get_runfile_args(runfile, expected_bind_mount_args, expected_python_arg
     fv3config.fv3run._docker._get_runfile_args(runfile, bind_mount_args, python_args)
     assert bind_mount_args == expected_bind_mount_args
     assert python_args == expected_python_args
+
+
+@pytest.mark.parametrize(
+    "runfile, env_var, expected",
+    [
+        ("/path/to/runfile.py", None, ["python3", "-m", "mpi4py", "runfile.py"]),
+        ("a", "b", ["python3", "-m", "mpi4py", "a"]),
+        (
+            None,
+            "/path/to/runfile.py",
+            ["python3", "-m", "mpi4py", "/path/to/runfile.py"],
+        ),
+        (None, None, ["python3", "-m", "mpi4py", "-m", "fv3config.fv3run"]),
+    ],
+)
+def test__get_native_python_args(monkeypatch, runfile, expected, env_var):
+    if env_var is not None:
+        monkeypatch.setenv(RUNFILE_ENV_VAR, env_var)
+    assert _get_python_args(runfile) == expected
 
 
 _original_get_file = fv3config.filesystem.get_file
