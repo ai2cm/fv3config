@@ -27,7 +27,7 @@ Will use google cloud storage key at $GOOGLE_APPLICATION_CREDENTIALS by default.
         type=str,
         action="store",
         help="Location of python script to execute with mpirun. If not specified, a "
-             f"default is used, which can be overriden by setting the {RUNFILE_ENV_VAR}."
+        f"default is used, which can be overriden by setting the {RUNFILE_ENV_VAR}.",
     )
     parser.add_argument(
         "--dockerimage",
