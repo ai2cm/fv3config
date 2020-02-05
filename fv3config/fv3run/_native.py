@@ -113,7 +113,7 @@ def _get_python_command(runfile):
     elif RUNFILE_ENV_VAR in os.environ:
         python_args.append(os.environ[RUNFILE_ENV_VAR])
     else:
-        python_args += ["-m", "fv3config.fv3run"]
+        python_args += ["-m", "fv3gfs.run"]
     return python_args
 
 
