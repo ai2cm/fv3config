@@ -204,7 +204,7 @@ def test_get_runfile_args(runfile, expected_bind_mount_args, expected_python_arg
             "/path/to/runfile.py",
             ["python3", "-m", "mpi4py", "/path/to/runfile.py"],
         ),
-        (None, None, ["python3", "-m", "mpi4py", "-m", "fv3config.fv3run"]),
+        (None, None, ["python3", "-m", "mpi4py", "-m", "fv3gfs.run"]),
     ],
 )
 def test__get_native_python_args(monkeypatch, runfile, expected, env_var):
