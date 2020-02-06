@@ -34,8 +34,8 @@ DIAG_TABLE_OPTIONS = {
     "grid_spec": os.path.join(DATA_DIR, "diag_table/diag_table_grid_spec"),
 }
 FIELD_TABLE_OPTIONS = {
-    "GFDLMP": os.path.join(DATA_DIR, "field_table/field_table_GFDLMP"),
-    "ZhaoCarr": os.path.join(DATA_DIR, "field_table/field_table_ZhaoCarr"),
+    "GFDLMP": "field_table_GFDLMP",
+    "ZhaoCarr": "field_table_ZhaoCarr",
 }
 
 
@@ -179,7 +179,44 @@ def get_microphysics_name(config):
 
 
 def get_field_table_filename(config):
-    """Get field_table filename given configuration dictionary
+    """Get field_table filename fiven configuration dictionary
+
+    Args:
+        config (dict): a configuration dictionary
+
+    Returns:
+        str: field_table filename
+
+    Raises:
+        ConfigError
+    """
+    field_table = config.get("field_table", None)
+    if field_table is None:
+        field_table_dir = os.path.join(DATA_DIR, "field_table")
+    elif os.path.isabs(field_table):
+        if os.path.isfile(field_table):
+            return field_table
+        else:
+            field_table_dir = field_table
+    else:
+        raise ConfigError(
+            f"field_table={field_table} must either be left unset or set "
+            "to an existing absolute path to a file or directory"
+        )
+    inferred_filename = _infer_field_table_filename(config)
+    field_table_filename = os.path.join(field_table_dir, inferred_filename)
+    if not os.path.isfile(field_table_filename):
+        raise ConfigError(
+            f"Inferred field_table file {field_table_filename} does not exist"
+        )
+    else:
+        return field_table_filename
+
+
+def _infer_field_table_filename(config):
+    """Infer field_table filename given configuration dictionary
+
+    The inference is made based on settings for the microphysics.
 
     Args:
         config (dict): a configuration dictionary
@@ -198,7 +235,7 @@ def get_field_table_filename(config):
         raise NotImplementedError(
             f"Field table does not exist for {microphysics_name} microphysics"
         )
-    return filename
+    return os.path.join(filename)
 
 
 def get_diag_table_filename(config):
