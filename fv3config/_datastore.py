@@ -235,7 +235,7 @@ def _infer_field_table_filename(config):
         raise NotImplementedError(
             f"Field table does not exist for {microphysics_name} microphysics"
         )
-    return os.path.join(filename)
+    return filename
 
 
 def get_diag_table_filename(config):
