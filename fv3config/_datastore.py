@@ -179,7 +179,7 @@ def get_microphysics_name(config):
 
 
 def get_field_table_filename(config):
-    """Get field_table filename fiven configuration dictionary
+    """Get field_table filename given configuration dictionary
 
     Args:
         config (dict): a configuration dictionary
@@ -193,8 +193,10 @@ def get_field_table_filename(config):
     field_table = config.get("field_table", None)
     if field_table is None:
         field_table_dir = os.path.join(DATA_DIR, "field_table")
-    elif os.path.isabs(field_table):
-        if os.path.isfile(field_table):
+    elif filesystem.isabs(field_table) and filesystem.get_fs(field_table).exists(
+        field_table
+    ):
+        if filesystem.get_fs(field_table).isfile(field_table):
             return field_table
         else:
             field_table_dir = field_table
@@ -205,7 +207,7 @@ def get_field_table_filename(config):
         )
     inferred_filename = _infer_field_table_filename(config)
     field_table_filename = os.path.join(field_table_dir, inferred_filename)
-    if not os.path.isfile(field_table_filename):
+    if not filesystem.get_fs(field_table_filename).exists(field_table_filename):
         raise ConfigError(
             f"Inferred field_table file {field_table_filename} does not exist"
         )
