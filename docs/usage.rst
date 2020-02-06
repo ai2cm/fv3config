@@ -81,6 +81,26 @@ filesystem must be given as absolute paths. If paths are given that begin with `
 attempt to download the specified file or files from Google Cloud Storage. For this functionality, ``gcsfs``
 must be installed and authorized to download from the specified bucket.
 
+A ``field_table`` file is required for running the model, though it is not
+necessarily a required key in the ``config`` dictionary. In this file, names
+and properties of the different tracers used in the model are specified. If
+not provided in the ``config`` dictionary, ``fv3config`` will attempt to infer
+the required ``field_table`` based on the namelist parameters specified. This
+is typically recommended, because different ``field_table`` files are required
+depending on the model configuration, and it can be nice to rely on
+``fv3config`` to decide on what the appropriate file should be. That said, it
+can be useful to be able to override this. If one specifies a file path as a
+``field_table``, this file will be used regardless of the namelist
+parameters. If one specifies a directory as a ``field_table`` it will be
+assumed that the reference ``field_table`` files will be present in this
+directory, and will be used in place of the default reference ``field_table``
+files provided with ``fv3config``.  The current reference ``field_table`` files
+provided in ``fv3config`` correspond with files used for running with Zhao-Carr
+microphysics (``field_table_ZhaoCarr``) or with GFDL microphysics
+(``field_table_GFDLMP``). In FV3GFS these correspond with running with
+``gfs_phys_nml`` namelist parameters of ``imp_physics=99``, ``ncld=1``, and
+``imp_physics=11``, ``ncld=5``, respectively.
+
 The ``namelist`` item is special in that it is explicitly stored in the ``config`` dictionary. For the
 fv3gfs model, individual namelists are specified for various components of the model. As an example, the
 vertical resolution can be accessed via ``config['namelist']['fv_core_nml']['npz']``.
