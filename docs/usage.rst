@@ -259,5 +259,3 @@ restart initial conditions can be created with::
     config['initial_conditions'] = 'restart_example'
     config = enable_restart(config)
     write_run_directory(config, './rundir')
-
-.. _HB2019: https://journals.ametsoc.org/doi/full/10.1175/WAF-D-18-0146.1
