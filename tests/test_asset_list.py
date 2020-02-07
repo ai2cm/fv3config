@@ -159,9 +159,15 @@ class AssetListTests(unittest.TestCase):
             )
             self.assertEqual(field_table_asset, expected_field_table_asset)
 
-    def test_get_field_table_asset_non_existent_filename_or_directory(self):
+    def test_get_field_table_asset_non_existent_relative_path(self):
         config = fv3config.get_default_config()
         config["field_table"] = "foo"
+        with self.assertRaises(fv3config.ConfigError):
+            get_field_table_asset(config)
+
+    def test_get_field_table_asset_non_existent_absolute_path(self):
+        config = fv3config.get_default_config()
+        config["field_table"] = "/foo"
         with self.assertRaises(fv3config.ConfigError):
             get_field_table_asset(config)
 
