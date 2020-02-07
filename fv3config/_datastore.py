@@ -33,6 +33,7 @@ DIAG_TABLE_OPTIONS = {
     "no_output": os.path.join(DATA_DIR, "diag_table/diag_table_no_output"),
     "grid_spec": os.path.join(DATA_DIR, "diag_table/diag_table_grid_spec"),
 }
+DEFAULT_FIELD_TABLE_DIR = os.path.join(DATA_DIR, "field_table")
 FIELD_TABLE_OPTIONS = {
     "GFDLMP": "field_table_GFDLMP",
     "ZhaoCarr": "field_table_ZhaoCarr",
@@ -178,24 +179,14 @@ def get_microphysics_name(config):
     return microphysics_name
 
 
-def get_inferred_field_table_filename(config, directory):
-    """Get field_table filename based on namelist parameter settings"""
-    field_table_filename = _infer_field_table_filename(config, directory)
-    if not filesystem.get_fs(field_table_filename).isfile(field_table_filename):
-        raise ConfigError(
-            f"Inferred field_table file {field_table_filename} does not exist"
-        )
-    else:
-        return field_table_filename
-
-
-def get_external_field_table_filename(config, field_table):
-    """Get field_table filename from a source to fv3config"""
+def _return_or_infer_field_table_filename(config, field_table):
+    """Return or infer the field_table filename based on the config"""
     if filesystem.get_fs(field_table).isfile(field_table):
         return field_table
+    elif filesystem.get_fs(field_table).isdir(field_table):
+        return _infer_field_table_filename(config, field_table)
     else:
-        directory = field_table
-        return get_inferred_field_table_filename(config, directory)
+        return field_table
 
 
 def get_field_table_filename(config):
@@ -210,18 +201,16 @@ def get_field_table_filename(config):
     Raises:
         ConfigError
     """
-    field_table = config.get("field_table", None)
-    if field_table is None:
-        directory = os.path.join(DATA_DIR, "field_table")
-        return get_inferred_field_table_filename(config, directory)
+    field_table = config.get("field_table", DEFAULT_FIELD_TABLE_DIR)
+    field_table_filename = _return_or_infer_field_table_filename(config, field_table)
+
+    if not filesystem.is_existing_absolute_path(field_table_filename):
+        raise ConfigError(
+            f"field_table={field_table} must either be left unset or set "
+            "to an existing absolute path to a file or directory"
+        )
     else:
-        if not filesystem.is_existing_absolute_path(field_table):
-            raise ConfigError(
-                f"field_table={field_table} must either be left unset or set "
-                "to an existing absolute path to a file or directory"
-            )
-        else:
-            return get_external_field_table_filename(config, field_table)
+        return field_table_filename
 
 
 def _infer_field_table_filename(config, field_table_directory):
