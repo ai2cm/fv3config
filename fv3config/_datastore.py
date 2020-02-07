@@ -222,7 +222,7 @@ def get_field_table_filename(config):
             )
         else:
             return get_external_field_table_filename(config, field_table)
-        
+
 
 def _infer_field_table_filename(config, field_table_directory):
     """Infer field_table filename given configuration dictionary
