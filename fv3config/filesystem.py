@@ -29,6 +29,11 @@ def isabs(path: str) -> bool:
         return os.path.isabs(path)
 
 
+def is_existing_absolute_path(path: str) -> bool:
+    """Return whether the path is an existing absolute path"""
+    return isabs(path) and get_fs(path).exists(path)
+
+
 def _get_protocol_prefix(location):
     """If a string starts with "<protocol>://"", return that part of the string.
     Otherwise, return an empty string.

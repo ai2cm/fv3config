@@ -178,6 +178,26 @@ def get_microphysics_name(config):
     return microphysics_name
 
 
+def get_inferred_field_table_filename(config, directory):
+    """Get field_table filename based on namelist parameter settings"""
+    field_table_filename = _infer_field_table_filename(config, directory)
+    if not filesystem.get_fs(field_table_filename).isfile(field_table_filename):
+        raise ConfigError(
+            f"Inferred field_table file {field_table_filename} does not exist"
+        )
+    else:
+        return field_table_filename
+
+
+def get_external_field_table_filename(config, field_table):
+    """Get field_table filename from a source to fv3config"""
+    if filesystem.get_fs(field_table).isfile(field_table):
+        return field_table
+    else:
+        directory = field_table
+        return get_inferred_field_table_filename(config, directory)
+
+
 def get_field_table_filename(config):
     """Get field_table filename given configuration dictionary
 
@@ -192,36 +212,26 @@ def get_field_table_filename(config):
     """
     field_table = config.get("field_table", None)
     if field_table is None:
-        field_table_dir = os.path.join(DATA_DIR, "field_table")
-    elif filesystem.isabs(field_table) and filesystem.get_fs(field_table).exists(
-        field_table
-    ):
-        if filesystem.get_fs(field_table).isfile(field_table):
-            return field_table
+        directory = os.path.join(DATA_DIR, "field_table")
+        return get_inferred_field_table_filename(config, directory)
+    else:
+        if not filesystem.is_existing_absolute_path(field_table):
+            raise ConfigError(
+                f"field_table={field_table} must either be left unset or set "
+                "to an existing absolute path to a file or directory"
+            )
         else:
-            field_table_dir = field_table
-    else:
-        raise ConfigError(
-            f"field_table={field_table} must either be left unset or set "
-            "to an existing absolute path to a file or directory"
-        )
-    inferred_filename = _infer_field_table_filename(config)
-    field_table_filename = os.path.join(field_table_dir, inferred_filename)
-    if not filesystem.get_fs(field_table_filename).exists(field_table_filename):
-        raise ConfigError(
-            f"Inferred field_table file {field_table_filename} does not exist"
-        )
-    else:
-        return field_table_filename
+            return get_external_field_table_filename(config, field_table)
+        
 
-
-def _infer_field_table_filename(config):
+def _infer_field_table_filename(config, field_table_directory):
     """Infer field_table filename given configuration dictionary
 
     The inference is made based on settings for the microphysics.
 
     Args:
         config (dict): a configuration dictionary
+        field_table_directory (str): a directory containing the field_table
 
     Returns:
         str: field_table filename
@@ -237,7 +247,7 @@ def _infer_field_table_filename(config):
         raise NotImplementedError(
             f"Field table does not exist for {microphysics_name} microphysics"
         )
-    return filename
+    return os.path.join(field_table_directory, filename)
 
 
 def get_diag_table_filename(config):
