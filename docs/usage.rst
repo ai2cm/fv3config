@@ -85,6 +85,19 @@ The ``namelist`` item is special in that it is explicitly stored in the ``config
 fv3gfs model, individual namelists are specified for various components of the model. As an example, the
 vertical resolution can be accessed via ``config['namelist']['fv_core_nml']['npz']``.
 
+By default, fv3config attempts to automatically select the ``field_table`` file
+to use for the model based on the selected microphysics scheme in the
+namelist. This supports Zhao-Carr or GFDL microphysics. If the user provides a
+``field_table`` key indicating a filename in the configuration dictionary, that
+file will be used instead.
+
+.. note::
+   The `Han and Bretherton (2019) <https://journals.ametsoc.org/doi/full/10.1175/WAF-D-18-0146.1>`_ TKE-EDMF
+   boundary layer scheme requires an additional tracer to be defined in the
+   ``field_table`` for TKE. This scheme is currently not supported by default
+   in ``fv3config``; however for the time being one can supply a custom
+   ``field_table`` for this purpose.
+
 Some helper functions exist for editing and retrieving information from configuration
 dictionaries, like :py:func:`fv3config.get_run_duration` and
 :py:func:`fv3config.set_run_duration`. See the :ref:`API Reference` for more details.

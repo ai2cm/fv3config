@@ -1,6 +1,7 @@
 import unittest
 import os
 import shutil
+import tempfile
 import fv3config
 from fv3config._asset_list import (
     is_dict_or_list,
@@ -146,6 +147,48 @@ class AssetListTests(unittest.TestCase):
         config = fv3config.get_default_config()
         field_table_asset = get_field_table_asset(config)
         self.assertEqual(field_table_asset, DEFAULT_FIELD_TABLE_ASSET)
+
+    def test_get_field_table_asset_existing_filename(self):
+        config = fv3config.get_default_config()
+        with tempfile.NamedTemporaryFile() as field_table:
+            config["field_table"] = field_table.name
+            field_table_asset = get_field_table_asset(config)
+            directory, filename = os.path.split(field_table.name)
+            expected_field_table_asset = get_asset_dict(
+                directory, filename, target_name="field_table"
+            )
+            self.assertEqual(field_table_asset, expected_field_table_asset)
+
+    def test_get_field_table_asset_non_existent_relative_path(self):
+        config = fv3config.get_default_config()
+        config["field_table"] = "foo"
+        with self.assertRaises(fv3config.ConfigError):
+            get_field_table_asset(config)
+
+    def test_get_field_table_asset_non_existent_absolute_path(self):
+        config = fv3config.get_default_config()
+        config["field_table"] = "/foo"
+        with self.assertRaises(fv3config.ConfigError):
+            get_field_table_asset(config)
+
+    def test_get_field_table_asset_existing_directory(self):
+        config = fv3config.get_default_config()
+        with tempfile.TemporaryDirectory() as directory:
+            default_field_table_name = DEFAULT_FIELD_TABLE_ASSET["source_name"]
+            open(os.path.join(directory, default_field_table_name), "a").close()
+            config["field_table"] = directory
+            field_table_asset = get_field_table_asset(config)
+            expected_field_table_asset = get_asset_dict(
+                directory, default_field_table_name, target_name="field_table"
+            )
+            self.assertEqual(field_table_asset, expected_field_table_asset)
+
+    def test_get_field_table_asset_existing_directory_absent_file(self):
+        config = fv3config.get_default_config()
+        with tempfile.TemporaryDirectory() as directory:
+            config["field_table"] = directory
+            with self.assertRaises(fv3config.ConfigError):
+                get_field_table_asset(config)
 
     def test_ensure_is_list(self):
         sample_dict = {}

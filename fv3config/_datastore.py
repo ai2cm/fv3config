@@ -33,9 +33,10 @@ DIAG_TABLE_OPTIONS = {
     "no_output": os.path.join(DATA_DIR, "diag_table/diag_table_no_output"),
     "grid_spec": os.path.join(DATA_DIR, "diag_table/diag_table_grid_spec"),
 }
+DEFAULT_FIELD_TABLE_DIR = os.path.join(DATA_DIR, "field_table")
 FIELD_TABLE_OPTIONS = {
-    "GFDLMP": os.path.join(DATA_DIR, "field_table/field_table_GFDLMP"),
-    "ZhaoCarr": os.path.join(DATA_DIR, "field_table/field_table_ZhaoCarr"),
+    "GFDLMP": "field_table_GFDLMP",
+    "ZhaoCarr": "field_table_ZhaoCarr",
 }
 
 
@@ -178,11 +179,47 @@ def get_microphysics_name(config):
     return microphysics_name
 
 
+def _return_or_infer_field_table_filename(config, field_table):
+    """Return or infer the field_table filename based on the config"""
+    if filesystem.get_fs(field_table).isfile(field_table):
+        return field_table
+    elif filesystem.get_fs(field_table).isdir(field_table):
+        return _infer_field_table_filename(config, field_table)
+    else:
+        return field_table
+
+
 def get_field_table_filename(config):
     """Get field_table filename given configuration dictionary
 
     Args:
         config (dict): a configuration dictionary
+
+    Returns:
+        str: field_table filename
+
+    Raises:
+        ConfigError
+    """
+    field_table = config.get("field_table", DEFAULT_FIELD_TABLE_DIR)
+    field_table_filename = _return_or_infer_field_table_filename(config, field_table)
+    if not filesystem.is_existing_absolute_path(field_table_filename):
+        raise ConfigError(
+            f"field_table={field_table} must either be left unset or set "
+            "to an existing absolute path to a file or directory"
+        )
+    else:
+        return field_table_filename
+
+
+def _infer_field_table_filename(config, field_table_directory):
+    """Infer field_table filename given configuration dictionary
+
+    The inference is made based on settings for the microphysics.
+
+    Args:
+        config (dict): a configuration dictionary
+        field_table_directory (str): a directory containing the field_table
 
     Returns:
         str: field_table filename
@@ -198,7 +235,7 @@ def get_field_table_filename(config):
         raise NotImplementedError(
             f"Field table does not exist for {microphysics_name} microphysics"
         )
-    return filename
+    return os.path.join(field_table_directory, filename)
 
 
 def get_diag_table_filename(config):
