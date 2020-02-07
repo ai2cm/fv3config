@@ -203,7 +203,6 @@ def get_field_table_filename(config):
     """
     field_table = config.get("field_table", DEFAULT_FIELD_TABLE_DIR)
     field_table_filename = _return_or_infer_field_table_filename(config, field_table)
-
     if not filesystem.is_existing_absolute_path(field_table_filename):
         raise ConfigError(
             f"field_table={field_table} must either be left unset or set "
