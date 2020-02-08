@@ -23,6 +23,7 @@ def run_kubernetes(
     cpu_count=1,
     gcp_secret=None,
     image_pull_policy="IfNotPresent",
+    experiment_label=None
 ):
     """Submit a kubernetes job to perform a fv3run operation.
 
@@ -56,6 +57,8 @@ def run_kubernetes(
             kubernetes job. if set to "Always", will always pull the latest image.
             When "IfNotPresent", will only pull if no image has already been pulled.
             Defaults to "IfNotPresent".
+        experiment_label (str, optional): label to apply to job pod.  Useful
+            for grouping jobs together in status checks.
     """
     job = _get_job(
         config_location,
@@ -68,6 +71,7 @@ def run_kubernetes(
         cpu_count,
         gcp_secret,
         image_pull_policy,
+        experiment_label,
     )
     _submit_job(job, namespace)
 
@@ -83,10 +87,11 @@ def _get_job(
     cpu_count=1,
     gcp_secret=None,
     image_pull_policy="IfNotPresent",
+    experiment_label=None,
 ):
     _ensure_locations_are_remote(config_location, outdir)
     kube_config = KubernetesConfig(
-        jobname, memory_gb, memory_gb_limit, cpu_count, gcp_secret, image_pull_policy
+        jobname, memory_gb, memory_gb_limit, cpu_count, gcp_secret, image_pull_policy, experiment_label,
     )
     return _create_job_object(
         config_location, outdir, docker_image, runfile, kube_config
@@ -144,6 +149,9 @@ def _get_kube_command(config_location, outdir, runfile=None):
 
 
 def _container_to_job(container, kube_config):
+    labels = {"app": "fv3run"}
+    labels.update(kube_config.experiment_label)
+
     # Toleration allows operation on the bigger nodes (with the specified taint)
     toleration = kube.client.V1Toleration(
         effect="NoSchedule", key="dedicated", value="climate-sim-pool",
@@ -155,7 +163,7 @@ def _container_to_job(container, kube_config):
         tolerations=[toleration],
     )
     template_spec = kube.client.V1PodTemplateSpec(
-        metadata=kube.client.V1ObjectMeta(labels={"app": "fv3run"}), spec=pod_spec,
+        metadata=kube.client.V1ObjectMeta(labels=labels), spec=pod_spec,
     )
     job_spec = kube.client.V1JobSpec(
         template=template_spec,
@@ -181,6 +189,7 @@ class KubernetesConfig:
         cpu_count=1,
         gcp_secret=None,
         image_pull_policy="IfNotPresent",
+        experiment_label=None,
     ):
         """Container for kubernetes-specific job configuration.
 
@@ -198,6 +207,8 @@ class KubernetesConfig:
                 kubernetes job. if set to "Always", will always pull the latest image.
                 When "IfNotPresent", will only pull if no image has already been pulled.
                 Defaults to "IfNotPresent".
+            experiment_label (str, optional): label to apply to job pod.  Useful
+                for grouping jobs together in status checks.
         """
         if jobname is None:
             self.jobname = uuid.uuid4().hex
@@ -211,6 +222,10 @@ class KubernetesConfig:
         self.cpu_count = cpu_count
         self.gcp_secret = gcp_secret
         self.image_pull_policy = image_pull_policy
+        if experiment_label is not None:
+            self.experiment_label = {"experiment_group": experiment_label}
+        else:
+            self.experiment_label = {}
 
     @property
     def resource_requirements(self):
