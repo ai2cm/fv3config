@@ -174,7 +174,7 @@ def _container_to_job(container, kube_config):
     job = kube.client.V1Job(
         api_version="batch/v1",
         kind="Job",
-        metadata=kube.client.V1ObjectMeta(name=kube_config.jobname,),
+        metadata=kube.client.V1ObjectMeta(name=kube_config.jobname),
         spec=job_spec,
     )
     return job
@@ -223,7 +223,7 @@ class KubernetesConfig:
         self.gcp_secret = gcp_secret
         self.image_pull_policy = image_pull_policy
         if experiment_label is not None:
-            self.experiment_label = {"experiment_group": experiment_label}
+            self.experiment_label = {"experiment_group": str(experiment_label)}
         else:
             self.experiment_label = {}
 
