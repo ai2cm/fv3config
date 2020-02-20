@@ -63,6 +63,7 @@ def gcp_secret(request):
 def image_pull_policy(request):
     return request.param
 
+
 @pytest.fixture(params=["test_exp_group", None])
 def experiment_label(request):
     return request.param
@@ -124,7 +125,6 @@ def test_get_job(
     toleration = pod_spec.tolerations[0]
     _check_toleration(toleration)
     _check_labels(job.spec.template.metadata, experiment_label)
-
 
 
 def _check_secret(gcp_secret, container, pod_spec):
@@ -205,5 +205,5 @@ def _check_labels(metadata, exp_label):
         assert metadata.labels["experiment_group"] == exp_label
     else:
         assert not hasattr(metadata.labels, "experiment_group")
-    
+
     assert metadata.labels["app"] == "fv3run"

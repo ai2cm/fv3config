@@ -23,7 +23,7 @@ def run_kubernetes(
     cpu_count=1,
     gcp_secret=None,
     image_pull_policy="IfNotPresent",
-    experiment_label=None
+    experiment_label=None,
 ):
     """Submit a kubernetes job to perform a fv3run operation.
 
@@ -91,7 +91,13 @@ def _get_job(
 ):
     _ensure_locations_are_remote(config_location, outdir)
     kube_config = KubernetesConfig(
-        jobname, memory_gb, memory_gb_limit, cpu_count, gcp_secret, image_pull_policy, experiment_label,
+        jobname,
+        memory_gb,
+        memory_gb_limit,
+        cpu_count,
+        gcp_secret,
+        image_pull_policy,
+        experiment_label,
     )
     return _create_job_object(
         config_location, outdir, docker_image, runfile, kube_config
