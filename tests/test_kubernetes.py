@@ -64,6 +64,11 @@ def image_pull_policy(request):
     return request.param
 
 
+@pytest.fixture(params=[{"job_group": "this_group", "extra_group": "this_extra"}, None])
+def job_labels(request):
+    return request.param
+
+
 def test_local_config_rejected(outdir, docker_image, runfile):
     with pytest.raises(ValueError):
         fv3config.fv3run._kubernetes._get_job(
@@ -88,6 +93,7 @@ def test_get_job(
     cpu_count,
     gcp_secret,
     image_pull_policy,
+    job_labels,
 ):
     job = fv3config.fv3run._kubernetes._get_job(
         config_location,
@@ -100,6 +106,7 @@ def test_get_job(
         cpu_count,
         gcp_secret,
         image_pull_policy,
+        job_labels,
     )
     _check_job(job, jobname)
     job_spec = job.spec
@@ -117,6 +124,7 @@ def test_get_job(
     assert len(pod_spec.tolerations) == 1
     toleration = pod_spec.tolerations[0]
     _check_toleration(toleration)
+    _check_labels(job.spec.template.metadata, job_labels)
 
 
 def _check_secret(gcp_secret, container, pod_spec):
@@ -189,3 +197,14 @@ def _check_env(env_list, key, value_or_none):
         assert not any(env.name == key for env in env_list)
     else:
         assert any(env.name == key and env.value == value_or_none for env in env_list)
+
+
+def _check_labels(metadata, job_labels):
+    if job_labels is not None:
+        for key, value in job_labels.items():
+            assert key in metadata.labels
+            assert metadata.labels[key] == value
+    else:
+        assert len(metadata.labels) == 1
+
+    assert metadata.labels["app"] == "fv3run"
