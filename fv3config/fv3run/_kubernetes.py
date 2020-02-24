@@ -57,7 +57,7 @@ def run_kubernetes(
             kubernetes job. if set to "Always", will always pull the latest image.
             When "IfNotPresent", will only pull if no image has already been pulled.
             Defaults to "IfNotPresent".
-        job_labels (Mapping[str, str], optional): labels provided as key-value pairs 
+        job_labels (Mapping[str, str], optional): labels provided as key-value pairs
             to apply to job pod.  Useful for grouping jobs together in status checks.
     """
     job = _get_job(
@@ -213,7 +213,7 @@ class KubernetesConfig:
                 kubernetes job. if set to "Always", will always pull the latest image.
                 When "IfNotPresent", will only pull if no image has already been pulled.
                 Defaults to "IfNotPresent".
-            job_labels (Mapping[str, str], optional): labels provided as key-value pairs 
+            job_labels (Mapping[str, str], optional): labels provided as key-value pairs
                 to apply to job pod.  Useful for grouping jobs together in status checks.
         """
         if jobname is None:
