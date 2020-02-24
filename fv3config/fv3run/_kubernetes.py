@@ -23,7 +23,7 @@ def run_kubernetes(
     cpu_count=1,
     gcp_secret=None,
     image_pull_policy="IfNotPresent",
-    experiment_label=None,
+    job_labels=None,
 ):
     """Submit a kubernetes job to perform a fv3run operation.
 
@@ -57,8 +57,8 @@ def run_kubernetes(
             kubernetes job. if set to "Always", will always pull the latest image.
             When "IfNotPresent", will only pull if no image has already been pulled.
             Defaults to "IfNotPresent".
-        experiment_label (str, optional): label to apply to job pod.  Useful
-            for grouping jobs together in status checks.
+        job_labels (Mapping[str, str], optional): labels provided as key-value pairs 
+            to apply to job pod.  Useful for grouping jobs together in status checks.
     """
     job = _get_job(
         config_location,
@@ -71,7 +71,7 @@ def run_kubernetes(
         cpu_count,
         gcp_secret,
         image_pull_policy,
-        experiment_label,
+        job_labels,
     )
     _submit_job(job, namespace)
 
@@ -87,7 +87,7 @@ def _get_job(
     cpu_count=1,
     gcp_secret=None,
     image_pull_policy="IfNotPresent",
-    experiment_label=None,
+    job_labels=None,
 ):
     _ensure_locations_are_remote(config_location, outdir)
     kube_config = KubernetesConfig(
@@ -97,7 +97,7 @@ def _get_job(
         cpu_count,
         gcp_secret,
         image_pull_policy,
-        experiment_label,
+        job_labels,
     )
     return _create_job_object(
         config_location, outdir, docker_image, runfile, kube_config
@@ -156,7 +156,7 @@ def _get_kube_command(config_location, outdir, runfile=None):
 
 def _container_to_job(container, kube_config):
     labels = {"app": "fv3run"}
-    labels.update(kube_config.experiment_label)
+    labels.update(kube_config.job_labels)
 
     # Toleration allows operation on the bigger nodes (with the specified taint)
     toleration = kube.client.V1Toleration(
@@ -195,7 +195,7 @@ class KubernetesConfig:
         cpu_count=1,
         gcp_secret=None,
         image_pull_policy="IfNotPresent",
-        experiment_label=None,
+        job_labels=None,
     ):
         """Container for kubernetes-specific job configuration.
 
@@ -213,8 +213,8 @@ class KubernetesConfig:
                 kubernetes job. if set to "Always", will always pull the latest image.
                 When "IfNotPresent", will only pull if no image has already been pulled.
                 Defaults to "IfNotPresent".
-            experiment_label (str, optional): label to apply to job pod.  Useful
-                for grouping jobs together in status checks.
+            job_labels (Mapping[str, str], optional): labels provided as key-value pairs 
+                to apply to job pod.  Useful for grouping jobs together in status checks.
         """
         if jobname is None:
             self.jobname = uuid.uuid4().hex
@@ -228,10 +228,10 @@ class KubernetesConfig:
         self.cpu_count = cpu_count
         self.gcp_secret = gcp_secret
         self.image_pull_policy = image_pull_policy
-        if experiment_label is not None:
-            self.experiment_label = {"experiment_group": str(experiment_label)}
+        if job_labels is not None:
+            self.job_labels = job_labels
         else:
-            self.experiment_label = {}
+            self.job_labels = {}
 
     @property
     def resource_requirements(self):
