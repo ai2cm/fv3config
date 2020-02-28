@@ -20,6 +20,10 @@ FORCING_OPTIONS_DICT = {
     "default": "base_forcing",
 }
 
+OROGRAPHIC_FORCING_OPTIONS_DICT = {
+    "default": "orographic_data",
+}
+
 INITIAL_CONDITIONS_OPTIONS_DICT = {
     "gfs_example": "initial_conditions/gfs_initial_conditions",
     "restart_example": "initial_conditions/restart_initial_conditions",
@@ -45,11 +49,13 @@ def get_orographic_forcing_directory(config):
     specified by a config dictionary.
     """
     resolution = get_resolution(config)
-    dirname = os.path.join(get_internal_cache_dir(), f"orographic_data/{resolution}")
-    if not os.path.isdir(dirname):
-        valid_options = os.listdir(
-            os.path.join(get_internal_cache_dir(), "orographic_data")
-        )
+    parent_dirname = resolve_option(
+        config.get("orographic_forcing", "default"), OROGRAPHIC_FORCING_OPTIONS_DICT
+    )
+    dirname = os.path.join(parent_dirname, resolution)
+    fs = filesystem.get_fs(dirname)
+    if not fs.isdir(dirname):
+        valid_options = fs.listdir(parent_dirname)
         raise ConfigError(
             f"resolution {resolution} is unsupported; valid options are {valid_options}"
         )
