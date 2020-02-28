@@ -49,7 +49,9 @@ def get_orographic_forcing_directory(config):
     specified by a config dictionary.
     """
     resolution = get_resolution(config)
-    parent_dirname = resolve_option(config.get('orographic_forcing', 'default'), OROGRAPHIC_FORCING_OPTIONS_DICT)
+    parent_dirname = resolve_option(
+        config.get("orographic_forcing", "default"), OROGRAPHIC_FORCING_OPTIONS_DICT
+    )
     dirname = os.path.join(parent_dirname, resolution)
     fs = filesystem.get_fs(dirname)
     if not fs.isdir(dirname):
