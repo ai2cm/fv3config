@@ -49,15 +49,11 @@ def get_orographic_forcing_directory(config):
     specified by a config dictionary.
     """
     resolution = get_resolution(config)
-    if 'orographic_forcing' not in config:
-        orographic_forcing_spec = 'default'
-    else:
-        orographic_forcing_spec = config['orographic_forcing']
-    parent_dirname = resolve_option(orographic_forcing_spec, OROGRAPHIC_FORCING_OPTIONS_DICT)
+    parent_dirname = resolve_option(config.get('orographic_forcing', 'default'), OROGRAPHIC_FORCING_OPTIONS_DICT)
     dirname = os.path.join(parent_dirname, resolution)
-
-    if get_internal_cache_dir() in dirname and not os.path.isdir(dirname):
-        valid_options = os.listdir(parent_dirname)
+    fs = filesystem.get_fs(dirname)
+    if not fs.isdir(dirname):
+        valid_options = fs.listdir(parent_dirname)
         raise ConfigError(
             f"resolution {resolution} is unsupported; valid options are {valid_options}"
         )
