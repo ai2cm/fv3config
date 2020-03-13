@@ -20,7 +20,7 @@ from ._asset_list import get_asset_dict
 
 __author__ = """Vulcan Technologies LLC"""
 __email__ = "jeremym@vulcan.com"
-__version__ = "__version__ = '0.2.0'"
+__version__ = "0.2.0"
 
 # necessary for auto-doc generation of API for public methods
 __all__ = dir()
