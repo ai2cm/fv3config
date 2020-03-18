@@ -89,7 +89,7 @@ def _get_job(
     image_pull_policy="IfNotPresent",
     job_labels=None,
 ):
-    _ensure_locations_are_remote(config_location, outdir)
+    # _ensure_locations_are_remote(config_location, outdir)
     kube_config = KubernetesConfig(
         jobname,
         memory_gb,
@@ -142,7 +142,7 @@ def _create_job_object(config_location, outdir, docker_image, runfile, kube_conf
 
 def _get_name_from_image(docker_image):
     name = os.path.basename(docker_image)
-    return re.split(r"\W+", name)[0]
+    return re.split(r"\W+", name)[0].replace("_", "-")
 
 
 def _get_kube_command(config_location, outdir, runfile=None):
