@@ -93,7 +93,7 @@ def _get_job(
 ):
     if filesystem._is_local_path(outdir):
         warnings.warn(
-            f"Output directory {outdir} is a local path, so it will not be accesible "
+            f"Output directory {outdir} is a local path, so it will not be accessible "
             "once the job finishes."
         )
 
