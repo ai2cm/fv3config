@@ -2,7 +2,6 @@ import os
 import re
 import uuid
 from .._exceptions import DelayedImportError
-from .. import filesystem
 from ._docker import _get_python_command
 
 try:
