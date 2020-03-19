@@ -12,9 +12,9 @@ def config_location():
     return "gs://my-bucket/fv3config.yml"
 
 
-@pytest.fixture
-def outdir():
-    return "gs://my-bucket/rundir"
+@pytest.fixture(params=["local", "remote"])
+def outdir(request):
+    return {"remote": "gs://my-bucket/rundir", "local": "/tmp/rundir"}[request.param]
 
 
 @pytest.fixture(params=["default", "tagged"])
