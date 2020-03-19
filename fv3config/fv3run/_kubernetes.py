@@ -1,8 +1,10 @@
 import os
 import re
 import uuid
-from .._exceptions import DelayedImportError
+import warnings
+
 from .. import filesystem
+from .._exceptions import DelayedImportError
 from ._docker import _get_python_command
 
 try:
@@ -89,7 +91,12 @@ def _get_job(
     image_pull_policy="IfNotPresent",
     job_labels=None,
 ):
-    _ensure_locations_are_remote(config_location, outdir)
+    if filesystem._is_local_path(outdir):
+        warnings.warn(
+            f"Output directory {outdir} is a local path, so it will not be accessible "
+            "once the job finishes."
+        )
+
     kube_config = KubernetesConfig(
         jobname,
         memory_gb,
@@ -102,23 +109,6 @@ def _get_job(
     return _create_job_object(
         config_location, outdir, docker_image, runfile, kube_config
     )
-
-
-def _ensure_locations_are_remote(config_location, outdir):
-    for location, description in (
-        (config_location, "yaml configuration"),
-        (outdir, "output directory"),
-    ):
-        if location is not None:
-            _ensure_is_remote(location, description)
-
-
-def _ensure_is_remote(location, description):
-    if filesystem._is_local_path(location):
-        raise ValueError(
-            f"{description} must be a remote path when running on kubernetes, "
-            f"instead is {location}"
-        )
 
 
 def _submit_job(job, namespace):
@@ -142,7 +132,7 @@ def _create_job_object(config_location, outdir, docker_image, runfile, kube_conf
 
 def _get_name_from_image(docker_image):
     name = os.path.basename(docker_image)
-    return re.split(r"\W+", name)[0]
+    return re.split(r"\W+", name)[0].replace("_", "-")
 
 
 def _get_kube_command(config_location, outdir, runfile=None):

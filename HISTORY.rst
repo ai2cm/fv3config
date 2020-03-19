@@ -2,6 +2,11 @@
 History
 =======
 
+Current
+_______
+
+* Do not require output dir and fv3config to be remote in ``run_kubernetes``
+* Fix bug when submitting k8s jobs with images that have an "_" in them
 
 0.2.0 (2020-01-27)
 ------------------

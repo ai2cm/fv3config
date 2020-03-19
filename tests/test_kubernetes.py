@@ -12,9 +12,9 @@ def config_location():
     return "gs://my-bucket/fv3config.yml"
 
 
-@pytest.fixture
-def outdir():
-    return "gs://my-bucket/rundir"
+@pytest.fixture(params=["local", "remote"])
+def outdir(request):
+    return {"remote": "gs://my-bucket/rundir", "local": "/tmp/rundir"}[request.param]
 
 
 @pytest.fixture(params=["default", "tagged"])
@@ -67,20 +67,6 @@ def image_pull_policy(request):
 @pytest.fixture(params=[{"job_group": "this_group", "extra_group": "this_extra"}, None])
 def job_labels(request):
     return request.param
-
-
-def test_local_config_rejected(outdir, docker_image, runfile):
-    with pytest.raises(ValueError):
-        fv3config.fv3run._kubernetes._get_job(
-            "/local/dir/config.yml", outdir, docker_image, runfile
-        )
-
-
-def test_local_outdir_rejected(config_location, docker_image, runfile):
-    with pytest.raises(ValueError):
-        fv3config.fv3run._kubernetes._get_job(
-            config_location, "/local/outdir", docker_image, runfile
-        )
 
 
 def test_get_job(
