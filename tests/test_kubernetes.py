@@ -69,20 +69,6 @@ def job_labels(request):
     return request.param
 
 
-def test_local_config_rejected(outdir, docker_image, runfile):
-    with pytest.raises(ValueError):
-        fv3config.fv3run._kubernetes._get_job(
-            "/local/dir/config.yml", outdir, docker_image, runfile
-        )
-
-
-def test_local_outdir_rejected(config_location, docker_image, runfile):
-    with pytest.raises(ValueError):
-        fv3config.fv3run._kubernetes._get_job(
-            config_location, "/local/outdir", docker_image, runfile
-        )
-
-
 def test_get_job(
     config_location,
     outdir,
