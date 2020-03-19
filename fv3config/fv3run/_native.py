@@ -130,8 +130,6 @@ def _run_experiment(dirname, n_processes, runfile, mpi_flags=None):
         subprocess.check_call(
             ["mpirun", "-n", str(n_processes)] + mpi_flags + python_command,
             cwd=dirname,
-            # stdout=out_file,
-            # stderr=err_file,
         )
 
 
