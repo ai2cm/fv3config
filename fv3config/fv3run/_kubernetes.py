@@ -1,6 +1,9 @@
 import os
 import re
 import uuid
+import warnings
+
+from .. import filesystem
 from .._exceptions import DelayedImportError
 from ._docker import _get_python_command
 
@@ -59,6 +62,12 @@ def run_kubernetes(
         job_labels (Mapping[str, str], optional): labels provided as key-value pairs
             to apply to job pod.  Useful for grouping jobs together in status checks.
     """
+    if filesystem._is_local_path(outdir):
+        warnings.warn(
+            f"Output directory {outdir} is a local path, so it will not be accesible "
+            "once the job finishes."
+        )
+
     job = _get_job(
         config_location,
         outdir,
