@@ -62,12 +62,6 @@ def run_kubernetes(
         job_labels (Mapping[str, str], optional): labels provided as key-value pairs
             to apply to job pod.  Useful for grouping jobs together in status checks.
     """
-    if filesystem._is_local_path(outdir):
-        warnings.warn(
-            f"Output directory {outdir} is a local path, so it will not be accesible "
-            "once the job finishes."
-        )
-
     job = _get_job(
         config_location,
         outdir,
@@ -97,6 +91,12 @@ def _get_job(
     image_pull_policy="IfNotPresent",
     job_labels=None,
 ):
+    if filesystem._is_local_path(outdir):
+        warnings.warn(
+            f"Output directory {outdir} is a local path, so it will not be accesible "
+            "once the job finishes."
+        )
+
     kube_config = KubernetesConfig(
         jobname,
         memory_gb,
