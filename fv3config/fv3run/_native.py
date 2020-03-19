@@ -1,5 +1,4 @@
 import logging
-import sys
 import contextlib
 import resource
 import subprocess
@@ -20,7 +19,7 @@ RUNFILE_ENV_VAR = "FV3CONFIG_DEFAULT_RUNFILE"
 logger = logging.getLogger("fv3run")
 
 
-def run_native(config_dict_or_location, outdir, runfile=None, stderr=sys.stderr, stdout=sys.stdout):
+def run_native(config_dict_or_location, outdir, runfile=None):
     """Run the FV3GFS model with the given configuration.
 
     Copies the resulting directory to a target location. Will use the Google cloud
@@ -53,7 +52,7 @@ def run_native(config_dict_or_location, outdir, runfile=None, stderr=sys.stderr,
                 localdir,
                 n_processes,
                 runfile=runfile,
-                mpi_flags=_add_oversubscribe_if_necessary(MPI_FLAGS, n_processes)
+                mpi_flags=_add_oversubscribe_if_necessary(MPI_FLAGS, n_processes),
             )
 
 
@@ -130,6 +129,8 @@ def _run_experiment(dirname, n_processes, runfile, mpi_flags=None):
         subprocess.check_call(
             ["mpirun", "-n", str(n_processes)] + mpi_flags + python_command,
             cwd=dirname,
+            stdout=out_file,
+            stderr=err_file,
         )
 
 
