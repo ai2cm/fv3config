@@ -89,7 +89,6 @@ def _get_job(
     image_pull_policy="IfNotPresent",
     job_labels=None,
 ):
-    # _ensure_locations_are_remote(config_location, outdir)
     kube_config = KubernetesConfig(
         jobname,
         memory_gb,
@@ -102,23 +101,6 @@ def _get_job(
     return _create_job_object(
         config_location, outdir, docker_image, runfile, kube_config
     )
-
-
-def _ensure_locations_are_remote(config_location, outdir):
-    for location, description in (
-        (config_location, "yaml configuration"),
-        (outdir, "output directory"),
-    ):
-        if location is not None:
-            _ensure_is_remote(location, description)
-
-
-def _ensure_is_remote(location, description):
-    if filesystem._is_local_path(location):
-        raise ValueError(
-            f"{description} must be a remote path when running on kubernetes, "
-            f"instead is {location}"
-        )
 
 
 def _submit_job(job, namespace):
