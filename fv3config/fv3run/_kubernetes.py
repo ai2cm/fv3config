@@ -26,7 +26,8 @@ def run_kubernetes(
     gcp_secret=None,
     image_pull_policy="IfNotPresent",
     job_labels=None,
-    **kwargs
+    submit=True,
+    **kwargs,
 ):
     """Submit a kubernetes job to perform a fv3run operation.
 
@@ -82,7 +83,10 @@ def run_kubernetes(
         image_pull_policy,
         job_labels,
     )
-    _submit_job(job, namespace)
+    if submit:
+        _submit_job(job, namespace)
+    else:
+        return job
 
 
 def _get_job(
@@ -131,15 +135,6 @@ def _create_job_object(command, docker_image, kube_config):
 def _get_name_from_image(docker_image):
     name = os.path.basename(docker_image)
     return re.split(r"\W+", name)[0].replace("_", "-")
-
-
-def _get_kube_command(config_location, outdir, runfile=None):
-    if runfile is None:
-        python_args = []
-    else:
-        python_args = ["--runfile", runfile]
-    python_command = _get_python_command(config_location, outdir)
-    return python_command + python_args
 
 
 def _container_to_job(container, kube_config):

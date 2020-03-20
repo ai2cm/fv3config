@@ -2,7 +2,6 @@ import sys
 import logging
 import contextlib
 import resource
-import functools
 import subprocess
 import multiprocessing
 import os
@@ -25,10 +24,10 @@ logger = logging.getLogger("fv3run")
 def call_via_subprocess(func):
     this_module = func.__module__
 
-    def main():
+    def main(argv):
         import json
-        serialized = sys.argv[1]
-        args, kwargs = json.loads(serialized)
+
+        args, kwargs = json.loads(argv[1])
         func(*args, **kwargs)
 
     def command(*args, **kwargs) -> str:
@@ -41,7 +40,9 @@ def call_via_subprocess(func):
 
 
 @call_via_subprocess
-def run_native(config_dict_or_location, outdir, runfile=None, capture_output: bool = True):
+def run_native(
+    config_dict_or_location, outdir, runfile=None, capture_output: bool = True
+):
     """Run the FV3GFS model with the given configuration.
 
     Copies the resulting directory to a target location. Will use the Google cloud
@@ -175,4 +176,4 @@ def _copy_and_load_config_dict(config_location, local_target_location):
 
 
 if __name__ == "__main__":
-    run_native.main()
+    run_native.main(sys.arv)

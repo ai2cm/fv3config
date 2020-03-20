@@ -1,10 +1,9 @@
-import tempfile
 import subprocess
 import os
 import fsspec
 import yaml
 from .. import filesystem
-from ._native import CONFIG_OUT_FILENAME, _get_config_dict_and_write, run_native
+from ._native import CONFIG_OUT_FILENAME, run_native
 
 DOCKER_OUTDIR = "/outdir"
 DOCKER_CONFIG_LOCATION = os.path.join("/", CONFIG_OUT_FILENAME)
@@ -15,8 +14,7 @@ FV3RUN_MODULE = "fv3config.fv3run"
 
 
 def run_docker(
-    config_dict_or_location, outdir, docker_image, runfile=None, keyfile=None,
-    **kwargs
+    config_dict_or_location, outdir, docker_image, runfile=None, keyfile=None, **kwargs
 ):
     """Run the FV3GFS model in a docker container with the given configuration.
 
@@ -51,17 +49,15 @@ def run_docker(
     _get_credentials_args(keyfile, docker_args, bind_mount_args)
     _get_local_data_bind_mounts(config_dict, bind_mount_args)
 
-    outdir_in_docker = _get_outdir_args(docker_args, bind_mount_args, outdir)
+    outdir_in_docker = _get_docker_args(docker_args, bind_mount_args, outdir)
     runfile_in_docker = _get_runfile_args(runfile, bind_mount_args)
 
-    python_command = run_native.command(config_dict, outdir_in_docker, runfile=runfile_in_docker, **kwargs)
+    python_command = run_native.command(
+        config_dict, outdir_in_docker, runfile=runfile_in_docker, **kwargs
+    )
 
     subprocess.check_call(
-        DOCKER_COMMAND
-        + bind_mount_args
-        + docker_args
-        + [docker_image]
-        + python_command
+        DOCKER_COMMAND + bind_mount_args + docker_args + [docker_image] + python_command
     )
 
 
@@ -124,7 +120,7 @@ def _get_local_data_bind_mounts(config_dict, bind_mount_args):
         bind_mount_args += ["-v", f"{local_path}:{local_path}"]
 
 
-def _get_outdir_args(docker_args, bind_mount_args, outdir):
+def _get_docker_args(docker_args, bind_mount_args, outdir):
     bind_mount_args += ["-v", f"{os.path.abspath(outdir)}:{DOCKER_OUTDIR}"]
     docker_args += ["--rm", "--user", f"{os.getuid()}:{os.getgid()}"]
     return DOCKER_OUTDIR
