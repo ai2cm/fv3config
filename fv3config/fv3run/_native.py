@@ -19,7 +19,26 @@ RUNFILE_ENV_VAR = "FV3CONFIG_DEFAULT_RUNFILE"
 logger = logging.getLogger("fv3run")
 
 
-def run_native(config_dict_or_location, outdir, runfile=None):
+def call_via_subprocess(func):
+    this_module = func.__module__
+
+    def main():
+        import json
+        serialized = sys.argv[1]
+        args, kwargs = json.loads(serialized)
+        func(*args, **kwargs)
+
+    def command(*args, **kwargs) -> str:
+        serialized = json.dumps([args, kwargs])
+        return ["python", "-m", this_module, serialized]
+
+    func.main = main
+    func.command = command
+    return func
+
+
+@call_via_subprocess
+def run_native(config_dict_or_location, outdir, runfile=None, capture_output: bool = True):
     """Run the FV3GFS model with the given configuration.
 
     Copies the resulting directory to a target location. Will use the Google cloud
@@ -33,6 +52,7 @@ def run_native(config_dict_or_location, outdir, runfile=None):
         outdir (str): location to copy the resulting run directory
         runfile (str, optional): Python model script to use in place of the default.
     """
+    print(config_dict_or_location)
     _set_stacksize_unlimited()
     with _temporary_directory(outdir) as localdir:
         config_out_filename = os.path.join(localdir, CONFIG_OUT_FILENAME)
@@ -150,3 +170,7 @@ def _copy_and_load_config_dict(config_location, local_target_location):
     with open(local_target_location, "r") as infile:
         config_dict = yaml.load(infile.read(), Loader=yaml.SafeLoader)
     return config_dict
+
+
+if __name__ == "__main__":
+    run_native.main()

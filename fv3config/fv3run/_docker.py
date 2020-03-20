@@ -2,7 +2,7 @@ import tempfile
 import subprocess
 import os
 from .. import filesystem
-from ._native import CONFIG_OUT_FILENAME, _get_config_dict_and_write
+from ._native import CONFIG_OUT_FILENAME, _get_config_dict_and_write, run_native
 
 DOCKER_OUTDIR = "/outdir"
 DOCKER_CONFIG_LOCATION = os.path.join("/", CONFIG_OUT_FILENAME)
@@ -13,7 +13,8 @@ FV3RUN_MODULE = "fv3config.fv3run"
 
 
 def run_docker(
-    config_dict_or_location, outdir, docker_image, runfile=None, keyfile=None
+    config_dict_or_location, outdir, docker_image, runfile=None, keyfile=None,
+    **kwargs
 ):
     """Run the FV3GFS model in a docker container with the given configuration.
 
@@ -36,38 +37,28 @@ def run_docker(
     if keyfile is None:
         keyfile = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS", None)
     filesystem.get_fs(outdir).makedirs(outdir, exist_ok=True)
-    with tempfile.NamedTemporaryFile(suffix=".yaml") as config_tempfile:
-        bind_mount_args = []
-        python_args = []
-        docker_args = []
-        config_location = _get_config_args(
-            config_dict_or_location, config_tempfile, bind_mount_args
-        )
-        _get_docker_args(docker_args, bind_mount_args, outdir)
-        _get_credentials_args(keyfile, docker_args, bind_mount_args)
-        _get_runfile_args(runfile, bind_mount_args, python_args)
-        python_command = _get_python_command(config_location, DOCKER_OUTDIR)
-        subprocess.check_call(
-            DOCKER_COMMAND
-            + bind_mount_args
-            + docker_args
-            + [docker_image]
-            + python_command
-            + python_args
-        )
+    bind_mount_args = []
+    docker_args = []
+    _get_docker_args(docker_args, bind_mount_args, outdir)
+    _get_credentials_args(keyfile, docker_args, bind_mount_args)
+    runfile = _get_runfile_args(runfile, bind_mount_args)
+    python_command = run_native.command(config_dict_or_location, outdir, runfile=runfile)
+    subprocess.check_call(
+        DOCKER_COMMAND
+        + bind_mount_args
+        + docker_args
+        + [docker_image]
+        + python_command
+    )
 
 
-def _get_runfile_args(runfile, bind_mount_args, python_args):
+def _get_runfile_args(runfile, bind_mount_args) -> str:
     if runfile is not None:
         if filesystem._is_local_path(runfile):
             bind_mount_args += ["-v", f"{os.path.abspath(runfile)}:{DOCKER_RUNFILE}"]
-            python_args += ["--runfile", DOCKER_RUNFILE]
+            return DOCKER_RUNFILE
         else:
-            python_args += ["--runfile", runfile]
-
-
-def _get_python_command(config_location, outdir):
-    return ["python3", "-m", FV3RUN_MODULE, config_location, outdir]
+            return runfile
 
 
 def _get_config_args(config_dict_or_location, config_tempfile, bind_mount_args):
