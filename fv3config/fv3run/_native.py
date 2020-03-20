@@ -47,11 +47,11 @@ def run_native(config_dict_or_location, outdir, runfile=None):
                 runfile, os.path.join(localdir, os.path.basename(runfile))
             )
         with _log_context(localdir) as (stdout, stderr):
-            logger.info("Running experiment in %s", localdir)
             n_processes = get_n_processes(config_dict)
             python_command = _get_python_command(runfile)
             mpi_flags = _add_oversubscribe_if_necessary(MPI_FLAGS, n_processes)
             command = ["mpirun", "-n", str(n_processes)] + mpi_flags + python_command
+            logger.info("Running experiment in %s", localdir)
             subprocess.check_call(
                 command,
                 cwd=localdir,
@@ -112,6 +112,12 @@ def _log_context(localdir):
             STDOUT_FILENAME,
             STDERR_FILENAME,
         )
+        with open(out_filename) as f:
+            print("STDOUT:")
+            print(f.read())
+        with open(err_filename) as f:
+            print("STDERR:")
+            print(f.read())
         raise e
 
 
