@@ -48,15 +48,18 @@ def run_native(config_dict_or_location, outdir, runfile=None):
             )
 
         command = _get_subprocess_command(config_dict, runfile)
+        _check_call_redirected(command, localdir)
 
-        with _log_exceptions(localdir) as (stdout, stderr):
-            logger.info("Running experiment in %s", localdir)
-            subprocess.check_call(
-                command,
-                cwd=localdir,
-                stdout=stdout,
-                stderr=stderr
-            )
+
+def _check_call_redirected(command, localdir):
+    with _log_exceptions(localdir) as (stdout, stderr):
+        logger.info("Running experiment in %s", localdir)
+        subprocess.check_call(
+            command,
+            cwd=localdir,
+            stdout=stdout,
+            stderr=stderr
+        )
 
 
 def _get_subprocess_command(config_dict, runfile):
