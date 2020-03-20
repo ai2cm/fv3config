@@ -47,7 +47,7 @@ def run_native(config_dict_or_location, outdir, runfile=None):
                 runfile, os.path.join(localdir, os.path.basename(runfile))
             )
 
-        command = _get_python_command(config_dict, runfile)
+        command = _get_subprocess_command(config_dict, runfile)
 
         with _log_exceptions(localdir) as (stdout, stderr):
             logger.info("Running experiment in %s", localdir)
