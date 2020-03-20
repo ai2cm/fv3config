@@ -54,7 +54,7 @@ def run_docker(
     outdir_in_docker = _get_outdir_args(docker_args, bind_mount_args, outdir)
     runfile_in_docker = _get_runfile_args(runfile, bind_mount_args)
 
-    python_command = run_native.command(config_dict, outdir_in_docker, runfile=runfile_in_docker)
+    python_command = run_native.command(config_dict, outdir_in_docker, runfile=runfile_in_docker, **kwargs)
 
     subprocess.check_call(
         DOCKER_COMMAND
