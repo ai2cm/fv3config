@@ -108,8 +108,11 @@ def _temporary_directory(outdir):
 @contextlib.contextmanager
 def _log_exceptions(localdir):
     logger.info("running experiment")
+    out_filename = os.path.join(localdir, STDOUT_FILENAME)
+    err_filename = os.path.join(localdir, STDERR_FILENAME)
     try:
-        yield
+        with open(out_filename, "wb") as out, open(err_filename) as err:
+            yield out, err
     except subprocess.CalledProcessError as e:
         logger.critical(
             "Experiment failed. " "Check %s and %s for logs.",
