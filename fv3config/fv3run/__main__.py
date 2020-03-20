@@ -41,6 +41,8 @@ Will use google cloud storage key at $GOOGLE_APPLICATION_CREDENTIALS by default.
         action="store",
         help="google cloud storage key to use for cloud copy commands",
     )
+
+    parser.add_argument("--show-output", "-s", action="store_true", help="Do not output stderr and stdout to the logging files.")
     return parser.parse_args()
 
 
@@ -49,10 +51,10 @@ def main():
     Copies the resulting run directory to a target location.
     """
     args = _parse_args()
-    run(args.config, args.outdir, args.runfile, args.dockerimage, args.keyfile)
+    run(args.config, args.outdir, args.runfile, args.dockerimage, args.keyfile, capture_output=not args.show_output)
 
 
-def run(config_dict_or_location, outdir, runfile=None, docker_image=None, keyfile=None):
+def run(config_dict_or_location, outdir, runfile=None, docker_image=None, keyfile=None, capture_output=True):
     """Run the FV3GFS model with the given configuration.
 
     Copies the resulting directory to a target location. Will use the Google cloud
@@ -77,9 +79,10 @@ def run(config_dict_or_location, outdir, runfile=None, docker_image=None, keyfil
             docker_image,
             runfile=runfile,
             keyfile=keyfile,
+            capture_output=capture_output
         )
     else:
-        run_native(config_dict_or_location, outdir, runfile=runfile)
+        run_native(config_dict_or_location, outdir, runfile=runfile, capture_output=capture_output)
 
 
 if __name__ == "__main__":

@@ -1,12 +1,15 @@
+import sys
 import logging
 import contextlib
 import resource
+import functools
 import subprocess
 import multiprocessing
 import os
 import tempfile
 import warnings
 import yaml
+import json
 from ..config import write_run_directory, get_n_processes, config_to_yaml
 from .. import filesystem
 
@@ -55,6 +58,13 @@ def run_native(config_dict_or_location, outdir, runfile=None, capture_output: bo
             _check_call_captured(command, localdir)
         else:
             subprocess.check_call(command, cwd=localdir)
+
+
+@functools.wraps(run_native)
+def run_native_command(*args, **kwargs) -> str:
+    this_module = run_native_command.__module__
+    serialized = json.dumps([args, kwargs])
+    return ["python", "-m", this_module, serialized]
 
 
 def _check_call_captured(command, localdir):
@@ -178,3 +188,10 @@ def _copy_and_load_config_dict(config_location, local_target_location):
     with open(local_target_location, "r") as infile:
         config_dict = yaml.load(infile.read(), Loader=yaml.SafeLoader)
     return config_dict
+
+
+if __name__ == "__main__":
+    import json
+    serialized = sys.argv[1]
+    args, kwargs = json.loads(serialized)
+    run_native(*args, **kwargs)

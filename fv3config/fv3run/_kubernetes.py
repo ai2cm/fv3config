@@ -5,7 +5,7 @@ import warnings
 
 from .. import filesystem
 from .._exceptions import DelayedImportError
-from ._docker import _get_python_command
+from ._native import run_native_command
 
 try:
     import kubernetes as kube
@@ -26,6 +26,7 @@ def run_kubernetes(
     gcp_secret=None,
     image_pull_policy="IfNotPresent",
     job_labels=None,
+    **kwargs
 ):
     """Submit a kubernetes job to perform a fv3run operation.
 
@@ -61,12 +62,18 @@ def run_kubernetes(
             Defaults to "IfNotPresent".
         job_labels (Mapping[str, str], optional): labels provided as key-value pairs
             to apply to job pod.  Useful for grouping jobs together in status checks.
+        **kwargs:  other arguments passed to be passed to run_native. These must be serializeable with json.
     """
+
+    if filesystem._is_local_path(outdir):
+        warnings.warn(
+            f"Output directory {outdir} is a local path, so it will not be accessible "
+            "once the job finishes."
+        )
+    command = run_native_command(config_location, outdir, runfile=runfile, **kwargs)
     job = _get_job(
-        config_location,
-        outdir,
+        command,
         docker_image,
-        runfile,
         jobname,
         memory_gb,
         memory_gb_limit,
@@ -79,10 +86,8 @@ def run_kubernetes(
 
 
 def _get_job(
-    config_location,
-    outdir,
+    command,
     docker_image,
-    runfile=None,
     jobname=None,
     memory_gb=3.6,
     memory_gb_limit=None,
@@ -91,11 +96,6 @@ def _get_job(
     image_pull_policy="IfNotPresent",
     job_labels=None,
 ):
-    if filesystem._is_local_path(outdir):
-        warnings.warn(
-            f"Output directory {outdir} is a local path, so it will not be accessible "
-            "once the job finishes."
-        )
 
     kube_config = KubernetesConfig(
         jobname,
@@ -106,9 +106,7 @@ def _get_job(
         image_pull_policy,
         job_labels,
     )
-    return _create_job_object(
-        config_location, outdir, docker_image, runfile, kube_config
-    )
+    return _create_job_object(command, docker_image, kube_config)
 
 
 def _submit_job(job, namespace):
@@ -117,12 +115,12 @@ def _submit_job(job, namespace):
     api.create_namespaced_job(body=job, namespace=namespace)
 
 
-def _create_job_object(config_location, outdir, docker_image, runfile, kube_config):
+def _create_job_object(command, docker_image, kube_config):
     container = kube.client.V1Container(
         name=_get_name_from_image(docker_image),
         image=docker_image,
         image_pull_policy=kube_config.image_pull_policy,
-        command=_get_kube_command(config_location, outdir, runfile),
+        command=command,
         resources=kube_config.resource_requirements,
         volume_mounts=kube_config.volume_mounts,
         env=kube_config.env,
