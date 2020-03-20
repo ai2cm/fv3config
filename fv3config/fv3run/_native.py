@@ -47,10 +47,7 @@ def run_native(config_dict_or_location, outdir, runfile=None):
                 runfile, os.path.join(localdir, os.path.basename(runfile))
             )
 
-        n_processes = get_n_processes(config_dict)
-        python_command = _get_python_command(runfile)
-        mpi_flags = _add_oversubscribe_if_necessary(MPI_FLAGS, n_processes)
-        command = ["mpirun", "-n", str(n_processes)] + mpi_flags + python_command
+        command = _get_python_command(config_dict, runfile)
 
         with _log_exceptions(localdir) as (stdout, stderr):
             logger.info("Running experiment in %s", localdir)
@@ -60,6 +57,13 @@ def run_native(config_dict_or_location, outdir, runfile=None):
                 stdout=stdout,
                 stderr=stderr
             )
+
+
+def _get_subprocess_command(config_dict, runfile):
+    n_processes = get_n_processes(config_dict)
+    python_command = _get_python_command(runfile)
+    mpi_flags = _add_oversubscribe_if_necessary(MPI_FLAGS, n_processes)
+    return ["mpirun", "-n", str(n_processes)] + mpi_flags + python_command
 
 
 def _set_stacksize_unlimited():
