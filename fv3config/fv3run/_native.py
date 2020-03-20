@@ -46,7 +46,7 @@ def run_native(config_dict_or_location, outdir, runfile=None):
             filesystem.get_file(
                 runfile, os.path.join(localdir, os.path.basename(runfile))
             )
-        with _log_context(localdir) as (stdout, stderr):
+        with _log_exceptions(localdir) as (stdout, stderr):
             n_processes = get_n_processes(config_dict)
             python_command = _get_python_command(runfile)
             mpi_flags = _add_oversubscribe_if_necessary(MPI_FLAGS, n_processes)
