@@ -19,7 +19,7 @@ RUNFILE_ENV_VAR = "FV3CONFIG_DEFAULT_RUNFILE"
 logger = logging.getLogger("fv3run")
 
 
-def run_native(config_dict_or_location, outdir, runfile=None):
+def run_native(config_dict_or_location, outdir, runfile=None, capture_output: bool = True):
     """Run the FV3GFS model with the given configuration.
 
     Copies the resulting directory to a target location. Will use the Google cloud
@@ -32,6 +32,9 @@ def run_native(config_dict_or_location, outdir, runfile=None):
             a configuration dictionary
         outdir (str): location to copy the resulting run directory
         runfile (str, optional): Python model script to use in place of the default.
+        capture_output (bool, optional): If true, then the standard error and standard
+            output will be saved to "{outdir}/stderr.log" and "{outdir}/stdout.log",
+            respectively.
     """
     _set_stacksize_unlimited()
     with _temporary_directory(outdir) as localdir:
@@ -46,12 +49,15 @@ def run_native(config_dict_or_location, outdir, runfile=None):
             filesystem.get_file(
                 runfile, os.path.join(localdir, os.path.basename(runfile))
             )
-
         command = _get_subprocess_command(config_dict, runfile)
-        _check_call_redirected(command, localdir)
+
+        if capture_output:
+            _check_call_captured(command, localdir)
+        else:
+            subprocess.check_call(command, cwd=localdir)
 
 
-def _check_call_redirected(command, localdir):
+def _check_call_captured(command, localdir):
     with _log_exceptions(localdir) as (stdout, stderr):
         logger.info("Running experiment in %s", localdir)
         subprocess.check_call(
