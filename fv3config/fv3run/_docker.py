@@ -1,6 +1,8 @@
 import tempfile
 import subprocess
 import os
+import fsspec
+import yaml
 from .. import filesystem
 from ._native import CONFIG_OUT_FILENAME, _get_config_dict_and_write, run_native
 
@@ -36,13 +38,24 @@ def run_docker(
     """
     if keyfile is None:
         keyfile = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS", None)
+
+    if isinstance(config_dict_or_location, str):
+        with fsspec.open(config_dict_or_location) as f:
+            config_dict = yaml.safe_load(f.read())
+    else:
+        config_dict = config_dict_or_location
+
     filesystem.get_fs(outdir).makedirs(outdir, exist_ok=True)
     bind_mount_args = []
     docker_args = []
-    _get_docker_args(docker_args, bind_mount_args, outdir)
     _get_credentials_args(keyfile, docker_args, bind_mount_args)
-    runfile = _get_runfile_args(runfile, bind_mount_args)
-    python_command = run_native.command(config_dict_or_location, outdir, runfile=runfile)
+    _get_local_data_bind_mounts(config_dict, bind_mount_args)
+
+    outdir_in_docker = _get_outdir_args(docker_args, bind_mount_args, outdir)
+    runfile_in_docker = _get_runfile_args(runfile, bind_mount_args)
+
+    python_command = run_native.command(config_dict, outdir_in_docker, runfile=runfile_in_docker)
+
     subprocess.check_call(
         DOCKER_COMMAND
         + bind_mount_args
@@ -59,26 +72,6 @@ def _get_runfile_args(runfile, bind_mount_args) -> str:
             return DOCKER_RUNFILE
         else:
             return runfile
-
-
-def _get_config_args(config_dict_or_location, config_tempfile, bind_mount_args):
-    config_dict = _get_config_dict_and_write(
-        config_dict_or_location, config_tempfile.name
-    )
-    if isinstance(config_dict_or_location, str):
-        if filesystem._is_local_path(config_dict_or_location):
-            bind_mount_args += [
-                "-v",
-                f"{os.path.abspath(config_dict_or_location)}:{DOCKER_CONFIG_LOCATION}",
-            ]
-            config_location = DOCKER_CONFIG_LOCATION
-        else:
-            config_location = config_dict_or_location
-    else:
-        bind_mount_args += ["-v", f"{config_tempfile.name}:{DOCKER_CONFIG_LOCATION}"]
-        config_location = DOCKER_CONFIG_LOCATION
-    _get_local_data_bind_mounts(config_dict, bind_mount_args)
-    return config_location
 
 
 def _get_paths(config_dict):
@@ -131,9 +124,10 @@ def _get_local_data_bind_mounts(config_dict, bind_mount_args):
         bind_mount_args += ["-v", f"{local_path}:{local_path}"]
 
 
-def _get_docker_args(docker_args, bind_mount_args, outdir):
+def _get_outdir_args(docker_args, bind_mount_args, outdir):
     bind_mount_args += ["-v", f"{os.path.abspath(outdir)}:{DOCKER_OUTDIR}"]
     docker_args += ["--rm", "--user", f"{os.getuid()}:{os.getgid()}"]
+    return DOCKER_OUTDIR
 
 
 def _get_credentials_args(keyfile, docker_args, bind_mount_args):

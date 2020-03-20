@@ -55,7 +55,6 @@ def run_native(config_dict_or_location, outdir, runfile=None, capture_output: bo
         outdir (str): location to copy the resulting run directory
         runfile (str, optional): Python model script to use in place of the default.
     """
-    print(config_dict_or_location)
     _set_stacksize_unlimited()
     with _temporary_directory(outdir) as localdir:
         config_out_filename = os.path.join(localdir, CONFIG_OUT_FILENAME)
