@@ -24,7 +24,7 @@ def run_native(config_dict_or_location, outdir, runfile=None):
 
     Copies the resulting directory to a target location. Will use the Google cloud
     storage key at ``$GOOGLE_APPLICATION_CREDENTIALS`` by default. Requires the
-    fv4gfs-python package.
+    fv3gfs-python package.
 
     Args:
         config_dict_or_location (dict or str): a configuration dictionary, or a
@@ -97,15 +97,10 @@ def _temporary_directory(outdir):
 
 
 @contextlib.contextmanager
-def _log_context(localdir):
-    """Log errors and exceptions in local-directory
-    """
+def _log_exceptions(localdir):
     logger.info("running experiment")
-    out_filename = os.path.join(localdir, STDOUT_FILENAME)
-    err_filename = os.path.join(localdir, STDERR_FILENAME)
     try:
-        with open(out_filename, "wb") as out_file, open(err_filename, "wb") as err_file:
-            yield out_file, err_file
+        yield
     except subprocess.CalledProcessError as e:
         logger.critical(
             "Experiment failed. " "Check %s and %s for logs.",
@@ -130,6 +125,23 @@ def _get_python_command(runfile):
     else:
         python_args += ["-m", "fv3gfs.run"]
     return python_args
+
+
+def _run_experiment(dirname, n_processes, runfile, mpi_flags=None):
+    if mpi_flags is None:
+        mpi_flags = []
+
+    python_command = _get_python_command(runfile)
+    out_filename = os.path.join(dirname, STDOUT_FILENAME)
+    err_filename = os.path.join(dirname, STDERR_FILENAME)
+    with open(out_filename, "wb") as out_file, open(err_filename, "wb") as err_file:
+        logger.info("Running experiment in %s", dirname)
+        subprocess.check_call(
+            ["mpirun", "-n", str(n_processes)] + mpi_flags + python_command,
+            cwd=dirname,
+            stdout=out_file,
+            stderr=err_file,
+        )
 
 
 def _get_config_dict_and_write(config_dict_or_location, config_out_filename):
