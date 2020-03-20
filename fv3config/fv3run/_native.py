@@ -22,6 +22,25 @@ RUNFILE_ENV_VAR = "FV3CONFIG_DEFAULT_RUNFILE"
 logger = logging.getLogger("fv3run")
 
 
+def call_via_subprocess(func):
+    this_module = func.__module__
+
+    def main():
+        import json
+        serialized = sys.argv[1]
+        args, kwargs = json.loads(serialized)
+        func(*args, **kwargs)
+
+    def command(*args, **kwargs) -> str:
+        serialized = json.dumps([args, kwargs])
+        return ["python", "-m", this_module, serialized]
+
+    func.main = main
+    func.command = command
+    return func
+
+
+@call_via_subprocess
 def run_native(config_dict_or_location, outdir, runfile=None, capture_output: bool = True):
     """Run the FV3GFS model with the given configuration.
 
@@ -39,6 +58,7 @@ def run_native(config_dict_or_location, outdir, runfile=None, capture_output: bo
             output will be saved to "{outdir}/stderr.log" and "{outdir}/stdout.log",
             respectively.
     """
+    print(config_dict_or_location)
     _set_stacksize_unlimited()
     with _temporary_directory(outdir) as localdir:
         config_out_filename = os.path.join(localdir, CONFIG_OUT_FILENAME)
@@ -58,13 +78,6 @@ def run_native(config_dict_or_location, outdir, runfile=None, capture_output: bo
             _check_call_captured(command, localdir)
         else:
             subprocess.check_call(command, cwd=localdir)
-
-
-@functools.wraps(run_native)
-def run_native_command(*args, **kwargs) -> str:
-    this_module = run_native_command.__module__
-    serialized = json.dumps([args, kwargs])
-    return ["python", "-m", this_module, serialized]
 
 
 def _check_call_captured(command, localdir):
@@ -191,7 +204,4 @@ def _copy_and_load_config_dict(config_location, local_target_location):
 
 
 if __name__ == "__main__":
-    import json
-    serialized = sys.argv[1]
-    args, kwargs = json.loads(serialized)
-    run_native(*args, **kwargs)
+    run_native.main()

@@ -5,7 +5,7 @@ import warnings
 
 from .. import filesystem
 from .._exceptions import DelayedImportError
-from ._native import run_native_command
+from ._native import run_native
 
 try:
     import kubernetes as kube
@@ -70,7 +70,7 @@ def run_kubernetes(
             f"Output directory {outdir} is a local path, so it will not be accessible "
             "once the job finishes."
         )
-    command = run_native_command(config_location, outdir, runfile=runfile, **kwargs)
+    command = run_native.command(config_location, outdir, runfile=runfile, **kwargs)
     job = _get_job(
         command,
         docker_image,

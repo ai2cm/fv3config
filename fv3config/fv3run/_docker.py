@@ -2,7 +2,7 @@ import tempfile
 import subprocess
 import os
 from .. import filesystem
-from ._native import CONFIG_OUT_FILENAME, _get_config_dict_and_write, run_native_command
+from ._native import CONFIG_OUT_FILENAME, _get_config_dict_and_write, run_native
 
 DOCKER_OUTDIR = "/outdir"
 DOCKER_CONFIG_LOCATION = os.path.join("/", CONFIG_OUT_FILENAME)
@@ -42,7 +42,7 @@ def run_docker(
     _get_docker_args(docker_args, bind_mount_args, outdir)
     _get_credentials_args(keyfile, docker_args, bind_mount_args)
     runfile = _get_runfile_args(runfile, bind_mount_args)
-    python_command = run_native_command(config_dict_or_location, outdir, runfile=runfile)
+    python_command = run_native.command(config_dict_or_location, outdir, runfile=runfile)
     subprocess.check_call(
         DOCKER_COMMAND
         + bind_mount_args
