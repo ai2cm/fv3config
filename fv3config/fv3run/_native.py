@@ -2,6 +2,7 @@ import sys
 import logging
 import contextlib
 import resource
+import functools
 import subprocess
 import multiprocessing
 import os
@@ -30,6 +31,7 @@ def call_via_subprocess(func):
         args, kwargs = json.loads(argv[1])
         func(*args, **kwargs)
 
+    @functools.wraps(func)
     def command(*args, **kwargs) -> str:
         serialized = json.dumps([args, kwargs])
         return ["python", "-m", this_module, serialized]
@@ -176,4 +178,4 @@ def _copy_and_load_config_dict(config_location, local_target_location):
 
 
 if __name__ == "__main__":
-    run_native.main(sys.arv)
+    run_native.main(sys.argv)
