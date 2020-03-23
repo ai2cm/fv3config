@@ -26,7 +26,7 @@ def run_kubernetes(
     gcp_secret=None,
     image_pull_policy="IfNotPresent",
     job_labels=None,
-    submit=True
+    submit=True,
 ):
     """Submit a kubernetes job to perform a fv3run operation.
 
@@ -69,7 +69,7 @@ def run_kubernetes(
             f"Output directory {outdir} is a local path, so it will not be accessible "
             "once the job finishes."
         )
-    command = run_native.command(config_location, outdir, runfile=runfile, **kwargs)
+    command = run_native.command(config_location, outdir, runfile=runfile)
     job = _get_job(
         command,
         docker_image,
