@@ -14,7 +14,7 @@ FV3RUN_MODULE = "fv3config.fv3run"
 
 
 def run_docker(
-    config_dict_or_location, outdir, docker_image, runfile=None, keyfile=None, **kwargs
+    config_dict_or_location, outdir, docker_image, runfile=None, keyfile=None
 ):
     """Run the FV3GFS model in a docker container with the given configuration.
 
@@ -52,7 +52,7 @@ def run_docker(
     runfile_in_docker = _get_runfile_args(runfile, bind_mount_args)
 
     python_command = run_native.command(
-        config_dict, DOCKER_OUTDIR, runfile=runfile_in_docker, **kwargs
+        config_dict, DOCKER_OUTDIR, runfile=runfile_in_docker
     )
 
     subprocess.check_call(
