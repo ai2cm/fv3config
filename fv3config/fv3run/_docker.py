@@ -38,8 +38,7 @@ def run_docker(
         keyfile = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS", None)
 
     if isinstance(config_dict_or_location, str):
-        with fsspec.open(config_dict_or_location) as f:
-            config_dict = yaml.safe_load(f.read())
+        config_dict = _load_yaml(config_dict_or_location)
     else:
         config_dict = config_dict_or_location
 
@@ -49,16 +48,21 @@ def run_docker(
     _get_credentials_args(keyfile, docker_args, bind_mount_args)
     _get_local_data_bind_mounts(config_dict, bind_mount_args)
 
-    outdir_in_docker = _get_docker_args(docker_args, bind_mount_args, outdir)
+    _get_docker_args(docker_args, bind_mount_args, outdir)
     runfile_in_docker = _get_runfile_args(runfile, bind_mount_args)
 
     python_command = run_native.command(
-        config_dict, outdir_in_docker, runfile=runfile_in_docker, **kwargs
+        config_dict, DOCKER_OUTDIR, runfile=runfile_in_docker, **kwargs
     )
 
     subprocess.check_call(
         DOCKER_COMMAND + bind_mount_args + docker_args + [docker_image] + python_command
     )
+
+
+def _load_yaml(url):
+    with fsspec.open(url) as f:
+        return yaml.safe_load(f.read())
 
 
 def _get_runfile_args(runfile, bind_mount_args) -> str:
@@ -123,7 +127,6 @@ def _get_local_data_bind_mounts(config_dict, bind_mount_args):
 def _get_docker_args(docker_args, bind_mount_args, outdir):
     bind_mount_args += ["-v", f"{os.path.abspath(outdir)}:{DOCKER_OUTDIR}"]
     docker_args += ["--rm", "--user", f"{os.getuid()}:{os.getgid()}"]
-    return DOCKER_OUTDIR
 
 
 def _get_credentials_args(keyfile, docker_args, bind_mount_args):

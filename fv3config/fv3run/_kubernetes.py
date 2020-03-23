@@ -26,8 +26,7 @@ def run_kubernetes(
     gcp_secret=None,
     image_pull_policy="IfNotPresent",
     job_labels=None,
-    submit=True,
-    **kwargs,
+    submit=True
 ):
     """Submit a kubernetes job to perform a fv3run operation.
 
@@ -63,7 +62,6 @@ def run_kubernetes(
             Defaults to "IfNotPresent".
         job_labels (Mapping[str, str], optional): labels provided as key-value pairs
             to apply to job pod.  Useful for grouping jobs together in status checks.
-        **kwargs:  other arguments passed to be passed to run_native. These must be serializeable with json.
     """
 
     if filesystem._is_local_path(outdir):
