@@ -4,6 +4,7 @@ import contextlib
 import resource
 import functools
 import subprocess
+import inspect
 import multiprocessing
 import os
 import tempfile
@@ -24,6 +25,7 @@ logger = logging.getLogger("fv3run")
 
 def call_via_subprocess(func):
     this_module = func.__module__
+    signature = inspect.signature(func)
 
     def main(argv):
         import json
@@ -33,6 +35,10 @@ def call_via_subprocess(func):
 
     @functools.wraps(func)
     def command(*args, **kwargs) -> str:
+        # check that args and kwargs match func
+        # raises TypeError if not
+        signature.bind(*args, **kwargs)
+
         serialized = json.dumps([args, kwargs])
         return ["python", "-m", this_module, serialized]
 

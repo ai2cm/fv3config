@@ -417,7 +417,7 @@ def test_call_via_subprocess_command():
     import json
 
     @call_via_subprocess
-    def dummy_function(*obj):
+    def dummy_function(*obj, **kwargs):
         pass
 
     command = dummy_function.command(1, a=1, b=1)
@@ -452,11 +452,10 @@ def test_call_via_subprocess_main():
     assert dummy_ans == python_ans
 
 
-@pytest.mark.xfail()
 def test_call_via_subprocess_command_fails_with_bad_args():
     @call_via_subprocess
     def dummy_function(a, b):
         pass
 
-    with pytest.raises(ValueError):
+    with pytest.raises(TypeError):
         dummy_function.command(1, 2, 3, king="kong")
