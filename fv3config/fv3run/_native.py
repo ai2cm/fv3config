@@ -28,8 +28,6 @@ def call_via_subprocess(func):
     signature = inspect.signature(func)
 
     def main(argv):
-        import json
-
         args, kwargs = json.loads(argv[1])
         func(*args, **kwargs)
 
