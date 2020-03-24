@@ -231,12 +231,9 @@ def maybe_get_file(*args, **kwargs):
 def test_get_docker_args(outdir, expected_docker_args, expected_bind_mount_args):
     docker_args = []
     bind_mount_args = []
-    outdir_in_docker = fv3config.fv3run._docker._get_docker_args(
-        docker_args, bind_mount_args, outdir
-    )
+    fv3config.fv3run._docker._get_docker_args(docker_args, bind_mount_args, outdir)
     assert docker_args == expected_docker_args
     assert bind_mount_args == expected_bind_mount_args
-    assert outdir_in_docker == "/outdir"
 
 
 @pytest.mark.parametrize(
@@ -453,3 +450,13 @@ def test_call_via_subprocess_main():
 
     # assert results where the same
     assert dummy_ans == python_ans
+
+
+@pytest.mark.xfail()
+def test_call_via_subprocess_command_fails_with_bad_args():
+    @call_via_subprocess
+    def dummy_function(a, b):
+        pass
+
+    with pytest.raises(ValueError):
+        dummy_function.command(1, 2, 3, king="kong")
