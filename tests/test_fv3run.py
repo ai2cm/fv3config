@@ -10,7 +10,11 @@ import pytest
 import yaml
 import gcsfs
 import fv3config
-from fv3config.fv3run._native import _get_python_command, RUNFILE_ENV_VAR
+from fv3config.fv3run._native import (
+    _get_python_command,
+    RUNFILE_ENV_VAR,
+    call_via_subprocess,
+)
 
 TEST_DIR = os.path.dirname(os.path.realpath(__file__))
 MOCK_RUNSCRIPT = os.path.abspath(os.path.join(TEST_DIR, "testdata/mock_runscript.py"))
@@ -169,29 +173,19 @@ def test_fv3run_with_mpi(runner):
 @pytest.mark.parametrize(
     "runfile, expected_bind_mount_args, expected_python_args",
     [
-        [
-            "/tmp/runfile.py",
-            ["-v", "/tmp/runfile.py:/runfile.py"],
-            ["--runfile", "/runfile.py"],
-        ],
+        ["/tmp/runfile.py", ["-v", "/tmp/runfile.py:/runfile.py"], "/runfile.py"],
         [
             "relative.py",
             ["-v", f"{os.path.join(os.getcwd(), 'relative.py')}:/runfile.py"],
-            ["--runfile", "/runfile.py"],
+            "/runfile.py",
         ],
-        [
-            "gs://bucket-name/runfile.py",
-            [],
-            ["--runfile", "gs://bucket-name/runfile.py"],
-        ],
+        ["gs://bucket-name/runfile.py", [], "gs://bucket-name/runfile.py"],
     ],
 )
 def test_get_runfile_args(runfile, expected_bind_mount_args, expected_python_args):
     bind_mount_args = []
-    python_args = []
-    fv3config.fv3run._docker._get_runfile_args(runfile, bind_mount_args, python_args)
+    runfile = fv3config.fv3run._docker._get_runfile_args(runfile, bind_mount_args)
     assert bind_mount_args == expected_bind_mount_args
-    assert python_args == expected_python_args
 
 
 @pytest.mark.parametrize(
@@ -221,43 +215,6 @@ def maybe_get_file(*args, **kwargs):
         _original_get_file(*args, **kwargs)
     except (OSError, gcsfs.utils.HttpError):
         pass
-
-
-@pytest.mark.parametrize(
-    "config, tempfile, expected_config_location, expected_bind_mount_args",
-    [
-        [
-            fv3config.get_default_config(),
-            MockTempfile(name="/tmp/file"),
-            fv3config.fv3run._docker.DOCKER_CONFIG_LOCATION,
-            ["-v", "/tmp/file:/fv3config.yml"],
-        ],
-        [
-            "/absolute/path/fv3config.yml",
-            MockTempfile(name="/tmp/file"),
-            fv3config.fv3run._docker.DOCKER_CONFIG_LOCATION,
-            ["-v", "/absolute/path/fv3config.yml:/fv3config.yml"],
-        ],
-        [
-            "gs://bucket-name/fv3config.yml",
-            MockTempfile(name="/tmp/file"),
-            "gs://bucket-name/fv3config.yml",
-            [],
-        ],
-    ],
-)
-def test_get_config_args(
-    config, tempfile, expected_config_location, expected_bind_mount_args
-):
-    # paths don't actually exist, but that doesn't matter for this test
-    # use mock to ignore the "not found" errors
-    with unittest.mock.patch("fv3config.filesystem.get_file", new=maybe_get_file):
-        bind_mount_args = []
-        config_location = fv3config.fv3run._docker._get_config_args(
-            config, tempfile, bind_mount_args
-        )
-        assert config_location == expected_config_location
-        assert bind_mount_args == expected_bind_mount_args
 
 
 @pytest.mark.parametrize(
@@ -454,3 +411,51 @@ def test_get_credentials_args(keyfile, expected_docker_args, expected_bind_mount
 def test_get_local_paths(config_dict, local_paths):
     return_value = fv3config.fv3run._docker._get_local_data_paths(config_dict)
     assert set(return_value) == set(local_paths)  # order does not matter
+
+
+def test_call_via_subprocess_command():
+    import json
+
+    @call_via_subprocess
+    def dummy_function(*obj, **kwargs):
+        pass
+
+    command = dummy_function.command(1, a=1, b=1)
+    args = command.pop()
+    assert json.loads(args) == [[1], dict(a=1, b=1)]
+    assert command == ["python", "-m", dummy_function.__module__]
+
+
+def test_call_via_subprocess_main():
+
+    # need to append outputs here since call_via_subprocess does not
+    # support return arguments
+    output = []
+
+    @call_via_subprocess
+    def dummy_function(*obj):
+        output.append(hash(obj))
+
+    inputs = (1, 2, 3)
+
+    # first call is via "main"
+    serialized_args = dummy_function.command(*inputs)[-1]
+    argv = [None, serialized_args]
+    dummy_function.main(argv)
+    dummy_ans = output.pop()
+
+    # second call is normal python call
+    dummy_function(*inputs)
+    python_ans = output.pop()
+
+    # assert results where the same
+    assert dummy_ans == python_ans
+
+
+def test_call_via_subprocess_command_fails_with_bad_args():
+    @call_via_subprocess
+    def dummy_function(a, b):
+        pass
+
+    with pytest.raises(TypeError):
+        dummy_function.command(1, 2, 3, king="kong")
