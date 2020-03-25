@@ -1,8 +1,9 @@
-import tempfile
 import subprocess
 import os
+import fsspec
+import yaml
 from .. import filesystem
-from ._native import CONFIG_OUT_FILENAME, _get_config_dict_and_write
+from ._native import CONFIG_OUT_FILENAME, run_native
 
 DOCKER_OUTDIR = "/outdir"
 DOCKER_CONFIG_LOCATION = os.path.join("/", CONFIG_OUT_FILENAME)
@@ -35,59 +36,42 @@ def run_docker(
     """
     if keyfile is None:
         keyfile = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS", None)
+
+    if isinstance(config_dict_or_location, str):
+        config_dict = _load_yaml(config_dict_or_location)
+    else:
+        config_dict = config_dict_or_location
+
     filesystem.get_fs(outdir).makedirs(outdir, exist_ok=True)
-    with tempfile.NamedTemporaryFile(suffix=".yaml") as config_tempfile:
-        bind_mount_args = []
-        python_args = []
-        docker_args = []
-        config_location = _get_config_args(
-            config_dict_or_location, config_tempfile, bind_mount_args
-        )
-        _get_docker_args(docker_args, bind_mount_args, outdir)
-        _get_credentials_args(keyfile, docker_args, bind_mount_args)
-        _get_runfile_args(runfile, bind_mount_args, python_args)
-        python_command = _get_python_command(config_location, DOCKER_OUTDIR)
-        subprocess.check_call(
-            DOCKER_COMMAND
-            + bind_mount_args
-            + docker_args
-            + [docker_image]
-            + python_command
-            + python_args
-        )
+    bind_mount_args = []
+    docker_args = []
+    _get_credentials_args(keyfile, docker_args, bind_mount_args)
+    _get_local_data_bind_mounts(config_dict, bind_mount_args)
+
+    _get_docker_args(docker_args, bind_mount_args, outdir)
+    runfile_in_docker = _get_runfile_args(runfile, bind_mount_args)
+
+    python_command = run_native.command(
+        config_dict, DOCKER_OUTDIR, runfile=runfile_in_docker
+    )
+
+    subprocess.check_call(
+        DOCKER_COMMAND + bind_mount_args + docker_args + [docker_image] + python_command
+    )
 
 
-def _get_runfile_args(runfile, bind_mount_args, python_args):
+def _load_yaml(url):
+    with fsspec.open(url) as f:
+        return yaml.safe_load(f.read())
+
+
+def _get_runfile_args(runfile, bind_mount_args) -> str:
     if runfile is not None:
         if filesystem._is_local_path(runfile):
             bind_mount_args += ["-v", f"{os.path.abspath(runfile)}:{DOCKER_RUNFILE}"]
-            python_args += ["--runfile", DOCKER_RUNFILE]
+            return DOCKER_RUNFILE
         else:
-            python_args += ["--runfile", runfile]
-
-
-def _get_python_command(config_location, outdir):
-    return ["python3", "-m", FV3RUN_MODULE, config_location, outdir]
-
-
-def _get_config_args(config_dict_or_location, config_tempfile, bind_mount_args):
-    config_dict = _get_config_dict_and_write(
-        config_dict_or_location, config_tempfile.name
-    )
-    if isinstance(config_dict_or_location, str):
-        if filesystem._is_local_path(config_dict_or_location):
-            bind_mount_args += [
-                "-v",
-                f"{os.path.abspath(config_dict_or_location)}:{DOCKER_CONFIG_LOCATION}",
-            ]
-            config_location = DOCKER_CONFIG_LOCATION
-        else:
-            config_location = config_dict_or_location
-    else:
-        bind_mount_args += ["-v", f"{config_tempfile.name}:{DOCKER_CONFIG_LOCATION}"]
-        config_location = DOCKER_CONFIG_LOCATION
-    _get_local_data_bind_mounts(config_dict, bind_mount_args)
-    return config_location
+            return runfile
 
 
 def _get_paths(config_dict):

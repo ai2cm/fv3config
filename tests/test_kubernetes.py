@@ -12,9 +12,9 @@ def config_location():
     return "gs://my-bucket/fv3config.yml"
 
 
-@pytest.fixture
-def outdir():
-    return "gs://my-bucket/rundir"
+@pytest.fixture(params=["local", "remote"])
+def outdir(request):
+    return {"remote": "gs://my-bucket/rundir", "local": "/tmp/rundir"}[request.param]
 
 
 @pytest.fixture(params=["default", "tagged"])
@@ -69,20 +69,6 @@ def job_labels(request):
     return request.param
 
 
-def test_local_config_rejected(outdir, docker_image, runfile):
-    with pytest.raises(ValueError):
-        fv3config.fv3run._kubernetes._get_job(
-            "/local/dir/config.yml", outdir, docker_image, runfile
-        )
-
-
-def test_local_outdir_rejected(config_location, docker_image, runfile):
-    with pytest.raises(ValueError):
-        fv3config.fv3run._kubernetes._get_job(
-            config_location, "/local/outdir", docker_image, runfile
-        )
-
-
 def test_get_job(
     config_location,
     outdir,
@@ -95,18 +81,21 @@ def test_get_job(
     image_pull_policy,
     job_labels,
 ):
-    job = fv3config.fv3run._kubernetes._get_job(
+    namespace = None
+    job = fv3config.fv3run.run_kubernetes(
         config_location,
         outdir,
         docker_image,
         runfile,
         jobname,
+        namespace,
         memory_args.memory_gb,
         memory_args.memory_gb_limit_in,
         cpu_count,
         gcp_secret,
         image_pull_policy,
         job_labels,
+        submit=False,
     )
     _check_job(job, jobname)
     job_spec = job.spec
@@ -114,7 +103,6 @@ def test_get_job(
     pod_spec = job_spec.template.spec
     assert pod_spec.restart_policy == "Never"
     container = pod_spec.containers[0]
-    _check_command(container.command, outdir, config_location, runfile)
     _check_secret(gcp_secret, container, pod_spec)
     assert container.image == docker_image
     assert container.image_pull_policy == image_pull_policy
@@ -163,13 +151,6 @@ def _check_toleration(toleration):
     assert toleration.effect == "NoSchedule"
     assert toleration.key == "dedicated"
     assert toleration.value == "climate-sim-pool"
-
-
-def _check_command(command, outdir, config_location, runfile):
-    assert outdir in command
-    assert config_location in command
-    assert runfile in command
-    assert command[command.index(runfile) - 1] == "--runfile"
 
 
 def _check_secret_mount(gcp_secret, container, pod_spec):

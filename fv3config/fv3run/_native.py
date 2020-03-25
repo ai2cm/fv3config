@@ -1,12 +1,16 @@
+import sys
 import logging
 import contextlib
 import resource
+import functools
 import subprocess
+import inspect
 import multiprocessing
 import os
 import tempfile
 import warnings
 import yaml
+import json
 from ..config import write_run_directory, get_n_processes, config_to_yaml
 from .. import filesystem
 
@@ -19,7 +23,32 @@ RUNFILE_ENV_VAR = "FV3CONFIG_DEFAULT_RUNFILE"
 logger = logging.getLogger("fv3run")
 
 
-def run_native(config_dict_or_location, outdir, runfile=None):
+def call_via_subprocess(func):
+    this_module = func.__module__
+    signature = inspect.signature(func)
+
+    def main(argv):
+        args, kwargs = json.loads(argv[1])
+        func(*args, **kwargs)
+
+    @functools.wraps(func)
+    def command(*args, **kwargs) -> str:
+        # check that args and kwargs match func
+        # raises TypeError if not
+        signature.bind(*args, **kwargs)
+
+        serialized = json.dumps([args, kwargs])
+        return ["python", "-m", this_module, serialized]
+
+    func.main = main
+    func.command = command
+    return func
+
+
+@call_via_subprocess
+def run_native(
+    config_dict_or_location, outdir, runfile=None, capture_output: bool = True
+):
     """Run the FV3GFS model with the given configuration.
 
     Copies the resulting directory to a target location. Will use the Google cloud
@@ -150,3 +179,7 @@ def _copy_and_load_config_dict(config_location, local_target_location):
     with open(local_target_location, "r") as infile:
         config_dict = yaml.load(infile.read(), Loader=yaml.SafeLoader)
     return config_dict
+
+
+if __name__ == "__main__":
+    run_native.main(sys.argv)
