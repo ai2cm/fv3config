@@ -2,6 +2,12 @@
 History
 =======
 
+latest
+------
+
+Minor changes:
+- Add ReadTheDocs configuration file
+
 
 0.2.0 (2020-01-27)
 ------------------
