@@ -1,7 +1,7 @@
 import os
 import fsspec
 from ._exceptions import DelayedImportError
-from .cache_location import get_internal_cache_dir
+from . import caching
 
 try:
     import gcsfs
@@ -75,18 +75,22 @@ def _put_directory(local_source_dir, dest_dir, fs=None):
             fs.put(source, dest)
 
 
-def get_file(source_filename, dest_filename, cache=False):
+def get_file(source_filename: str, dest_filename: str, cache: bool = None):
     """Copy a file from a local or remote location to a local location.
 
     Optionally cache remote files in the local fv3config cache.
     
     Args:
-        source_filename (str): the local or remote location to copy
-        dest_filename (str): the local target location
-        cache (bool, optional): if True and source is remote, copy the file from the
+        source_filename: the local or remote location to copy
+        dest_filename: the local target location
+        cache (optional): if True and source is remote, copy the file from the
             fv3config cache if it has been previously downloaded, and cache the file
-            if not. Does nothing if source_filename is local. Default is False.
+            if not. Does nothing if source_filename is local.
+            Default ``fv3config.caching.CACHE_REMOTE_FILES``, set by
+            ``fv3config.enable_remote_caching(True/False)``.
     """
+    if cache is None:
+        cache = caching.CACHE_REMOTE_FILES
     if not cache or _is_local_path(source_filename):
         _get_file_uncached(source_filename, dest_filename)
     else:
@@ -125,5 +129,5 @@ def _get_cache_filename(source_filename):
     path = _get_path(source_filename)
     if len(path) == 0:
         raise ValueError(f"no file path given in source filename {source_filename}")
-    cache_dir = get_internal_cache_dir()
+    cache_dir = caching.get_internal_cache_dir()
     return os.path.join(cache_dir, prefix, path)

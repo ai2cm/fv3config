@@ -8,6 +8,15 @@ else:
     os.makedirs(USER_CACHE_DIR, exist_ok=True)
 CACHE_PREFIX = "fv3config-cache"
 
+CACHE_REMOTE_FILES = True
+
+
+def do_remote_caching(flag: bool):
+    if not isinstance(flag, bool):
+        raise TypeError(f"flag must be a boolean, was given {flag}")
+    global CACHE_REMOTE_FILES
+    CACHE_REMOTE_FILES = flag
+
 
 def set_cache_dir(parent_dirname):
     if not os.path.isdir(parent_dirname):

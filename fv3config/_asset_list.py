@@ -172,7 +172,7 @@ def write_asset(asset, target_directory):
     if not os.path.exists(os.path.dirname(target_path)):
         os.makedirs(os.path.dirname(target_path))
     if copy_method == "copy":
-        filesystem.get_file(source_path, target_path, cache=True)
+        filesystem.get_file(source_path, target_path)
     elif copy_method == "link":
         link_file(source_path, target_path)
     else:
