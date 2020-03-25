@@ -26,7 +26,6 @@ def test_cache_filename_raises_on_no_filename():
 
 
 class CacheDirectoryTests(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         cls.cache_dir = tempfile.TemporaryDirectory()
@@ -40,10 +39,7 @@ class CacheDirectoryTests(unittest.TestCase):
         cls.cache_dir.cleanup()
 
     def tearDown(self):
-        gs_cache_dir = os.path.join(
-            self.cache_dir.name,
-            "fv3config-cache/gs/"
-        )
+        gs_cache_dir = os.path.join(self.cache_dir.name, "fv3config-cache/gs/")
         if os.path.isdir(gs_cache_dir):
             shutil.rmtree(gs_cache_dir)
 
