@@ -58,6 +58,10 @@ a "fv3config-cache" subdirectory with unrelated files, or the cache files will n
 download until you call :py:func:`fv3config.refresh_downloaded_data` (which will delete any files
 in the subdirectory).
 
+Automatic caching of remote files can be disabled using the
+:py:func:`fv3config.do_remote_caching` routine.
+
+
 Configuration
 -------------
 

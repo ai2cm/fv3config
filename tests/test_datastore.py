@@ -4,7 +4,7 @@ import tempfile
 import fv3config
 import os
 
-import fv3config.cache_location
+import fv3config.caching
 
 TEST_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
 TAR_GZ_FILENAME = os.path.join(
@@ -33,35 +33,35 @@ FILE_CONTENT = "mock_content\n"
 
 class DatastoreTests(unittest.TestCase):
     def test_get_archive_dir(self):
-        result = fv3config.cache_location.get_cache_dir()
+        result = fv3config.caching.get_cache_dir()
         assert isinstance(result, str)
         assert os.path.isabs(result)
 
     def test_set_then_get_archive_dir(self):
         with tempfile.TemporaryDirectory() as tempdir:
-            original = fv3config.cache_location.get_cache_dir()
+            original = fv3config.caching.get_cache_dir()
             try:
-                fv3config.cache_location.set_cache_dir(tempdir)
-                new = fv3config.cache_location.get_cache_dir()
+                fv3config.caching.set_cache_dir(tempdir)
+                new = fv3config.caching.get_cache_dir()
                 assert new != original
                 assert new == tempdir
             finally:
-                fv3config.cache_location.set_cache_dir(original)
+                fv3config.caching.set_cache_dir(original)
 
 
 class DatastoreFileTests(unittest.TestCase):
     def setUp(self):
         self._original_get = requests.get
         requests.get = mock_requests_get
-        self.original_cachedir = fv3config.cache_location.get_cache_dir()
+        self.original_cachedir = fv3config.caching.get_cache_dir()
         self._cachedir_obj = tempfile.TemporaryDirectory()
-        fv3config.cache_location.set_cache_dir(self._cachedir_obj.name)
+        fv3config.caching.set_cache_dir(self._cachedir_obj.name)
         self.cachedir = os.path.join(self._cachedir_obj.name, "fv3config-cache")
         MockResponse.times_called = 0
 
     def tearDown(self):
         requests.get = self._original_get
-        fv3config.cache_location.set_cache_dir(self.original_cachedir)
+        fv3config.caching.set_cache_dir(self.original_cachedir)
         self._cachedir_obj.cleanup()
 
     def test_ensure_data_is_downloaded_when_empty(self):

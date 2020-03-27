@@ -5,9 +5,9 @@ import logging
 import tempfile
 import requests
 
-from fv3config.cache_location import get_internal_cache_dir
-from fv3config.config.derive import get_resolution
-from fv3config.data import DATA_DIR
+from .caching import get_internal_cache_dir
+from .config.derive import get_resolution
+from .data import DATA_DIR
 from ._exceptions import ConfigError, DataMissingError
 from . import filesystem
 
