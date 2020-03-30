@@ -17,7 +17,13 @@ from .. import filesystem
 STDOUT_FILENAME = "stdout.log"
 STDERR_FILENAME = "stderr.log"
 CONFIG_OUT_FILENAME = "fv3config.yml"
-MPI_FLAGS = ["--allow-run-as-root", "--use-hwthread-cpus", "--mca", "btl_vader_single_copy_mechanism", "none"]
+MPI_FLAGS = [
+    "--allow-run-as-root",
+    "--use-hwthread-cpus",
+    "--mca",
+    "btl_vader_single_copy_mechanism",
+    "none",
+]
 RUNFILE_ENV_VAR = "FV3CONFIG_DEFAULT_RUNFILE"
 
 logger = logging.getLogger("fv3run")
