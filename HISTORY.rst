@@ -6,6 +6,8 @@ latest
 ------
 
 Minor changes:
+
+* Added the flag ``--mca btl_vader_single_copy_mechanism none to mpirun in fv3run`` to mpirun in fv3run
 * Add ReadTheDocs configuration file
 * Do not require output dir and fv3config to be remote in ``run_kubernetes``
 * Fix bug when submitting k8s jobs with images that have an "_" in them
