@@ -15,7 +15,7 @@ Minor changes:
 Breaking changes
 ~~~~~~~~~~~~~~~~
 * Refactored run_kubernetes and run_docker to call run_native via a new API serializing
-  their args/kwargs as json strings. While no API changes occured, the
+  their args/kwargs as json strings. The
   fv3config version in a docker image must be greater than or equal inside a
   container to outside, or a silent error will occur.
 
