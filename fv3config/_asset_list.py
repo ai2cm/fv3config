@@ -130,7 +130,7 @@ def asset_list_from_path(from_location, target_location="", copy_method="copy"):
     Returns:
         list: a list of asset dictionaries
         """
-    if not filesystem._is_local_path(from_location):
+    if not filesystem.is_local_path(from_location):
         copy_method = "copy"
     asset_list = []
     for dirname, basename, relative_target_location in _asset_walk(from_location):
@@ -227,7 +227,7 @@ def config_to_asset_list(config):
 
 
 def link_file(source_item, target_item):
-    if any(not filesystem._is_local_path(item) for item in [source_item, target_item]):
+    if any(not filesystem.is_local_path(item) for item in [source_item, target_item]):
         raise NotImplementedError(
             "cannot perform linking operation involving remote urls "
             f"from {source_item} to {target_item}"

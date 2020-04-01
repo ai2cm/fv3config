@@ -117,14 +117,18 @@ def _add_oversubscribe_if_necessary(mpi_flags, n_processes):
 
 @contextlib.contextmanager
 def _temporary_directory(outdir):
+    fs = filesystem.get_fs(outdir)
+    # if not filesystem.is_local_path(outdir):
     with tempfile.TemporaryDirectory() as tempdir:
         try:
             yield tempdir
         finally:
             logger.info("Copying output to %s", outdir)
-            fs = filesystem.get_fs(outdir)
             fs.makedirs(outdir, exist_ok=True)
             filesystem._put_directory(tempdir, outdir)
+    # else:
+    #     fs.makedirs(outdir, exist_ok=True)
+    #     yield outdir
 
 
 @contextlib.contextmanager

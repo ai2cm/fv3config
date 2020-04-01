@@ -67,7 +67,7 @@ def _load_yaml(url):
 
 def _get_runfile_args(runfile, bind_mount_args) -> str:
     if runfile is not None:
-        if filesystem._is_local_path(runfile):
+        if filesystem.is_local_path(runfile):
             bind_mount_args += ["-v", f"{os.path.abspath(runfile)}:{DOCKER_RUNFILE}"]
             return DOCKER_RUNFILE
         else:
@@ -94,7 +94,7 @@ def _is_local_path(maybe_path_or_object):
     return (
         isinstance(maybe_path_or_object, str)
         and os.path.isabs(maybe_path_or_object)
-        and filesystem._is_local_path(maybe_path_or_object)
+        and filesystem.is_local_path(maybe_path_or_object)
     )
 
 
@@ -106,13 +106,13 @@ def _get_local_data_paths(config_dict):
             local_paths.append(potential_path)
         elif isinstance(potential_path, list):
             for asset in potential_path:
-                if filesystem._is_local_path(asset["source_location"]):
+                if filesystem.is_local_path(asset["source_location"]):
                     local_paths.append(
                         os.path.join(asset["source_location"], asset["source_name"])
                     )
         elif isinstance(potential_path, dict):
             asset = potential_path
-            if filesystem._is_local_path(asset["source_location"]):
+            if filesystem.is_local_path(asset["source_location"]):
                 local_paths.append(
                     os.path.join(asset["source_location"], asset["source_name"])
                 )
