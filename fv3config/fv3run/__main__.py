@@ -56,10 +56,24 @@ def main():
     Copies the resulting run directory to a target location.
     """
     args = _parse_args()
-    run(args.config, args.outdir, args.runfile, args.dockerimage, args.keyfile, args.kubernetes)
+    run(
+        args.config,
+        args.outdir,
+        args.runfile,
+        args.dockerimage,
+        args.keyfile,
+        args.kubernetes,
+    )
 
 
-def run(config_dict_or_location, outdir, runfile=None, docker_image=None, keyfile=None, kubernetes=False):
+def run(
+    config_dict_or_location,
+    outdir,
+    runfile=None,
+    docker_image=None,
+    keyfile=None,
+    kubernetes=False,
+):
     """Run the FV3GFS model with the given configuration.
 
     Copies the resulting directory to a target location. Will use the Google cloud
@@ -81,10 +95,7 @@ def run(config_dict_or_location, outdir, runfile=None, docker_image=None, keyfil
     if docker_image is not None:
         if kubernetes:
             run_kubernetes(
-                config_dict_or_location,
-                outdir,
-                docker_image,
-                runfile=runfile,
+                config_dict_or_location, outdir, docker_image, runfile=runfile,
             )
         else:
             run_docker(
