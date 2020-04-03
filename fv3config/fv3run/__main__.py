@@ -3,6 +3,7 @@ import argparse
 from ._docker import run_docker
 from ._kubernetes import run_kubernetes
 from ._native import run_native, RUNFILE_ENV_VAR
+import yaml
 
 MODULE_NAME = "fv3config.run"
 STDOUT_FILENAME = "stdout.log"
@@ -21,7 +22,8 @@ Will use google cloud storage key at $GOOGLE_APPLICATION_CREDENTIALS by default.
         "config", type=str, action="store", help="location of fv3config yaml file"
     )
     parser.add_argument(
-        "outdir", type=str, action="store", help="location to copy final run directory"
+        "outdir", type=str, action="store",
+        help="location to copy final run directory, used as run directory if local"
     )
     parser.add_argument(
         "--runfile",
@@ -46,7 +48,10 @@ Will use google cloud storage key at $GOOGLE_APPLICATION_CREDENTIALS by default.
         "--kubernetes",
         action="store_true",
         default=False,
-        help="if given, run the job on kubernetes and ignore --keyfile",
+        help=(
+            "if given, ignore --keyfile and output a yaml kubernetes config to stdout "
+            "instead of submitting a run"
+        ),
     )
     return parser.parse_args()
 
@@ -94,9 +99,11 @@ def run(
     """
     if docker_image is not None:
         if kubernetes:
-            run_kubernetes(
+            job = run_kubernetes(
                 config_dict_or_location, outdir, docker_image, runfile=runfile,
+                submit=False
             )
+            yaml.dump(job.to_dict(), stream=sys.stdout)
         else:
             run_docker(
                 config_dict_or_location,

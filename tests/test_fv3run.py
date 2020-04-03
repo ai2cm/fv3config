@@ -419,7 +419,7 @@ def test_get_local_paths(config_dict, local_paths):
 def test_call_via_subprocess_command():
     import json
 
-    @call_via_subprocess
+    @call_via_subprocess(__name__)
     def dummy_function(*obj, **kwargs):
         pass
 
@@ -435,7 +435,7 @@ def test_call_via_subprocess_main():
     # support return arguments
     output = []
 
-    @call_via_subprocess
+    @call_via_subprocess(__name__)
     def dummy_function(*obj):
         output.append(hash(obj))
 
@@ -456,7 +456,7 @@ def test_call_via_subprocess_main():
 
 
 def test_call_via_subprocess_command_fails_with_bad_args():
-    @call_via_subprocess
+    @call_via_subprocess(__name__)
     def dummy_function(a, b):
         pass
 

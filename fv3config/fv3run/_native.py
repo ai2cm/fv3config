@@ -29,29 +29,32 @@ RUNFILE_ENV_VAR = "FV3CONFIG_DEFAULT_RUNFILE"
 logger = logging.getLogger("fv3run")
 
 
-def call_via_subprocess(func):
-    this_module = func.__module__
-    signature = inspect.signature(func)
+def call_via_subprocess(module):
 
-    def main(argv):
-        args, kwargs = json.loads(argv[1])
-        func(*args, **kwargs)
+    def decorator(func):
+        signature = inspect.signature(func)
 
-    @functools.wraps(func)
-    def command(*args, **kwargs) -> str:
-        # check that args and kwargs match func
-        # raises TypeError if not
-        signature.bind(*args, **kwargs)
+        def main(argv):
+            args, kwargs = json.loads(argv[1])
+            func(*args, **kwargs)
 
-        serialized = json.dumps([args, kwargs])
-        return ["python", "-m", this_module, serialized]
+        @functools.wraps(func)
+        def command(*args, **kwargs) -> str:
+            # check that args and kwargs match func
+            # raises TypeError if not
+            signature.bind(*args, **kwargs)
 
-    func.main = main
-    func.command = command
-    return func
+            serialized = json.dumps([args, kwargs])
+            return ["python", "-m", module, serialized]
+
+        func.main = main
+        func.command = command
+        return func
+
+    return decorator
 
 
-@call_via_subprocess
+@call_via_subprocess("fv3config.fv3run._native_main")
 def run_native(
     config_dict_or_location, outdir, runfile=None, capture_output: bool = True
 ):
@@ -192,4 +195,11 @@ def _copy_and_load_config_dict(config_location, local_target_location):
 
 
 if __name__ == "__main__":
+    # In theory this warning should never be triggered.
+    # There's probably a bug in run_native.command if it is.
+    # Remove this main block after some time if it never gets triggered.
+    warnings.warn(
+        "calling fv3config.fv3run._native is deprecated, call fv3config.fv3run._native_main instead",
+        DeprecationWarning
+    )
     run_native.main(sys.argv)
