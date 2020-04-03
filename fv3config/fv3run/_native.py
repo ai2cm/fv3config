@@ -30,7 +30,6 @@ logger = logging.getLogger("fv3run")
 
 
 def call_via_subprocess(module):
-
     def decorator(func):
         signature = inspect.signature(func)
 
@@ -200,6 +199,6 @@ if __name__ == "__main__":
     # Remove this main block after some time if it never gets triggered.
     warnings.warn(
         "calling fv3config.fv3run._native is deprecated, call fv3config.fv3run._native_main instead",
-        DeprecationWarning
+        DeprecationWarning,
     )
     run_native.main(sys.argv)

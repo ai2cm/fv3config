@@ -22,8 +22,10 @@ Will use google cloud storage key at $GOOGLE_APPLICATION_CREDENTIALS by default.
         "config", type=str, action="store", help="location of fv3config yaml file"
     )
     parser.add_argument(
-        "outdir", type=str, action="store",
-        help="location to copy final run directory, used as run directory if local"
+        "outdir",
+        type=str,
+        action="store",
+        help="location to copy final run directory, used as run directory if local",
     )
     parser.add_argument(
         "--runfile",
@@ -100,8 +102,11 @@ def run(
     if docker_image is not None:
         if kubernetes:
             job = run_kubernetes(
-                config_dict_or_location, outdir, docker_image, runfile=runfile,
-                submit=False
+                config_dict_or_location,
+                outdir,
+                docker_image,
+                runfile=runfile,
+                submit=False,
             )
             yaml.dump(job.to_dict(), stream=sys.stdout)
         else:
