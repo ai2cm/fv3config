@@ -56,7 +56,8 @@ def _get_path(location):
         return location
 
 
-def _is_local_path(location):
+def is_local_path(location):
+    """returns True if the location is local, False otherwise"""
     return _get_protocol_prefix(location) == ""
 
 
@@ -91,7 +92,7 @@ def get_file(source_filename: str, dest_filename: str, cache: bool = None):
     """
     if cache is None:
         cache = caching.CACHE_REMOTE_FILES
-    if not cache or _is_local_path(source_filename):
+    if not cache or is_local_path(source_filename):
         _get_file_uncached(source_filename, dest_filename)
     else:
         _get_file_cached(source_filename, dest_filename)
@@ -103,7 +104,7 @@ def _get_file_uncached(source_filename, dest_filename):
 
 
 def _get_file_cached(source_filename, dest_filename):
-    if _is_local_path(source_filename):
+    if is_local_path(source_filename):
         raise ValueError(f"will not cache a local path, was given {source_filename}")
     else:
         cache_location = _get_cache_filename(source_filename)

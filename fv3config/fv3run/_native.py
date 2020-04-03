@@ -29,29 +29,31 @@ RUNFILE_ENV_VAR = "FV3CONFIG_DEFAULT_RUNFILE"
 logger = logging.getLogger("fv3run")
 
 
-def call_via_subprocess(func):
-    this_module = func.__module__
-    signature = inspect.signature(func)
+def call_via_subprocess(module):
+    def decorator(func):
+        signature = inspect.signature(func)
 
-    def main(argv):
-        args, kwargs = json.loads(argv[1])
-        func(*args, **kwargs)
+        def main(argv):
+            args, kwargs = json.loads(argv[1])
+            func(*args, **kwargs)
 
-    @functools.wraps(func)
-    def command(*args, **kwargs) -> str:
-        # check that args and kwargs match func
-        # raises TypeError if not
-        signature.bind(*args, **kwargs)
+        @functools.wraps(func)
+        def command(*args, **kwargs) -> str:
+            # check that args and kwargs match func
+            # raises TypeError if not
+            signature.bind(*args, **kwargs)
 
-        serialized = json.dumps([args, kwargs])
-        return ["python", "-m", this_module, serialized]
+            serialized = json.dumps([args, kwargs])
+            return ["python", "-m", module, serialized]
 
-    func.main = main
-    func.command = command
-    return func
+        func.main = main
+        func.command = command
+        return func
+
+    return decorator
 
 
-@call_via_subprocess
+@call_via_subprocess("fv3config.fv3run._native_main")
 def run_native(
     config_dict_or_location, outdir, runfile=None, capture_output: bool = True
 ):
@@ -117,14 +119,18 @@ def _add_oversubscribe_if_necessary(mpi_flags, n_processes):
 
 @contextlib.contextmanager
 def _temporary_directory(outdir):
-    with tempfile.TemporaryDirectory() as tempdir:
-        try:
-            yield tempdir
-        finally:
-            logger.info("Copying output to %s", outdir)
-            fs = filesystem.get_fs(outdir)
-            fs.makedirs(outdir, exist_ok=True)
-            filesystem._put_directory(tempdir, outdir)
+    fs = filesystem.get_fs(outdir)
+    if not filesystem.is_local_path(outdir):
+        with tempfile.TemporaryDirectory() as tempdir:
+            try:
+                yield tempdir
+            finally:
+                logger.info("Copying output to %s", outdir)
+                fs.makedirs(outdir, exist_ok=True)
+                filesystem._put_directory(tempdir, outdir)
+    else:
+        fs.makedirs(outdir, exist_ok=True)
+        yield outdir
 
 
 @contextlib.contextmanager
@@ -188,4 +194,11 @@ def _copy_and_load_config_dict(config_location, local_target_location):
 
 
 if __name__ == "__main__":
+    # In theory this warning should never be triggered.
+    # There's probably a bug in run_native.command if it is.
+    # Remove this main block after some time if it never gets triggered.
+    warnings.warn(
+        "calling fv3config.fv3run._native is deprecated, call fv3config.fv3run._native_main instead",
+        DeprecationWarning,
+    )
     run_native.main(sys.argv)

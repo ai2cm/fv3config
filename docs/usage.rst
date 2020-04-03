@@ -169,7 +169,9 @@ a yaml file. There is also a bash interface for running from yaml configuration.
 
     positional arguments:
       config                location of fv3config yaml file
-      outdir                location to copy final run directory
+      outdir                location to copy final run directory, used as run
+                            directory if local
+
 
     optional arguments:
       -h, --help            show this help message and exit
@@ -179,6 +181,9 @@ a yaml file. There is also a bash interface for running from yaml configuration.
                             given name
       --keyfile KEYFILE     google cloud storage key to use for cloud copy
                             commands
+      --kubernetes          if given, ignore --keyfile and output a yaml
+                            kubernetes config to stdout instead of submitting a
+                            run
 
 The only required inputs are ``config``, which specifies a yaml file containing the
 ``fv3config`` run directory configuration, and a final location to copy the run directory.
@@ -245,6 +250,19 @@ based on the default configuration dictionary::
 The gcp key is generally necessary to gain permissions to read and write from google
 cloud storage buckets. In the unlikely case that you are writing to a public bucket,
 it can be ommitted.
+
+From the command line, fv3run can be used to create a yaml file to submit for a
+kubernetes job. To create the file, add the ``--kubernetes`` flag to ``fv3run`` and
+pipe the result to a file. For example:
+
+  $ fv3run gs://bucket/config.yml gs://bucket/outdir --dockerimage us.gcr.io/vcm-ml/fv3gfs-python:latest --kubernetes > kubeconfig.yml
+
+The resulting file can be submitted using
+
+  $ kubectl apply -f kubeconfig.yml
+
+You can also modify the yaml file before submitting the job, for example to request more
+than one processor or a different amount of memory.
 
 Restart runs
 ------------

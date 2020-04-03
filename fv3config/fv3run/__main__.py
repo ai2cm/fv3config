@@ -1,7 +1,9 @@
 import sys
 import argparse
 from ._docker import run_docker
+from ._kubernetes import run_kubernetes
 from ._native import run_native, RUNFILE_ENV_VAR
+import yaml
 
 MODULE_NAME = "fv3config.run"
 STDOUT_FILENAME = "stdout.log"
@@ -20,7 +22,10 @@ Will use google cloud storage key at $GOOGLE_APPLICATION_CREDENTIALS by default.
         "config", type=str, action="store", help="location of fv3config yaml file"
     )
     parser.add_argument(
-        "outdir", type=str, action="store", help="location to copy final run directory"
+        "outdir",
+        type=str,
+        action="store",
+        help="location to copy final run directory, used as run directory if local",
     )
     parser.add_argument(
         "--runfile",
@@ -41,6 +46,15 @@ Will use google cloud storage key at $GOOGLE_APPLICATION_CREDENTIALS by default.
         action="store",
         help="google cloud storage key to use for cloud copy commands",
     )
+    parser.add_argument(
+        "--kubernetes",
+        action="store_true",
+        default=False,
+        help=(
+            "if given, ignore --keyfile and output a yaml kubernetes config to stdout "
+            "instead of submitting a run"
+        ),
+    )
     return parser.parse_args()
 
 
@@ -49,10 +63,24 @@ def main():
     Copies the resulting run directory to a target location.
     """
     args = _parse_args()
-    run(args.config, args.outdir, args.runfile, args.dockerimage, args.keyfile)
+    run(
+        args.config,
+        args.outdir,
+        args.runfile,
+        args.dockerimage,
+        args.keyfile,
+        args.kubernetes,
+    )
 
 
-def run(config_dict_or_location, outdir, runfile=None, docker_image=None, keyfile=None):
+def run(
+    config_dict_or_location,
+    outdir,
+    runfile=None,
+    docker_image=None,
+    keyfile=None,
+    kubernetes=False,
+):
     """Run the FV3GFS model with the given configuration.
 
     Copies the resulting directory to a target location. Will use the Google cloud
@@ -69,15 +97,26 @@ def run(config_dict_or_location, outdir, runfile=None, docker_image=None, keyfil
             using this docker image. Image must have this package and fv3gfs-python
             installed.
         keyfile (str, optional): location of a Google cloud storage key
+        kubernetes (bool, optional): if True, run the job on kubernetes and ignore keyfile
     """
     if docker_image is not None:
-        run_docker(
-            config_dict_or_location,
-            outdir,
-            docker_image,
-            runfile=runfile,
-            keyfile=keyfile,
-        )
+        if kubernetes:
+            job = run_kubernetes(
+                config_dict_or_location,
+                outdir,
+                docker_image,
+                runfile=runfile,
+                submit=False,
+            )
+            yaml.dump(job.to_dict(), stream=sys.stdout)
+        else:
+            run_docker(
+                config_dict_or_location,
+                outdir,
+                docker_image,
+                runfile=runfile,
+                keyfile=keyfile,
+            )
     else:
         run_native(config_dict_or_location, outdir, runfile=runfile)
 

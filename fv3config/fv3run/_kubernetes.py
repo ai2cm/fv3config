@@ -64,7 +64,7 @@ def run_kubernetes(
             to apply to job pod.  Useful for grouping jobs together in status checks.
     """
 
-    if filesystem._is_local_path(outdir):
+    if filesystem.is_local_path(outdir):
         warnings.warn(
             f"Output directory {outdir} is a local path, so it will not be accessible "
             "once the job finishes."
