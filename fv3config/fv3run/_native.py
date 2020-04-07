@@ -69,6 +69,9 @@ def run_native(
             a configuration dictionary
         outdir (str): location to copy the resulting run directory
         runfile (str, optional): Python model script to use in place of the default.
+        capture_output (bool, optional): If true, then the stderr and stdout
+            streams will be redirected to the files `outdir/stderr.log` and `outdir/stdout.log`
+            respectively.
     """
     _set_stacksize_unlimited()
     with _temporary_directory(outdir) as localdir:
