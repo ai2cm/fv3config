@@ -91,7 +91,7 @@ def run_native(
                 runfile=runfile,
                 mpi_flags=_add_oversubscribe_if_necessary(MPI_FLAGS, n_processes),
                 stdout=stdout,
-                stderr=stderr
+                stderr=stderr,
             )
 
 
@@ -178,7 +178,9 @@ def _get_python_command(runfile):
     return python_args
 
 
-def _run_experiment(dirname, n_processes, runfile, mpi_flags=None, stdout=None, stderr=None):
+def _run_experiment(
+    dirname, n_processes, runfile, mpi_flags=None, stdout=None, stderr=None
+):
     if mpi_flags is None:
         mpi_flags = []
 
@@ -188,7 +190,7 @@ def _run_experiment(dirname, n_processes, runfile, mpi_flags=None, stdout=None, 
         ["mpirun", "-n", str(n_processes)] + mpi_flags + python_command,
         cwd=dirname,
         stdout=stderr,
-        stderr=stdout
+        stderr=stdout,
     )
 
 

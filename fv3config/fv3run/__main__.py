@@ -57,13 +57,13 @@ Will use google cloud storage key at $GOOGLE_APPLICATION_CREDENTIALS by default.
         ),
     )
     parser.add_argument(
-        '--capture-output',
-        action='store_true',
+        "--capture-output",
+        action="store_true",
         default=False,
         help="If given, save the outputs of the fv3gfs call in a outdir/stderr.log and "
         "outdir/stdout.log. Not recommended for use with docker or kubernetes. "
         "It is recommended to use default linux pipes or docker's and kuberentes' logging "
-        "functionality."
+        "functionality.",
     )
     return parser.parse_args()
 
@@ -94,7 +94,13 @@ def main():
                 keyfile=args.keyfile,
             )
     else:
-        run_native(args.config, args.outdir, runfile=args.runfile, capture_output=args.capture_output)
+        run_native(
+            args.config,
+            args.outdir,
+            runfile=args.runfile,
+            capture_output=args.capture_output,
+        )
+
 
 if __name__ == "__main__":
     sys.exit(main())
