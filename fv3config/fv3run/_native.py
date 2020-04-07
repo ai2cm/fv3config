@@ -86,7 +86,7 @@ def run_native(
             filesystem.get_file(
                 runfile, os.path.join(localdir, os.path.basename(runfile))
             )
-        with _error_context(localdir, capture_output) as (stdout, stderr):
+        with _output_stream_context(localdir, capture_output) as (stdout, stderr):
             n_processes = get_n_processes(config_dict)
             _run_experiment(
                 localdir,
@@ -138,7 +138,7 @@ def _temporary_directory(outdir):
         yield outdir
 
 
-def _error_context_captured(localdir):
+def _captured_output_context(localdir):
     out_filename = os.path.join(localdir, STDOUT_FILENAME)
     err_filename = os.path.join(localdir, STDERR_FILENAME)
     with open(out_filename, "wb") as out_file, open(err_filename, "wb") as err_file:
@@ -153,7 +153,7 @@ def _error_context_captured(localdir):
             raise e
 
 
-def _error_context_uncaptured(localdir):
+def _uncaptured_output_context(localdir):
     try:
         yield sys.stdout, sys.stderr
     except subprocess.CalledProcessError as e:
@@ -162,12 +162,12 @@ def _error_context_uncaptured(localdir):
 
 
 @contextlib.contextmanager
-def _error_context(localdir: str, capture_output: bool):
+def _output_stream_context(localdir: str, capture_output: bool):
     logger.info("running experiment")
     if capture_output:
-        yield from _error_context_captured(localdir)
+        yield from _captured_output_context(localdir)
     else:
-        yield from _error_context_uncaptured(localdir)
+        yield from _uncaptured_output_context(localdir)
 
 
 def _get_python_command(runfile):

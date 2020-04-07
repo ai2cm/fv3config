@@ -15,7 +15,7 @@ import yaml
 import fv3config
 from fv3config.fv3run._native import (
     RUNFILE_ENV_VAR,
-    _error_context,
+    _output_stream_context,
     _get_python_command,
     call_via_subprocess,
 )
@@ -224,10 +224,10 @@ def test__get_native_python_args(monkeypatch, runfile, expected, env_var):
 _original_get_file = fv3config.filesystem.get_file
 
 
-def test__error_context_captured(tmpdir):
+def test__output_stream_context_captured(tmpdir):
     err_msg = b"error"
     out_msg = b"output"
-    with _error_context(tmpdir, True) as (stdout, stderr):
+    with _output_stream_context(tmpdir, True) as (stdout, stderr):
         stdout.write(out_msg)
         stderr.write(err_msg)
 
@@ -238,8 +238,8 @@ def test__error_context_captured(tmpdir):
         assert out_msg == f.read()
 
 
-def test__error_context_uncaptured(tmpdir):
-    with _error_context(tmpdir, False) as (stdout, stderr):
+def test__output_stream_context_uncaptured(tmpdir):
+    with _output_stream_context(tmpdir, False) as (stdout, stderr):
         assert stdout == sys.stdout
         assert stderr == sys.stderr
 
