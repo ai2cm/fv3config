@@ -45,7 +45,14 @@ def subprocess_run(config_dict, outdir):
         config_file.write(yaml.dump(config_dict))
         config_file.flush()
         subprocess.check_call(
-            ["fv3run", config_file.name, outdir, "--runfile", MOCK_RUNSCRIPT]
+            [
+                "fv3run",
+                config_file.name,
+                outdir,
+                "--runfile",
+                MOCK_RUNSCRIPT,
+                "--capture-output",
+            ]
         )
 
 
