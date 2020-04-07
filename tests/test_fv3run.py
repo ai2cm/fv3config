@@ -13,8 +13,12 @@ import pytest
 import yaml
 
 import fv3config
-from fv3config.fv3run._native import (RUNFILE_ENV_VAR, _error_context,
-                                      _get_python_command, call_via_subprocess)
+from fv3config.fv3run._native import (
+    RUNFILE_ENV_VAR,
+    _error_context,
+    _get_python_command,
+    call_via_subprocess,
+)
 
 TEST_DIR = os.path.dirname(os.path.realpath(__file__))
 MOCK_RUNSCRIPT = os.path.abspath(os.path.join(TEST_DIR, "testdata/mock_runscript.py"))
