@@ -14,7 +14,12 @@ FV3RUN_MODULE = "fv3config.fv3run"
 
 
 def run_docker(
-    config_dict_or_location, outdir, docker_image, runfile=None, keyfile=None
+    config_dict_or_location,
+    outdir,
+    docker_image,
+    runfile=None,
+    keyfile=None,
+    capture_output=True,
 ):
     """Run the FV3GFS model in a docker container with the given configuration.
 
@@ -33,6 +38,9 @@ def run_docker(
             installed.
         keyfile (str, optional): location of a Google cloud storage key to use
             inside the docker container
+        capture_output (bool, optional): If true, then the stderr and stdout
+            streams will be redirected to the files `outdir/stderr.log` and `outdir/stdout.log`
+            respectively.
     """
     if keyfile is None:
         keyfile = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS", None)
@@ -52,7 +60,10 @@ def run_docker(
     runfile_in_docker = _get_runfile_args(runfile, bind_mount_args)
 
     python_command = run_native.command(
-        config_dict, DOCKER_OUTDIR, runfile=runfile_in_docker
+        config_dict,
+        DOCKER_OUTDIR,
+        runfile=runfile_in_docker,
+        capture_output=capture_output,
     )
 
     subprocess.check_call(

@@ -27,6 +27,7 @@ def run_kubernetes(
     image_pull_policy="IfNotPresent",
     job_labels=None,
     submit=True,
+    capture_output=True,
 ):
     """Submit a kubernetes job to perform a fv3run operation.
 
@@ -62,6 +63,9 @@ def run_kubernetes(
             Defaults to "IfNotPresent".
         job_labels (Mapping[str, str], optional): labels provided as key-value pairs
             to apply to job pod.  Useful for grouping jobs together in status checks.
+        capture_output (bool, optional): If true, then the stderr and stdout
+            streams will be redirected to the files `outdir/stderr.log` and `outdir/stdout.log`
+            respectively.
     """
 
     if filesystem.is_local_path(outdir):
@@ -69,7 +73,9 @@ def run_kubernetes(
             f"Output directory {outdir} is a local path, so it will not be accessible "
             "once the job finishes."
         )
-    command = run_native.command(config_location, outdir, runfile=runfile)
+    command = run_native.command(
+        config_location, outdir, runfile=runfile, capture_output=capture_output
+    )
     job = _get_job(
         command,
         docker_image,
