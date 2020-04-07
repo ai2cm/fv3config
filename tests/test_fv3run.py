@@ -1,20 +1,20 @@
-import unittest
-import unittest.mock
+import collections
+import contextlib
 import os
 import shutil
-import tempfile
-import contextlib
-import collections
 import subprocess
+import sys
+import tempfile
+import unittest
+import unittest.mock
+
+import gcsfs
 import pytest
 import yaml
-import gcsfs
+
 import fv3config
-from fv3config.fv3run._native import (
-    _get_python_command,
-    RUNFILE_ENV_VAR,
-    call_via_subprocess,
-)
+from fv3config.fv3run._native import (RUNFILE_ENV_VAR, _error_context,
+                                      _get_python_command, call_via_subprocess)
 
 TEST_DIR = os.path.dirname(os.path.realpath(__file__))
 MOCK_RUNSCRIPT = os.path.abspath(os.path.join(TEST_DIR, "testdata/mock_runscript.py"))
@@ -211,6 +211,26 @@ def test__get_native_python_args(monkeypatch, runfile, expected, env_var):
 
 
 _original_get_file = fv3config.filesystem.get_file
+
+
+def test__error_context_captured(tmpdir):
+    err_msg = b"error"
+    out_msg = b"output"
+    with _error_context(tmpdir, True) as (stdout, stderr):
+        stdout.write(out_msg)
+        stderr.write(err_msg)
+
+    with open(tmpdir.join("stderr.log"), "rb") as f:
+        assert err_msg == f.read()
+
+    with open(tmpdir.join("stdout.log"), "rb") as f:
+        assert out_msg == f.read()
+
+
+def test__error_context_uncaptured(tmpdir):
+    with _error_context(tmpdir, False) as (stdout, stderr):
+        assert stdout == sys.stdout
+        assert stderr == sys.stderr
 
 
 def maybe_get_file(*args, **kwargs):
