@@ -5,13 +5,23 @@ History
 Latest
 ------
 
+
+v0.3.1 (2020-04-08)
+-------------------
+
 Major changes:
 ~~~~~~~~~~~~~
-- add get_timestep and config_from_yaml functions
+- Add get_timestep and config_from_yaml functions
 
 Minor changes:
 ~~~~~~~~~~~~~
-- allow config_to_yaml to write to remote locations
+- Allow config_to_yaml to write to remote locations
+- Control whether outputs are logged to console or not in `run_kubernetes`, `run_native`, and `run_docker`.
+
+Breaking changes
+~~~~~~~~~~~~~~~~
+- Print stderr and stdout to the console by default when using fv3run. Use the
+  `--capture-output` command-line flag to enable the previous behavior.
 
 
 v0.3.0 (2020-04-03)
@@ -23,7 +33,6 @@ Major changes:
 
 Minor changes:
 ~~~~~~~~~~~~~
-- Control whether outputs are logged to console or not in `run_kubernetes`, `run_native`, and `run_docker`.
 - Added the flag ``--mca btl_vader_single_copy_mechanism none to mpirun in fv3run`` to mpirun in fv3run
 - Add ReadTheDocs configuration file
 - Do not require output dir and fv3config to be remote in ``run_kubernetes``
@@ -31,8 +40,6 @@ Minor changes:
 
 Breaking changes
 ~~~~~~~~~~~~~~~~
-- Print stderr and stdout to the console by default when using fv3run. Use the
-  `--capture-output` command-line flag to enable the previous behavior.
 - Refactored run_kubernetes and run_docker to call run_native via a new API serializing
   their args/kwargs as json strings. The
   fv3config version in a docker image must be greater than or equal inside a
