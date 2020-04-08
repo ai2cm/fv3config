@@ -1,24 +1,30 @@
-import os
 import f90nml
+import fsspec
 import yaml
 from .._exceptions import InvalidFileError
 
 
 def config_to_yaml(config, config_out_filename):
-    with open(config_out_filename, "w") as outfile:
+    with fsspec.open(config_out_filename, "w") as outfile:
         outfile.write(yaml.dump(config))
 
 
+def config_from_yaml(path):
+    """Return fv3config dictionary at path"""
+    with fsspec.open(path) as yaml_file:
+        config = yaml.safe_load(yaml_file)
+    return config
+
+
 def config_to_namelist(config, namelist_filename):
-    """Write a configuration dictionary to a namelist file.
+    """Write the namelist of a configuration dictionary to a namelist file.
 
     Args:
         config (dict): a configuration dictionary
         namelist_filename (str): filename to write, will be overwritten if present
     """
-    if os.path.isfile(namelist_filename):
-        os.remove(namelist_filename)
-    f90nml.write(config["namelist"], namelist_filename)
+    with fsspec.open(namelist_filename, "w") as namelist_file:
+        f90nml.write(config["namelist"], namelist_file, force=True)
 
 
 def config_from_namelist(namelist_filename):
@@ -36,7 +42,8 @@ def config_from_namelist(namelist_filename):
         InvalidFileError: if the specified filename does not exist
     """
     try:
-        return_dict = _to_nested_dict(f90nml.read(namelist_filename).items())
+        with fsspec.open(namelist_filename) as namelist_file:
+            return_dict = _to_nested_dict(f90nml.read(namelist_file).items())
     except FileNotFoundError:
         raise InvalidFileError(f"namelist {namelist_filename} does not exist")
     return return_dict

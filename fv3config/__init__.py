@@ -10,6 +10,8 @@ from .config import (
     enable_restart,
     get_run_duration,
     set_run_duration,
+    get_timestep,
+    config_from_yaml,
 )
 from ._exceptions import InvalidFileError, ConfigError
 from ._datastore import ensure_data_is_downloaded

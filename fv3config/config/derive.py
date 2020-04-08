@@ -111,3 +111,15 @@ def get_resolution(config):
         )
     resolution = f"C{npx-1}"
     return resolution
+
+
+def get_timestep(config):
+    """Get the model timestep from a configuration dictionary.
+
+    Args:
+        config (dict): a configuration dictionary
+
+    Returns:
+        datetime.timedelta: the model timestep
+    """
+    return timedelta(seconds=config["namelist"]["coupler_nml"]["dt_atmos"])
