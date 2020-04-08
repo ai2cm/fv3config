@@ -1,16 +1,24 @@
 import os
 import f90nml
+import fsspec
 import yaml
 from .._exceptions import InvalidFileError
 
 
 def config_to_yaml(config, config_out_filename):
-    with open(config_out_filename, "w") as outfile:
+    with fsspec.open(config_out_filename, "w") as outfile:
         outfile.write(yaml.dump(config))
 
 
+def config_from_yaml(path):
+    """Return fv3config dictionary at path"""
+    with fsspec.open(path) as yaml_file:
+        config = yaml.safe_load(yaml_file)
+    return config
+
+
 def config_to_namelist(config, namelist_filename):
-    """Write a configuration dictionary to a namelist file.
+    """Write the namelist of a configuration dictionary to a namelist file.
 
     Args:
         config (dict): a configuration dictionary

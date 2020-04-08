@@ -2,6 +2,18 @@
 History
 =======
 
+Latest
+------
+
+Major changes:
+~~~~~~~~~~~~~
+- add get_timestep and config_from_yaml functions
+
+Minor changes:
+~~~~~~~~~~~~~
+- allow config_to_yaml to write to remote locations
+
+
 v0.3.0 (2020-04-03)
 -------------------
 
