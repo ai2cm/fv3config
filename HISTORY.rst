@@ -9,7 +9,7 @@ Major changes:
 ~~~~~~~~~~~~~
 - add get_timestep and config_from_yaml functions
 
-Major changes:
+Minor changes:
 ~~~~~~~~~~~~~
 - allow config_to_yaml to write to remote locations
 
