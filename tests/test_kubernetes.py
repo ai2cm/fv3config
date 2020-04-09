@@ -69,6 +69,7 @@ def job_labels(request):
     return request.param
 
 
+@pytest.mark.filterwarnings("ignore:Output directory .* is a local path.*")
 def test_get_job(
     config_location,
     outdir,
