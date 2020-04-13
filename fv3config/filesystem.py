@@ -1,7 +1,10 @@
 import os
 import fsspec
+import backoff
 from ._exceptions import DelayedImportError
 from . import caching
+from concurrent.futures import ThreadPoolExecutor
+
 
 try:
     import gcsfs
@@ -11,6 +14,9 @@ try:
     import google.auth
 except ImportError as err:
     google = DelayedImportError(err)
+
+
+fsspec_backoff = backoff.on_exception(backoff.expo, RuntimeError, max_time=60)
 
 
 def get_fs(path: str) -> fsspec.AbstractFileSystem:
@@ -61,19 +67,26 @@ def is_local_path(location):
     return _get_protocol_prefix(location) == ""
 
 
-def _put_directory(local_source_dir, dest_dir, fs=None):
+def put_directory(local_source_dir, dest_dir, fs=None, thread_pool=None):
     """Copy the contents of a local directory to a local or remote directory.
     """
     if fs is None:
         fs = get_fs(dest_dir)
+    if thread_pool is None:
+        thread_pool = ThreadPoolExecutor()
+        manage_threads = True
+    else:
+        manage_threads = False
     for token in os.listdir(local_source_dir):
         source = os.path.join(os.path.abspath(local_source_dir), token)
         dest = os.path.join(dest_dir, token)
         if os.path.isdir(source):
-            fs.makedirs(dest, exist_ok=True)
-            _put_directory(source, dest, fs)
+            fsspec_backoff(fs.makedirs)(dest, exist_ok=True)  # must be blocking call
+            put_directory(source, dest, fs=fs, thread_pool=thread_pool)
         else:
-            fs.put(source, dest)
+            thread_pool.submit(fsspec_backoff(fs.put), source, dest)
+    if manage_threads:
+        thread_pool.shutdown(wait=True)
 
 
 def get_file(source_filename: str, dest_filename: str, cache: bool = None):
@@ -98,6 +111,7 @@ def get_file(source_filename: str, dest_filename: str, cache: bool = None):
         _get_file_cached(source_filename, dest_filename)
 
 
+@fsspec_backoff
 def _get_file_uncached(source_filename, dest_filename):
     fs = get_fs(source_filename)
     fs.get(source_filename, dest_filename)
@@ -114,6 +128,7 @@ def _get_file_cached(source_filename, dest_filename):
         _get_file_uncached(cache_location, dest_filename)
 
 
+@fsspec_backoff
 def put_file(source_filename, dest_filename):
     """Copy a file from a local location to a local or remote location.
     

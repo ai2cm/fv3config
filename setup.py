@@ -18,6 +18,7 @@ requirements = [
     "pyyaml>=5.0",
     "gcsfs>=0.4.0",
     "fsspec>=0.6.0",
+    "backoff>=1.10",
 ]
 
 setup_requirements = []
