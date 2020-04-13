@@ -58,10 +58,13 @@ def run_docker(
 
     _get_docker_args(docker_args, bind_mount_args, outdir)
     runfile_in_docker = _get_runfile_args(runfile, bind_mount_args)
-
+    if filesystem.is_local_path(outdir):
+        docker_outdir = DOCKER_OUTDIR
+    else:
+        docker_outdir = outdir
     python_command = run_native.command(
         config_dict,
-        DOCKER_OUTDIR,
+        docker_outdir,
         runfile=runfile_in_docker,
         capture_output=capture_output,
     )
@@ -136,7 +139,8 @@ def _get_local_data_bind_mounts(config_dict, bind_mount_args):
 
 
 def _get_docker_args(docker_args, bind_mount_args, outdir):
-    bind_mount_args += ["-v", f"{os.path.abspath(outdir)}:{DOCKER_OUTDIR}"]
+    if filesystem.is_local_path(outdir):
+        bind_mount_args += ["-v", f"{os.path.abspath(outdir)}:{DOCKER_OUTDIR}"]
     docker_args += ["--rm", "--user", f"{os.getuid()}:{os.getgid()}"]
 
 

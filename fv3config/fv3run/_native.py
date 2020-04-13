@@ -132,7 +132,7 @@ def _temporary_directory(outdir):
             finally:
                 logger.info("Copying output to %s", outdir)
                 fs.makedirs(outdir, exist_ok=True)
-                filesystem._put_directory(tempdir, outdir)
+                filesystem.put_directory(tempdir, outdir)
     else:
         fs.makedirs(outdir, exist_ok=True)
         yield outdir

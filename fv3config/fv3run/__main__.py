@@ -92,6 +92,7 @@ def main():
                 args.dockerimage,
                 runfile=args.runfile,
                 keyfile=args.keyfile,
+                capture_output=args.capture_output,
             )
     else:
         run_native(
