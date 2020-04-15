@@ -5,6 +5,16 @@ History
 Latest
 ------
 
+Major changes:
+~~~~~~~~~~~~~
+- filesystem operations now manually backoff with a 1-minute max time on RuntimeError (which gcsfs often raises when it shouldn't) and gcsfs.utils.HttpError
+- `put_directory` now makes use of a thread pool to copy items in parallel.
+
+Minor changes:
+~~~~~~~~~~~~~
+- `run_docker` now works when supplying an outdir on google cloud storage
+- `put_directory` is now marked as package-private instead of module-private
+
 
 v0.3.1 (2020-04-08)
 -------------------
