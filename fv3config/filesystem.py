@@ -8,15 +8,17 @@ from concurrent.futures import ThreadPoolExecutor
 
 try:
     import gcsfs
+    FSSPEC_ERRORS = (RuntimeError, gcsfs.utils.HttpError)
 except ImportError as err:
     gcsfs = DelayedImportError(err)
+    FSSPEC_ERRORS = RuntimeError
 try:
     import google.auth
 except ImportError as err:
     google = DelayedImportError(err)
 
 
-fsspec_backoff = backoff.on_exception(backoff.expo, RuntimeError, max_time=60)
+fsspec_backoff = backoff.on_exception(backoff.expo, FSSPEC_ERRORS, max_time=60)
 
 
 def get_fs(path: str) -> fsspec.AbstractFileSystem:
