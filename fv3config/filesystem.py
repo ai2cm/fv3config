@@ -3,11 +3,12 @@ import fsspec
 import backoff
 from ._exceptions import DelayedImportError
 from . import caching
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, Executor
 
 
 try:
     import gcsfs
+
     FSSPEC_ERRORS = (RuntimeError, gcsfs.utils.HttpError)
 except ImportError as err:
     gcsfs = DelayedImportError(err)
@@ -69,13 +70,18 @@ def is_local_path(location):
     return _get_protocol_prefix(location) == ""
 
 
-def put_directory(local_source_dir, dest_dir, fs=None, thread_pool=None):
+def put_directory(
+    local_source_dir: str,
+    dest_dir: str,
+    fs: fsspec.AbstractFileSystem = None,
+    executor: Executor = None,
+):
     """Copy the contents of a local directory to a local or remote directory.
     """
     if fs is None:
         fs = get_fs(dest_dir)
-    if thread_pool is None:
-        thread_pool = ThreadPoolExecutor()
+    if executor is None:
+        executor = ThreadPoolExecutor()
         manage_threads = True
     else:
         manage_threads = False
@@ -84,11 +90,11 @@ def put_directory(local_source_dir, dest_dir, fs=None, thread_pool=None):
         dest = os.path.join(dest_dir, token)
         if os.path.isdir(source):
             fsspec_backoff(fs.makedirs)(dest, exist_ok=True)  # must be blocking call
-            put_directory(source, dest, fs=fs, thread_pool=thread_pool)
+            put_directory(source, dest, fs=fs, executor=executor)
         else:
-            thread_pool.submit(fsspec_backoff(fs.put), source, dest)
+            executor.submit(fsspec_backoff(fs.put), source, dest)
     if manage_threads:
-        thread_pool.shutdown(wait=True)
+        executor.shutdown(wait=True)
 
 
 def get_file(source_filename: str, dest_filename: str, cache: bool = None):
