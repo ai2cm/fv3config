@@ -63,7 +63,7 @@ def run_kubernetes(
             Defaults to "IfNotPresent".
         job_labels (Mapping[str, str], optional): labels provided as key-value pairs
             to apply to job pod.  Useful for grouping jobs together in status checks.
-        capture_output (bool, optional): If true, then the stderr and stdout
+        capture_output (bool, optional): If True, then the stderr and stdout
             streams will be redirected to the files `outdir/stderr.log` and `outdir/stdout.log`
             respectively.
     """
