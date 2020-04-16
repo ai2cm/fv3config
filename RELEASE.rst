@@ -17,6 +17,6 @@ version, while "v1" is not and "0.3.0" is not.
 6. `git push -u origin release/<version>` and create a new pull request in Github.
 
 7. When the pull request is merged to master, `git checkout master` and `git pull`,
-   followed by `git tag <version>` and 
+   followed by `git tag <version>`.
 
 8. Run `git push origin --tags` to push all local tags to Github.
