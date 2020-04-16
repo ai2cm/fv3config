@@ -1,10 +1,22 @@
 Release Instructions
 ====================
 
-1. Prepare master branch for release (make sure all PRs are merged and tests pass).
+Versions should take the form "v<major>.<minor>.patch". For example, "v0.3.0" is a valid
+version, while "v1" is not and "0.3.0" is not.
 
-2. Run `bumpversion <major/minor/bugfix>`. This will create a new tagged commit,
-   having updated all version references to the new, higher version.
+1. Make sure all PRs are merged and tests pass.
 
-3. Run `git push && git push origin --tags` to push the version reference commit and
-   then all local tags to master.
+2. Prepare a release branch with `git checkout -b release/<version>`.
+
+3. Update the HISTORY.md, replacing the "latest" version heading with the new version.
+
+4. Commit your changes so far to the release branch.
+
+5. In the project root, run `bumpversion <major/minor/patch>`. This will create a new commit.
+
+6. `git push -u origin release/<version>` and create a new pull request in Github.
+
+7. When the pull request is merged to master, `git checkout master` and `git pull`,
+   followed by `git tag <version>` and 
+
+8. Run `git push origin --tags` to push all local tags to Github.
