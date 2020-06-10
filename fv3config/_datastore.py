@@ -1,9 +1,4 @@
 import os
-import tarfile
-import shutil
-import logging
-import tempfile
-import requests
 
 from .caching import get_internal_cache_dir
 from .config.derive import get_resolution
@@ -11,23 +6,6 @@ from .data import DATA_DIR
 from ._exceptions import ConfigError, DataMissingError
 from . import filesystem
 
-
-ARCHIVE_FILENAME = "2019-10-23-data-for-running-fv3gfs.tar.gz"
-ARCHIVE_FILENAME_ROOT = "2019-10-23-data-for-running-fv3gfs"
-ARCHIVE_URL = f"http://storage.googleapis.com/vcm-ml-public/{ARCHIVE_FILENAME}"
-
-FORCING_OPTIONS_DICT = {
-    "default": "base_forcing",
-}
-
-OROGRAPHIC_FORCING_OPTIONS_DICT = {
-    "default": "orographic_data",
-}
-
-INITIAL_CONDITIONS_OPTIONS_DICT = {
-    "gfs_example": "initial_conditions/gfs_initial_conditions",
-    "restart_example": "initial_conditions/restart_initial_conditions",
-}
 
 DATA_TABLE_OPTIONS = {
     "default": os.path.join(DATA_DIR, "data_table/data_table_default"),
@@ -49,15 +27,17 @@ def get_orographic_forcing_directory(config):
     specified by a config dictionary.
     """
     resolution = get_resolution(config)
-    parent_dirname = resolve_option(
-        config.get("orographic_forcing", "default"), OROGRAPHIC_FORCING_OPTIONS_DICT
-    )
+    if "orographic_forcing" not in config:
+        raise ValueError("config dictionary must have an 'orographic_forcing' key")
+    parent_dirname = config["orographic_forcing"]
+    ensure_exists(parent_dirname, "orographic_forcing")
     dirname = os.path.join(parent_dirname, resolution)
     fs = filesystem.get_fs(dirname)
     if not fs.isdir(dirname):
         valid_options = fs.listdir(parent_dirname)
         raise ConfigError(
-            f"resolution {resolution} is unsupported; valid options are {valid_options}"
+            f"resolution {resolution} orographic forcing is not present at {dirname},"
+            f" valid options are {valid_options}"
         )
     return dirname
 
@@ -68,7 +48,8 @@ def get_base_forcing_directory(config):
     """
     if "forcing" not in config:
         raise ConfigError("config dictionary must have a 'forcing' key")
-    return resolve_option(config["forcing"], FORCING_OPTIONS_DICT)
+    ensure_exists(config["forcing"], "forcing")
+    return config["forcing"]
 
 
 def get_initial_conditions_directory(config):
@@ -77,54 +58,28 @@ def get_initial_conditions_directory(config):
     """
     if "initial_conditions" not in config:
         raise ConfigError("config dictionary must have an 'initial_conditions' key")
-    return resolve_option(config["initial_conditions"], INITIAL_CONDITIONS_OPTIONS_DICT)
+    ensure_exists(config["initial_conditions"], "initial_conditions")
+    return config["initial_conditions"]
+
+
+def ensure_exists(location: str, location_name: str):
+    if not filesystem.get_fs(location).exists(location):
+        raise ValueError(f"{location_name} location {location} does not exist")
 
 
 def check_if_data_is_downloaded():
-    dirname = get_internal_cache_dir()
-    if not os.path.isdir(dirname) or len(os.listdir(dirname)) == 0:
-        raise DataMissingError(
-            "Required data for running fv3gfs not available. Try "
-            "python -m fv3config.download_data or ensure_data_is_downloaded()"
-        )
+    """Removed, do not use."""
+    raise NotImplementedError("check_if_data_is_downloaded has been removed")
 
 
 def ensure_data_is_downloaded():
-    """Check of the cached data is present, and if not, download it."""
-    os.makedirs(get_internal_cache_dir(), exist_ok=True)
-    if len(os.listdir(get_internal_cache_dir())) == 0:
-        with tempfile.NamedTemporaryFile(mode="wb") as archive_file:
-            download_data_archive(archive_file)
-            archive_file.flush()
-            extract_data(archive_file.name)
+    """Removed, do not use."""
+    raise NotImplementedError("ensure_data_is_downloaded has been removed")
 
 
 def refresh_downloaded_data():
-    """Delete the cached data (if present) and re-download it."""
-    shutil.rmtree(get_internal_cache_dir())
-    ensure_data_is_downloaded()
-
-
-def download_data_archive(target_file):
-    """Download the cached data."""
-    logging.info("Downloading required data for running fv3gfs to temporary file")
-    r = requests.get(ARCHIVE_URL)
-    target_file.write(r.content)
-
-
-def extract_data(archive_filename):
-    """Extract the downloaded archive, over-writing any data already present."""
-    logging.info(
-        "Extracting required data for running fv3gfs to %s", get_internal_cache_dir()
-    )
-    with tarfile.open(archive_filename, mode="r:gz") as f:
-        with tempfile.TemporaryDirectory() as tempdir:
-            f.extractall(tempdir)
-            for name in os.listdir(os.path.join(tempdir, ARCHIVE_FILENAME_ROOT)):
-                shutil.move(
-                    os.path.join(tempdir, ARCHIVE_FILENAME_ROOT, name),
-                    get_internal_cache_dir(),
-                )
+    """Removed, do not use."""
+    raise NotImplementedError("refresh_downloaded_data has been removed")
 
 
 def resolve_option(option, built_in_options_dict):
