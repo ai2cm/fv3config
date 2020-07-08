@@ -107,7 +107,6 @@ one_item_built_in_options_dict = {"custom_option": "/path/to/custom/option"}
 
 
 class ForcingTests(unittest.TestCase):
-
     @classmethod
     def setUpClass(cls):
         cls.cache_dir = tempfile.TemporaryDirectory()

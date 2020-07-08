@@ -153,7 +153,9 @@ def test_fv3run_with_mocked_subprocess(runner, config):
                 "mock_runscript.py",
             ]
         ]
-        written_config = yaml.safe_load(open(os.path.join(outdir, "fv3config.yml"), "r"))
+        written_config = yaml.safe_load(
+            open(os.path.join(outdir, "fv3config.yml"), "r")
+        )
         assert written_config == config
 
 
@@ -168,10 +170,7 @@ def test_fv3run_docker(config):
 
     with cleaned_up_directory(outdir):
         fv3config.run_docker(
-            config,
-            outdir,
-            DOCKER_IMAGE_NAME,
-            runfile=MOCK_RUNSCRIPT,
+            config, outdir, DOCKER_IMAGE_NAME, runfile=MOCK_RUNSCRIPT,
         )
         check_run_directory(outdir)
 

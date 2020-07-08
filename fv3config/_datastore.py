@@ -3,7 +3,7 @@ import os
 from .caching import get_internal_cache_dir
 from .config.derive import get_resolution
 from .data import DATA_DIR
-from ._exceptions import ConfigError, DataMissingError
+from ._exceptions import ConfigError
 from . import filesystem
 
 
