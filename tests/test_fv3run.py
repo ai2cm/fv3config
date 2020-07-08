@@ -101,6 +101,11 @@ def count_executed_ranks(rundir):
     return total
 
 
+@pytest.fixture
+def config(c12_config):
+    return c12_config
+
+
 @contextlib.contextmanager
 def cleaned_up_directory(dirname):
     try:
@@ -120,14 +125,13 @@ def check_run_directory(dirname):
 
 
 @pytest.mark.parametrize("runner", [config_dict_module_run, config_dict_filename_run])
-def test_fv3run_with_mocked_subprocess(runner):
-    fv3config.ensure_data_is_downloaded()
+def test_fv3run_with_mocked_subprocess(runner, config):
     outdir = os.path.join(TEST_DIR, "outdir")
 
     with unittest.mock.patch("subprocess.check_call") as mock, cleaned_up_directory(
         outdir
     ):
-        runner(fv3config.get_default_config(), outdir)
+        runner(config, outdir)
         assert mock.called
         call_args = list(mock.call_args[0])
         # ensure test does not depend on # of processors on testing system
@@ -149,22 +153,22 @@ def test_fv3run_with_mocked_subprocess(runner):
                 "mock_runscript.py",
             ]
         ]
-        config = yaml.safe_load(open(os.path.join(outdir, "fv3config.yml"), "r"))
-        assert config == fv3config.get_default_config()
+        written_config = yaml.safe_load(open(os.path.join(outdir, "fv3config.yml"), "r"))
+        assert written_config == config
 
 
 @pytest.mark.skipif(
     not DOCKER_ENABLED,
     reason=f"docker or docker image {DOCKER_IMAGE_NAME} is not available",
 )
-def test_fv3run_docker():
+def test_fv3run_docker(config):
     """End-to-end test of running a mock runscript inside a docker container.
     """
     outdir = os.path.join(TEST_DIR, "outdir")
 
     with cleaned_up_directory(outdir):
         fv3config.run_docker(
-            fv3config.get_default_config(),
+            config,
             outdir,
             DOCKER_IMAGE_NAME,
             runfile=MOCK_RUNSCRIPT,
@@ -176,11 +180,11 @@ def test_fv3run_docker():
 @pytest.mark.parametrize(
     "runner", [subprocess_run, config_dict_module_run, config_dict_filename_run]
 )
-def test_fv3run_with_mpi(runner):
+def test_fv3run_with_mpi(runner, config):
     fv3config.ensure_data_is_downloaded()
     outdir = os.path.join(TEST_DIR, "outdir")
     with cleaned_up_directory(outdir):
-        runner(fv3config.get_default_config(), outdir)
+        runner(config, outdir)
         check_run_directory(outdir)
 
 

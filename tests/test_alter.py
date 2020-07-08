@@ -4,8 +4,8 @@ from datetime import timedelta
 
 
 @pytest.fixture
-def config():
-    return fv3config.get_default_config()
+def config(c12_config):
+    return c12_config
 
 
 @pytest.fixture(params=["seconds", "hours", "days", "years"])

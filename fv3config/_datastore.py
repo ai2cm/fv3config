@@ -28,7 +28,7 @@ def get_orographic_forcing_directory(config):
     """
     resolution = get_resolution(config)
     if "orographic_forcing" not in config:
-        raise ValueError("config dictionary must have an 'orographic_forcing' key")
+        raise ConfigError("config dictionary must have an 'orographic_forcing' key")
     parent_dirname = config["orographic_forcing"]
     ensure_exists(parent_dirname, "orographic_forcing")
     dirname = os.path.join(parent_dirname, resolution)
@@ -64,7 +64,7 @@ def get_initial_conditions_directory(config):
 
 def ensure_exists(location: str, location_name: str):
     if not filesystem.get_fs(location).exists(location):
-        raise ValueError(f"{location_name} location {location} does not exist")
+        raise ConfigError(f"{location_name} location {location} does not exist")
 
 
 def check_if_data_is_downloaded():
