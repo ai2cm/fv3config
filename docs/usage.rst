@@ -126,7 +126,9 @@ a call to :py:func:`fv3config.run_docker`:
 .. code-block:: python
 
     >>> import fv3config
-    >>> config = fv3config.get_default_config()
+    >>> import yaml
+    >>> with open("config.yml", 'r') as f:
+    >>>     config = yaml.safe_load(f)
     >>> fv3config.run_docker(config, 'outdir', docker_image='us.gcr.io/vcm-ml/fv3gfs-python')
 
 If the ``fv3gfs-python`` package is installed natively, the model could be run
@@ -205,7 +207,7 @@ Submitting a Kubernetes job
 
 A python interface :py:func:`fv3config.run_kubernetes` is provided for
 submitting `fv3run` jobs to Kubernetes. Here's an example for submitting a job
-based on the default configuration dictionary::
+based on a config dictionary stored in Google cloud storage::
 
     import yaml
     import gcsfs
@@ -214,12 +216,6 @@ based on the default configuration dictionary::
     config_location = 'gs://my_bucket/fv3config.yml'
     outdir = 'gs://my_bucket/rundir'
     docker_image = 'us.gcr.io/vcm-ml/fv3gfs-python'
-    config = fv3config.get_default_config()
-
-    fs = gcsfs.GCSFileSystem()  # project name is optional,
-                                # we don't use commands that depend on it
-    with fs.open(config_location, 'w') as config_file:
-        config_file.write(yaml.dump(config))
 
     fv3config.run_kubernetes(
         config_location,

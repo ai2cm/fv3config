@@ -11,9 +11,10 @@ Basic usage
 
 .. code-block:: python
 
-    from fv3config import get_default_config, write_run_directory
+    from fv3config import write_run_directory
 
-    config = get_default_config()
+    with open("config.yml", 'r') as f:
+        config = yaml.safe_load(f)
     write_run_directory(config, './rundir')
 
 :code:`config` is a configuration dictionary which contains namelists, input data specifications,
