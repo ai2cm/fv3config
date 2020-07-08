@@ -181,7 +181,6 @@ def test_fv3run_docker(config):
     "runner", [subprocess_run, config_dict_module_run, config_dict_filename_run]
 )
 def test_fv3run_with_mpi(runner, config):
-    fv3config.ensure_data_is_downloaded()
     outdir = os.path.join(TEST_DIR, "outdir")
     with cleaned_up_directory(outdir):
         runner(config, outdir)
