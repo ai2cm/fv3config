@@ -2,6 +2,15 @@
 History
 =======
 
+latest
+------
+
+Major changes:
+~~~~~~~~~~~~~
+- the old "default" data options are removed
+- get_default_config() is removed, with a placeholder which says it was removed
+- ensure_data_is_downloaded is removed, with a placeholder which says it was removed
+
 v0.3.2 2020-04-16
 -----------------
 
