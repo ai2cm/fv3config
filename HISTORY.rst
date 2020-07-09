@@ -2,17 +2,18 @@
 History
 =======
 
-latest
-------
+v0.4.0 (2020-07-09)
+-------------------
 
 Major changes:
 ~~~~~~~~~~~~~
 - the old "default" data options are removed
+- orographic_forcing is now a required configuration key
 - get_default_config() is removed, with a placeholder which says it was removed
 - ensure_data_is_downloaded is removed, with a placeholder which says it was removed
 
-v0.3.2 2020-04-16
------------------
+v0.3.2 (2020-04-16)
+-------------------
 
 Major changes:
 ~~~~~~~~~~~~~
