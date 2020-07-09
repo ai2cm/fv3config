@@ -4,16 +4,18 @@ from fv3config import (
     config_from_namelist,
     InvalidFileError,
     ConfigError,
-    get_default_config,
     enable_restart,
 )
 import os
-import shutil
 from copy import deepcopy
+import yaml
+import tempfile
 
 
-test_directory = os.path.dirname(os.path.realpath(__file__))
+TEST_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
 
+with open(os.path.join(TEST_DIRECTORY, "c12_config.yml"), "r") as f:
+    DEFAULT_CONFIG = yaml.safe_load(f)
 
 one_item_namelist = """&fms_io_nml
     checksum_required = .false.
@@ -57,15 +59,6 @@ config_with_empty_namelist = {"namelist": {}}
 config_with_empty_fv_core_nml = {"namelist": {"fv_core_nml": {}}}
 
 
-class RunDirectory(object):
-    def __init__(self, directory_path):
-        os.mkdir(directory_path)
-        self.directory_path = directory_path
-
-    def cleanup(self):
-        shutil.rmtree(self.directory_path)
-
-
 class ConfigDictTests(unittest.TestCase):
     def setUp(self):
         self._run_directory_list = []
@@ -75,9 +68,9 @@ class ConfigDictTests(unittest.TestCase):
             directory.cleanup()
 
     def make_run_directory(self, directory_name):
-        full_path = os.path.join(test_directory, directory_name)
-        self._run_directory_list.append(RunDirectory(full_path))
-        return full_path
+        directory = tempfile.TemporaryDirectory(directory_name)
+        self._run_directory_list.append(directory)
+        return directory.name
 
     def test_init_from_empty_namelist(self):
         rundir = self.make_run_directory("test_rundir")
@@ -162,7 +155,7 @@ class ConfigDictTests(unittest.TestCase):
         self.assertEqual(written_lines[6:], target_lines[6:])
 
     def test_default_config_has_entries(self):
-        config = get_default_config()
+        config = DEFAULT_CONFIG.copy()
         self.assertTrue(len(config) > 0)
         self.assertIn("namelist", config)
         self.assertIsInstance(config["namelist"], dict)
@@ -183,7 +176,7 @@ class EnableRestartTests(unittest.TestCase):
                 self.assertEqual(item, target_dict[name])
 
     def test_enable_restart_from_default(self):
-        config = get_default_config()
+        config = DEFAULT_CONFIG.copy()
         restart_config = enable_restart(config)
         self.assert_dict_in_and_equal(
             restart_namelist_settings, restart_config["namelist"]
@@ -204,12 +197,12 @@ class EnableRestartTests(unittest.TestCase):
             enable_restart(empty_dict)
 
     def test_enable_restart_makes_copy(self):
-        config = get_default_config()
+        config = DEFAULT_CONFIG.copy()
         restart_config = enable_restart(config)
-        self.assertEqual(config, get_default_config())
+        self.assertEqual(config, DEFAULT_CONFIG)
         restart_config["initial_conditions"] = "changed item"
         restart_config["namelist"]["fv_core_nml"]["npx"] = 0
-        self.assertEqual(config, get_default_config())
+        self.assertEqual(config, DEFAULT_CONFIG)
 
 
 if __name__ == "__main__":

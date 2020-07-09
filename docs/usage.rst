@@ -5,41 +5,25 @@ Usage
 Quickstart
 ----------
 
-The following code would write a default run directory::
+The following code would write a run directory based on the contents of a yaml file::
 
-    from fv3config import get_default_config, write_run_directory
+    from fv3config import write_run_directory
 
-    config = get_default_config()
+    with open("config.yml", "r") as f:
+        config = yaml.safe_load(f)
     write_run_directory(config, './rundir')
 
 :code:`config` is a configuration dictionary which contains namelists, input data specifications,
-and other options. It can be edited just like any dictionary. Namelists are specified as
-sub-dictionaries. A default configuration dictionary can be retrieved with
-:py:func:`fv3config.get_default_config`, and a run directory can be written
-using :py:func:`fv3config.write_run_directory`.
+and other options, as described further below. It can be edited just like any dictionary. Namelists are specified as
+sub-dictionaries. An example C12 configuration dictionary is in the `tests` directory of this package.
+
+A run directory based on a configuration can be written using :py:func:`fv3config.write_run_directory`.
 
 Data Caching
 ------------
 
-:code:`fv3config` writes run directories by symbolically linking cached data files into the directory.
-Before this data can be linked, it must be downloaded. This can be done form the command line:
-
-.. code-block:: console
-
-    $ python -m fv3config.download_data
-
-Or from inside Python::
-
-    from fv3config import ensure_data_is_downloaded
-
-    ensure_data_is_downloaded()
-
-It is also possible to delete and re-download the data archive, in case something goes wrong::
-
-    $ python -m fv3config.refresh_data
-
-Cache Location
---------------
+:code:`fv3config` can write files from local or remote locations. When remote locations
+are used, the package first downloads the data to a local cache directory.
 
 If the FV3CONFIG_CACHE_DIR environment variable is set, the package will download
 and store data into ``$(FV3CONFIG_CACHE_DIR)/fv3config-cache``.
@@ -67,20 +51,19 @@ Configuration
 
 The ``config`` dictionary must have at least the following items:
 
-==================== ======== ==================== ========================
-Key                  Type     Default              Other built-in options
-==================== ======== ==================== ========================
-namelist             Namelist default Namelist     none
-experiment_name      str      'default_experiment' n/a
-diag_table           str      'default'            'grid_spec', 'no_output'
-data_table           str      'default'            none
-initial_conditions   str      'gfs_example'        'restart_example'
-forcing              str      'default'            none
-==================== ======== ==================== ========================
+==================== ======== ============================================
+Key                  Type     Description
+==================== ======== ============================================
+namelist             dict     Model namelist
+experiment_name      str      Name of experiment to use in output
+diag_table           str      location of diag_table file, or one of ("default", "grid_spec", "no_output")
+data_table           str      location of data_table file, or "default"
+initial_conditions   str      location of directory containing initial conditions data
+forcing              str      location of directory containing forcing data
+orographic_forcing   str      location of directory containing orographic data
+==================== ======== ============================================
 
-In addition to one of the built-in options, a custom ``diag_table`` and ``data_table`` can be specified
-by supplying a path to a file. Custom ``initial_conditions`` and ``forcing`` can be specified by
-supplying a path to a directory that contains the appropriate files. Paths to files or directories on the local
+Paths to files or directories on the local
 filesystem must be given as absolute paths. If paths are given that begin with ``gs://`` then ``fv3config`` will
 attempt to download the specified file or files from Google Cloud Storage. For this functionality, ``gcsfs``
 must be installed and authorized to download from the specified bucket.
@@ -144,7 +127,9 @@ a call to :py:func:`fv3config.run_docker`:
 .. code-block:: python
 
     >>> import fv3config
-    >>> config = fv3config.get_default_config()
+    >>> import yaml
+    >>> with open("config.yml", 'r') as f:
+    >>>     config = yaml.safe_load(f)
     >>> fv3config.run_docker(config, 'outdir', docker_image='us.gcr.io/vcm-ml/fv3gfs-python')
 
 If the ``fv3gfs-python`` package is installed natively, the model could be run
@@ -223,7 +208,7 @@ Submitting a Kubernetes job
 
 A python interface :py:func:`fv3config.run_kubernetes` is provided for
 submitting `fv3run` jobs to Kubernetes. Here's an example for submitting a job
-based on the default configuration dictionary::
+based on a config dictionary stored in Google cloud storage::
 
     import yaml
     import gcsfs
@@ -232,12 +217,6 @@ based on the default configuration dictionary::
     config_location = 'gs://my_bucket/fv3config.yml'
     outdir = 'gs://my_bucket/rundir'
     docker_image = 'us.gcr.io/vcm-ml/fv3gfs-python'
-    config = fv3config.get_default_config()
-
-    fs = gcsfs.GCSFileSystem()  # project name is optional,
-                                # we don't use commands that depend on it
-    with fs.open(config_location, 'w') as config_file:
-        config_file.write(yaml.dump(config))
 
     fv3config.run_kubernetes(
         config_location,
@@ -271,13 +250,3 @@ The required namelist settings for a restart run (as opposed to a run initialize
 analysis) can be applied to a configuration dictionary as follows::
 
     config = enable_restart(config)
-
-A set of restart files is provided in the cached data files. Thus, an example run directory with model
-restart initial conditions can be created with::
-
-    from fv3config import get_default_config, write_run_directory, enable_restart
-
-    config = get_default_config()
-    config['initial_conditions'] = 'restart_example'
-    config = enable_restart(config)
-    write_run_directory(config, './rundir')

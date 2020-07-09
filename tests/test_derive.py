@@ -3,6 +3,11 @@ import pytest
 from datetime import timedelta
 
 
+@pytest.fixture
+def config(c12_config):
+    return c12_config
+
+
 @pytest.mark.parametrize(
     "coupler_nml, duration",
     [
@@ -14,8 +19,7 @@ from datetime import timedelta
         ({"seconds": 5, "minutes": 1, "hours": 1}, timedelta(seconds=65, hours=1)),
     ],
 )
-def test_get_run_duration(coupler_nml, duration):
-    config = fv3config.get_default_config()
+def test_get_run_duration(coupler_nml, duration, config):
     config["namelist"]["coupler_nml"] = coupler_nml
     if coupler_nml.get("months", 0) != 0:
         with pytest.raises(ValueError):

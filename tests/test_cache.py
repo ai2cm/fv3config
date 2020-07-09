@@ -4,6 +4,14 @@ import pytest
 import fv3config
 import os
 import shutil
+import yaml
+import copy
+
+
+TEST_DIR = os.path.dirname(os.path.abspath(__file__))
+
+with open(os.path.join(TEST_DIR, "c12_config.yml"), "r") as f:
+    DEFAULT_CONFIG = yaml.safe_load(f)
 
 
 @pytest.mark.parametrize(
@@ -25,13 +33,30 @@ def test_cache_filename_raises_on_no_filename():
         fv3config.filesystem._get_cache_filename("gs://")
 
 
+class ChangeCacheDirectoryTests(unittest.TestCase):
+    def test_get_archive_dir(self):
+        result = fv3config.caching.get_cache_dir()
+        assert isinstance(result, str)
+        assert os.path.isabs(result)
+
+    def test_set_then_get_archive_dir(self):
+        with tempfile.TemporaryDirectory() as tempdir:
+            original = fv3config.caching.get_cache_dir()
+            try:
+                fv3config.caching.set_cache_dir(tempdir)
+                new = fv3config.caching.get_cache_dir()
+                assert new != original
+                assert new == tempdir
+            finally:
+                fv3config.caching.set_cache_dir(original)
+
+
 class CacheDirectoryTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.cache_dir = tempfile.TemporaryDirectory()
         cls.original_cache_dir = fv3config.caching.get_cache_dir()
         fv3config.caching.set_cache_dir(cls.cache_dir.name)
-        fv3config.ensure_data_is_downloaded()
 
     @classmethod
     def tearDownClass(cls):
@@ -44,7 +69,7 @@ class CacheDirectoryTests(unittest.TestCase):
             shutil.rmtree(gs_cache_dir)
 
     def test_cache_diag_table(self):
-        config = fv3config.get_default_config()
+        config = copy.deepcopy(DEFAULT_CONFIG)
         config[
             "diag_table"
         ] = "gs://vcm-fv3config/config/diag_table/default/v1.0/diag_table"
@@ -58,7 +83,7 @@ class CacheDirectoryTests(unittest.TestCase):
         assert os.path.isfile(cache_filename)
 
     def test_disable_caching(self):
-        config = fv3config.get_default_config()
+        config = copy.deepcopy(DEFAULT_CONFIG)
         config[
             "diag_table"
         ] = "gs://vcm-fv3config/config/diag_table/default/v1.0/diag_table"
@@ -73,7 +98,7 @@ class CacheDirectoryTests(unittest.TestCase):
         assert not os.path.isfile(cache_filename)
 
     def test_reenable_caching(self):
-        config = fv3config.get_default_config()
+        config = copy.deepcopy(DEFAULT_CONFIG)
         config[
             "diag_table"
         ] = "gs://vcm-fv3config/config/diag_table/default/v1.0/diag_table"
@@ -89,7 +114,7 @@ class CacheDirectoryTests(unittest.TestCase):
         assert os.path.isfile(cache_filename)
 
     def test_cached_diag_table_is_not_redownloaded(self):
-        config = fv3config.get_default_config()
+        config = copy.deepcopy(DEFAULT_CONFIG)
         config[
             "diag_table"
         ] = "gs://vcm-fv3config/config/diag_table/default/v1.0/diag_table"

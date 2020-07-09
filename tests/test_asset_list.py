@@ -14,10 +14,15 @@ from fv3config._asset_list import (
     check_asset_has_required_keys,
     write_asset,
 )
+import yaml
 
 
 TEST_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
 DATA_DIRECTORY = os.path.join(os.path.dirname(TEST_DIRECTORY), "fv3config", "data")
+
+with open(os.path.join(TEST_DIRECTORY, "c12_config.yml"), "r") as f:
+    DEFAULT_CONFIG = yaml.safe_load(f)
+
 
 DEFAULT_DATA_TABLE_ASSET = {
     "source_location": os.path.join(DATA_DIRECTORY, "data_table"),
@@ -134,22 +139,22 @@ class AssetListTests(unittest.TestCase):
         self.assertFalse(is_dict_or_list(1))
 
     def test_get_data_table_asset_default(self):
-        config = fv3config.get_default_config()
+        config = DEFAULT_CONFIG.copy()
         data_table_asset = get_data_table_asset(config)
         self.assertEqual(data_table_asset, DEFAULT_DATA_TABLE_ASSET)
 
     def test_get_diag_table_asset_default(self):
-        config = fv3config.get_default_config()
+        config = DEFAULT_CONFIG.copy()
         diag_table_asset = get_diag_table_asset(config)
         self.assertEqual(diag_table_asset, DEFAULT_DIAG_TABLE_ASSET)
 
     def test_get_field_table_asset_default(self):
-        config = fv3config.get_default_config()
+        config = DEFAULT_CONFIG.copy()
         field_table_asset = get_field_table_asset(config)
         self.assertEqual(field_table_asset, DEFAULT_FIELD_TABLE_ASSET)
 
     def test_get_field_table_asset_existing_filename(self):
-        config = fv3config.get_default_config()
+        config = DEFAULT_CONFIG.copy()
         with tempfile.NamedTemporaryFile() as field_table:
             config["field_table"] = field_table.name
             field_table_asset = get_field_table_asset(config)
@@ -160,19 +165,19 @@ class AssetListTests(unittest.TestCase):
             self.assertEqual(field_table_asset, expected_field_table_asset)
 
     def test_get_field_table_asset_non_existent_relative_path(self):
-        config = fv3config.get_default_config()
+        config = DEFAULT_CONFIG.copy()
         config["field_table"] = "foo"
         with self.assertRaises(fv3config.ConfigError):
             get_field_table_asset(config)
 
     def test_get_field_table_asset_non_existent_absolute_path(self):
-        config = fv3config.get_default_config()
+        config = DEFAULT_CONFIG.copy()
         config["field_table"] = "/foo"
         with self.assertRaises(fv3config.ConfigError):
             get_field_table_asset(config)
 
     def test_get_field_table_asset_existing_directory(self):
-        config = fv3config.get_default_config()
+        config = DEFAULT_CONFIG.copy()
         with tempfile.TemporaryDirectory() as directory:
             default_field_table_name = DEFAULT_FIELD_TABLE_ASSET["source_name"]
             open(os.path.join(directory, default_field_table_name), "a").close()
@@ -184,7 +189,7 @@ class AssetListTests(unittest.TestCase):
             self.assertEqual(field_table_asset, expected_field_table_asset)
 
     def test_get_field_table_asset_existing_directory_absent_file(self):
-        config = fv3config.get_default_config()
+        config = DEFAULT_CONFIG.copy()
         with tempfile.TemporaryDirectory() as directory:
             config["field_table"] = directory
             with self.assertRaises(fv3config.ConfigError):
