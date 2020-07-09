@@ -60,6 +60,7 @@ diag_table           str      location of diag_table file, or one of ("default",
 data_table           str      location of data_table file, or "default"
 initial_conditions   str      location of directory containing initial conditions data
 forcing              str      location of directory containing forcing data
+orographic_forcing   str      location of directory containing orographic data
 ==================== ======== ============================================
 
 Paths to files or directories on the local
