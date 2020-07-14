@@ -2,6 +2,13 @@
 History
 =======
 
+latest
+------
+
+Minor changes:
+~~~~~~~~~~~~~
+- updated create_rundir example to accept external arguments
+
 v0.4.0 (2020-07-09)
 -------------------
 
