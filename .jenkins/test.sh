@@ -1,4 +1,4 @@
-#!/bin/bash -f
+#!/bin/bash -f -e
 
 ##################################################
 # functions
@@ -68,19 +68,30 @@ fi
 # set root and move to testuite folder
 root=`pwd`
 
-# setup virtual env with dependencies
+# run tests
 if [ ! -f requirements_dev.txt ] ; then
     exitError 1205 ${LINENO} "could not find requirements_dev.txt"
 fi
 python3 -m venv venv
 . ./venv/bin/activate
 pip3 install -r requirements_dev.txt
-
-# install package
 pip3 install -e .
-
-# run tests
 pytest --junitxml results.xml tests
+deactivate
+\rm -rf venv
+
+# install and run example
+python3 -m venv venv
+. ./venv/bin/activate
+pip3 install -e .
+cd examples/
+./create_rundir.sh
+test -d example_rundir || exit 1
+test -f example_rundir/input.nml || exit 1
+test -f example_rundir/field_table || exit 1
+test -f example_rundir/grb/seaice_newland.grb || exit 1
+deactivate
+\rm -rf venv
 
 # end timer and report time taken
 T="$(($(date +%s)-T))"

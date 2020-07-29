@@ -61,7 +61,7 @@ test )
     script=".jenkins/test.sh"
     test -f "${script}" || exitError 1301 ${LINENO} "cannot find script ${script}"
 
-    ${script} ${optarg} ${opts}
+    ${script} ${optarg}
     if [ $? -ne 0 ] ; then
       exitError 1510 ${LINENO} "problem while executing script ${script}"
     fi
