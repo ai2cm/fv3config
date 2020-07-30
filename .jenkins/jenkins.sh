@@ -75,7 +75,7 @@ test )
     fi
 
     # success
-    echo "TESTING SUCCESSFUL"
+    echo "### TESTING SUCCESSFUL"
 
     ;;
 

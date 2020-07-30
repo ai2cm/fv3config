@@ -66,6 +66,7 @@ fi
 
 
 # run tests
+echo "### run tests"
 if [ ! -f requirements_dev.txt ] ; then
     exitError 1205 ${LINENO} "could not find requirements_dev.txt, run from top directory"
 fi
@@ -78,6 +79,7 @@ deactivate
 \rm -rf venv
 
 # install and run example
+echo "### run install and example"
 python3 -m venv venv
 . ./venv/bin/activate
 pip3 install -e .
