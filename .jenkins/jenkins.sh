@@ -2,8 +2,10 @@
 
 # This is the master script used to trigger Jenkins actions.
 # The idea of this script is to keep the amount of code in the "Execute shell" field small
-# Exmple syntax:
+#
+# Example syntax:
 # .jenkins/jenkins.sh test
+#
 # Other actions such as test/build/deploy can be defined.
 
 ### Some environment variables available from Jenkins
@@ -60,32 +62,15 @@ echo ${host} | grep "${shortslave}" || exitError 1006 ${LINENO} "host does not c
 # get root directory of where jenkins.sh is sitting
 root=`dirname $0`
 
-# act according to action specified
-case "${action}" in
+# check if action script exists
+script="${root}/action/${action}.sh"
+test -f "${script}" || exitError 1301 ${LINENO} "cannot find script ${script}"
 
-test )
-
-    # check if test script exists
-    script="${root}/test.sh"
-    test -f "${script}" || exitError 1301 ${LINENO} "cannot find script ${script}"
-
-    ${script} ${optarg}
-    if [ $? -ne 0 ] ; then
-      exitError 1510 ${LINENO} "problem while executing script ${script}"
-    fi
-
-    # success
-    echo "### TESTING SUCCESSFUL"
-
-    ;;
-
-* )
-
-    exitError 3001 ${LINENO} "unsupported action in $0 encountered ($action)"
-
-    ;;
-
-esac
+${script} ${optarg}
+if [ $? -ne 0 ] ; then
+  exitError 1510 ${LINENO} "problem while executing script ${script}"
+fi
+echo "### ACTION ${action} SUCESSFULL"
 
 # end timer and report time taken
 T="$(($(date +%s)-T))"
