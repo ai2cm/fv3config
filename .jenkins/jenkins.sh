@@ -70,7 +70,7 @@ ${script} ${optarg}
 if [ $? -ne 0 ] ; then
   exitError 1510 ${LINENO} "problem while executing script ${script}"
 fi
-echo "### ACTION ${action} SUCESSFULL"
+echo "### ACTION ${action} SUCCESSFUL"
 
 # end timer and report time taken
 T="$(($(date +%s)-T))"
