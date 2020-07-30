@@ -37,7 +37,6 @@ T="$(date +%s)"
 test -n "$1" || exitError 1001 ${LINENO} "must pass an argument"
 test -n "${slave}" || exitError 1005 ${LINENO} "slave is not defined"
 shortslave=`echo ${slave} | sed 's/[0-9]*$//g'`
-echo "$1" | egrep '^test$' || exitError 1007 ${LINENO} "invalid argument (must be test)"
 
 # some global variables
 action="$1"
@@ -70,7 +69,6 @@ test )
     script="${root}/test.sh"
     test -f "${script}" || exitError 1301 ${LINENO} "cannot find script ${script}"
 
-    echo "RUNNING ${script} ${optarg}"
     ${script} ${optarg}
     if [ $? -ne 0 ] ; then
       exitError 1510 ${LINENO} "problem while executing script ${script}"
