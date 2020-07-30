@@ -1,5 +1,4 @@
 #!/bin/bash -f
-set -x
 
 ### Some environment variables available from Jenkins
 ### Note: for a complete list see https://jenkins.ginko.ch/env-vars.html
@@ -62,6 +61,7 @@ test )
     script=".jenkins/test.sh"
     test -f "${script}" || exitError 1301 ${LINENO} "cannot find script ${script}"
 
+    echo "RUNNING ${script} ${optarg}"
     ${script} ${optarg}
     if [ $? -ne 0 ] ; then
       exitError 1510 ${LINENO} "problem while executing script ${script}"
