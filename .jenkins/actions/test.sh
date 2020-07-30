@@ -45,7 +45,7 @@ parseOptions $*
 
 # check presence of env directory
 pushd `dirname $0` > /dev/null
-envloc=`/bin/pwd`
+envloc=`/bin/pwd`/..
 popd > /dev/null
 
 # Download the env
