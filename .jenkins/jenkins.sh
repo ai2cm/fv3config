@@ -63,7 +63,7 @@ echo ${host} | grep "${shortslave}" || exitError 1006 ${LINENO} "host does not c
 root=`dirname $0`
 
 # check if action script exists
-script="${root}/action/${action}.sh"
+script="${root}/actions/${action}.sh"
 test -f "${script}" || exitError 1301 ${LINENO} "cannot find script ${script}"
 
 ${script} ${optarg}
