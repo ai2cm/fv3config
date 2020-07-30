@@ -1,4 +1,4 @@
-#!/bin/bash -f
+o!/bin/bash -f
 
 ##################################################
 # functions
@@ -23,7 +23,7 @@ showUsage()
 parseOptions()
 {
     # process command line options
-    while getopts ":c:dfhl" opt
+    while getopts "h" opt
     do
         case $opt in
         h) showUsage; exit 0 ;;
@@ -65,12 +65,9 @@ fi
 . ${envloc}/env/env.${host}.sh
 
 
-# set root and move to testuite folder
-root=`pwd`
-
 # run tests
 if [ ! -f requirements_dev.txt ] ; then
-    exitError 1205 ${LINENO} "could not find requirements_dev.txt"
+    exitError 1205 ${LINENO} "could not find requirements_dev.txt, run from top directory"
 fi
 python3 -m venv venv
 . ./venv/bin/activate

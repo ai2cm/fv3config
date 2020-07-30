@@ -1,5 +1,11 @@
 #!/bin/bash -f
 
+# This is the master script used to trigger Jenkins actions.
+# The idea of this script is to keep the amount of code in the "Execute shell" field small
+# Exmple syntax:
+# .jenkins/jenkins.sh test
+# Other actions such as test/build/deploy can be defined.
+
 ### Some environment variables available from Jenkins
 ### Note: for a complete list see https://jenkins.ginko.ch/env-vars.html
 # slave              The name of the build slave (daint, kesch, ...).
@@ -52,13 +58,16 @@ test -f ${envloc}/env/machineEnvironment.sh || exitError 1201 ${LINENO} "cannot 
 # check that host (define in machineEnvironment.sh) and slave are consistent
 echo ${host} | grep "${shortslave}" || exitError 1006 ${LINENO} "host does not contain slave"
 
+# get root directory of where jenkins.sh is sitting
+root=`dirname $0`
+
 # act according to action specified
 case "${action}" in
 
 test )
 
     # check if test script exists
-    script=".jenkins/test.sh"
+    script="${root}/test.sh"
     test -f "${script}" || exitError 1301 ${LINENO} "cannot find script ${script}"
 
     echo "RUNNING ${script} ${optarg}"
