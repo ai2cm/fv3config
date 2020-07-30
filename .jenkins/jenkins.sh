@@ -1,4 +1,5 @@
 #!/bin/bash -f
+set -x
 
 ### Some environment variables available from Jenkins
 ### Note: for a complete list see https://jenkins.ginko.ch/env-vars.html
