@@ -21,3 +21,4 @@ Basic usage
 and other options. It can be edited just like any dictionary.
 
 For more in-depth usage, please refer to the documentation. This can be generated with :code:`make docs`.
+
