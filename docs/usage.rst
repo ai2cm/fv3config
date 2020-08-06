@@ -19,6 +19,18 @@ sub-dictionaries. An example C12 configuration dictionary is in the `tests` dire
 
 A run directory based on a configuration can be written using :py:func:`fv3config.write_run_directory`.
 
+Shell Usage
+-----------
+
+This module installs a command line interface `write_run_directory` that can
+be used to write the run directory from a shell. For example, if the file
+`config.yaml` contains a yaml-encoded configuration dictionary
+
+    write_run_directory config.yaml rundir
+
+will write an FV3 run directory to the path `rundir`.
+
+This module also installs a command line interface `fv3run`, which is further detailed below.
 Data Caching
 ------------
 
