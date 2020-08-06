@@ -30,6 +30,7 @@ be used to write the run directory from a shell. For example, if the file
 
 will write an FV3 run directory to the path `rundir`.
 
+This module also installs a command line interface `fv3run`, which is further detailed below.
 Data Caching
 ------------
 
