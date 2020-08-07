@@ -303,5 +303,16 @@ def test_write_bytes_asset(tmpdir, target_location):
         assert f.read() == b"hello world"
 
 
+def test_bytes_asset_serializes_with_yaml():
+    asset = get_bytes_asset_dict(
+        b"hello world", target_location="", target_name="hello.txt"
+    )
+
+    serialized = yaml.safe_dump(asset)
+    deserialized = yaml.safe_load(serialized)
+
+    assert deserialized == asset
+
+
 if __name__ == "__main__":
     unittest.main()
