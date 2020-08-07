@@ -16,7 +16,7 @@ from .config import (
 from ._exceptions import InvalidFileError, ConfigError
 from ._datastore import ensure_data_is_downloaded
 from .fv3run import run_docker, run_native, run_kubernetes
-from ._asset_list import get_asset_dict
+from ._asset_list import get_asset_dict, get_bytes_asset_dict
 from .caching import CACHE_REMOTE_FILES, do_remote_caching, set_cache_dir, get_cache_dir
 
 

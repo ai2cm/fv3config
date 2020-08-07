@@ -9,6 +9,7 @@ from fv3config._asset_list import (
     get_diag_table_asset,
     get_field_table_asset,
     get_asset_dict,
+    get_bytes_asset_dict,
     ensure_is_list,
     asset_list_from_path,
     check_asset_has_required_keys,
@@ -287,6 +288,15 @@ class AssetListTests(unittest.TestCase):
         self.make_empty_files(source_workdir, [test_filename])
         write_asset(test_asset, target_workdir)
         self.assertTrue(os.path.exists(os.path.join(target_workdir, test_filename)))
+
+
+def test_write_bytes_asset(tmpdir):
+    asset = get_bytes_asset_dict(
+        b"hello world", target_location="", target_name="hello.txt"
+    )
+    write_asset(asset, tmpdir)
+    with tmpdir.join("hello.txt").open("rb") as f:
+        assert f.read() == b"hello world"
 
 
 if __name__ == "__main__":
