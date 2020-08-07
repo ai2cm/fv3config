@@ -17,6 +17,8 @@ from fv3config._asset_list import (
 )
 import yaml
 
+import pytest
+
 
 TEST_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
 DATA_DIRECTORY = os.path.join(os.path.dirname(TEST_DIRECTORY), "fv3config", "data")
@@ -290,12 +292,14 @@ class AssetListTests(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(target_workdir, test_filename)))
 
 
-def test_write_bytes_asset(tmpdir):
+@pytest.mark.parametrize("target_location", ["", "subdir"])
+def test_write_bytes_asset(tmpdir, target_location):
     asset = get_bytes_asset_dict(
-        b"hello world", target_location="", target_name="hello.txt"
+        b"hello world", target_location=target_location, target_name="hello.txt"
     )
     write_asset(asset, tmpdir)
-    with tmpdir.join("hello.txt").open("rb") as f:
+    dir_ = tmpdir.join(target_location)
+    with dir_.join("hello.txt").open("rb") as f:
         assert f.read() == b"hello world"
 
 

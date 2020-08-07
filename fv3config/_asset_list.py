@@ -193,6 +193,8 @@ def write_asset(asset, target_directory):
         target_directory, asset["target_location"], asset["target_name"]
     )
 
+    os.makedirs(os.path.dirname(target_path), exist_ok=True)
+
     if "copy_method" in asset:
         copy_file_asset(asset, target_path)
     elif "bytes" in asset:
@@ -208,8 +210,6 @@ def copy_file_asset(asset, target_path):
     check_asset_has_required_keys(asset)
     source_path = os.path.join(asset["source_location"], asset["source_name"])
     copy_method = asset["copy_method"]
-    if not os.path.exists(os.path.dirname(target_path)):
-        os.makedirs(os.path.dirname(target_path))
     if copy_method == "copy":
         filesystem.get_file(source_path, target_path)
     elif copy_method == "link":
