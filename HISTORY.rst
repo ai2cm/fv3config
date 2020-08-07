@@ -8,6 +8,7 @@ latest
 Major changes:
 ~~~~~~~~~~~~~~
 
+- a new public function `fv3gfs.get_bytes_asset_dict`
 - a new command line interface `write_run_directory`
 
 Minor changes:
