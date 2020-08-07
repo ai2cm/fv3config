@@ -123,7 +123,7 @@ written to the desired location using
     >>> get_bytes_asset_dict(b"hello_world", "hello.txt", target_location=".")
 
 This is useful for storing small files in the configuration dictionary,
-without needing to deploy them to an external strorage system.
+without needing to deploy them to an external storage system.
 
 One can set ``config['initial_conditions']`` or ``config['forcing']``
 to a list of assets in order to specify every initial condition or forcing file individually.
