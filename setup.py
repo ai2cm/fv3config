@@ -39,7 +39,12 @@ setup(
         "Programming Language :: Python :: 3.7",
     ],
     description="FV3Config is used to configure and manipulate run directories for FV3GFS.",
-    entry_points={"console_scripts": ["fv3run=fv3config.fv3run.__main__:main"]},
+    entry_points={
+        "console_scripts": [
+            "fv3run=fv3config.fv3run.__main__:main",
+            "write_run_directory=fv3config.cli:write_run_directory",
+        ]
+    },
     install_requires=requirements,
     extras_require={
         "bucket-access": "gcsfs",

@@ -9,12 +9,15 @@ from fv3config._asset_list import (
     get_diag_table_asset,
     get_field_table_asset,
     get_asset_dict,
+    get_bytes_asset_dict,
     ensure_is_list,
     asset_list_from_path,
     check_asset_has_required_keys,
     write_asset,
 )
 import yaml
+
+import pytest
 
 
 TEST_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
@@ -287,6 +290,28 @@ class AssetListTests(unittest.TestCase):
         self.make_empty_files(source_workdir, [test_filename])
         write_asset(test_asset, target_workdir)
         self.assertTrue(os.path.exists(os.path.join(target_workdir, test_filename)))
+
+
+@pytest.mark.parametrize("target_location", ["", "subdir"])
+def test_write_bytes_asset(tmpdir, target_location):
+    asset = get_bytes_asset_dict(
+        b"hello world", target_location=target_location, target_name="hello.txt"
+    )
+    write_asset(asset, tmpdir)
+    dir_ = tmpdir.join(target_location)
+    with dir_.join("hello.txt").open("rb") as f:
+        assert f.read() == b"hello world"
+
+
+def test_bytes_asset_serializes_with_yaml():
+    asset = get_bytes_asset_dict(
+        b"hello world", target_location="", target_name="hello.txt"
+    )
+
+    serialized = yaml.safe_dump(asset)
+    deserialized = yaml.safe_load(serialized)
+
+    assert deserialized == asset
 
 
 if __name__ == "__main__":
