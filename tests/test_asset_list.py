@@ -8,6 +8,7 @@ from fv3config._asset_list import (
     get_data_table_asset,
     get_diag_table_asset,
     get_field_table_asset,
+    get_fv3config_yaml_asset,
     get_asset_dict,
     get_bytes_asset_dict,
     ensure_is_list,
@@ -312,6 +313,17 @@ def test_bytes_asset_serializes_with_yaml():
     deserialized = yaml.safe_load(serialized)
 
     assert deserialized == asset
+
+
+def test_get_fv3config_yaml_asset(tmpdir):
+    config = {"some": "dict"}
+    asset = get_fv3config_yaml_asset(config)
+    write_asset(asset, str(tmpdir))
+
+    with open(str(tmpdir.join("fv3config.yml"))) as f:
+        loaded = yaml.safe_load(f)
+
+    assert loaded == config
 
 
 if __name__ == "__main__":
