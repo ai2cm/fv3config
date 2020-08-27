@@ -163,11 +163,11 @@ class AssetListTests(unittest.TestCase):
         config["diag_table"] = DEFAULT_DIAG_TABLE_ASSET.copy()
         config["diag_table"]["target_name"] = "wrong_name_for_diag_table"
         with self.assertRaises(fv3config.ConfigError):
-            diag_table_asset = get_diag_table_asset(config)
+            get_diag_table_asset(config)
         config["diag_table"] = DEFAULT_DIAG_TABLE_ASSET.copy()
         config["diag_table"]["target_location"] = "wrong_location_for_diag_table"
         with self.assertRaises(fv3config.ConfigError):
-            diag_table_asset = get_diag_table_asset(config)
+            get_diag_table_asset(config)
 
     def test_get_field_table_asset_default(self):
         config = DEFAULT_CONFIG.copy()
