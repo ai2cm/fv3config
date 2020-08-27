@@ -1,4 +1,7 @@
 import os
+
+import yaml
+
 from ._datastore import (
     get_initial_conditions_directory,
     get_orographic_forcing_directory,
@@ -11,6 +14,9 @@ from fv3config._datastore import (
 )
 from ._exceptions import ConfigError
 from . import filesystem
+
+
+FV3CONFIG_YML_NAME = "fv3config.yml"
 
 
 def is_dict_or_list(option):
@@ -72,6 +78,15 @@ def get_field_table_asset(config):
     field_table_filename = get_field_table_filename(config)
     location, name = os.path.split(field_table_filename)
     return get_asset_dict(location, name, target_name="field_table")
+
+
+def get_fv3config_yaml_asset(config):
+    """An asset containing this configuration"""
+    return get_bytes_asset_dict(
+        bytes(yaml.safe_dump(config), "UTF-8"),
+        target_location=".",
+        target_name=FV3CONFIG_YML_NAME,
+    )
 
 
 def get_asset_dict(
@@ -254,6 +269,7 @@ def config_to_asset_list(config):
     asset_list.append(get_field_table_asset(config))
     asset_list.append(get_diag_table_asset(config))
     asset_list.append(get_data_table_asset(config))
+    asset_list.append(get_fv3config_yaml_asset(config))
     if "patch_files" in config:
         if is_dict_or_list(config["patch_files"]):
             asset_list += ensure_is_list(config["patch_files"])
