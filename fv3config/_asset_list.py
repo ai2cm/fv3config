@@ -68,9 +68,22 @@ def get_data_table_asset(config):
 
 def get_diag_table_asset(config):
     """Return asset for diag_table"""
-    diag_table_filename = get_diag_table_filename(config)
-    location, name = os.path.split(diag_table_filename)
-    return get_asset_dict(location, name, target_name="diag_table")
+    try:
+        target_name = config["diag_table"]["target_name"]
+        target_location = config["diag_table"]["target_location"]
+        if target_name != "diag_table" or _without_dot(target_location) != "":
+            raise ConfigError(
+                "If providing an asset dict for the diag_table entry, its target name "
+                "must be 'diag_table' and its target location must be the root of the "
+                f"run directory. Got {target_name} for target_name and "
+                f"{target_location} for target_location."
+            )
+        asset = config["diag_table"]
+    except TypeError:  # raised if config["diag_table"] is a string, not an asset dict
+        diag_table_filename = get_diag_table_filename(config)
+        location, name = os.path.split(diag_table_filename)
+        asset = get_asset_dict(location, name, target_name="diag_table")
+    return asset
 
 
 def get_field_table_asset(config):

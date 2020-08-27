@@ -68,10 +68,10 @@ Key                  Type     Description
 ==================== ======== ============================================
 namelist             dict     Model namelist
 experiment_name      str      Name of experiment to use in output
-diag_table           str      location of diag_table file, or one of ("default", "grid_spec", "no_output")
+diag_table           str      location of diag_table file, or one of ("default", "grid_spec", "no_output") or an asset
 data_table           str      location of data_table file, or "default"
-initial_conditions   str      location of directory containing initial conditions data
-forcing              str      location of directory containing forcing data
+initial_conditions   str      location of directory containing initial conditions data or sequence of assets
+forcing              str      location of directory containing forcing data or sequence of assets
 orographic_forcing   str      location of directory containing orographic data
 ==================== ======== ============================================
 
@@ -127,6 +127,9 @@ without needing to deploy them to an external storage system.
 
 One can set ``config['initial_conditions']`` or ``config['forcing']``
 to a list of assets in order to specify every initial condition or forcing file individually.
+As well, the ``config['diag_table']`` entry can be set to an asset. This is useful for passing
+the diag_table as a python bytes object. The ``diag_table`` asset must have a ``target_name`` 
+set to ``diag_table``.
 
 One can use a directory to specify the initial conditions or forcing files and replace only a
 subset of the files within the that directory with the optional ``config['patch_files']`` item.
