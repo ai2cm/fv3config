@@ -137,4 +137,4 @@ class CacheDirectoryTests(unittest.TestCase):
         ] = "gs://vcm-fv3config/config/diag_table/default/v1.0/diag_table"
         with tempfile.TemporaryDirectory() as rundir:
             fv3config.write_run_directory(config, rundir)
-        assert "fv3config.yml" in os.listdir(rundir)
+            assert "fv3config.yml" in os.listdir(rundir)
