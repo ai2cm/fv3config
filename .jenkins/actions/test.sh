@@ -82,7 +82,6 @@ deactivate
 echo "### run install and example"
 python3 -m venv venv
 . ./venv/bin/activate
-pip3 install setuptools wheel
 pip3 install -e .
 cd examples/
 ./create_rundir.sh
