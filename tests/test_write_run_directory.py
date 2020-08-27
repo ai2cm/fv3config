@@ -132,9 +132,6 @@ class CacheDirectoryTests(unittest.TestCase):
 
     def test_rundir_contains_fv3config_yml(self):
         config = copy.deepcopy(DEFAULT_CONFIG)
-        config[
-            "diag_table"
-        ] = "gs://vcm-fv3config/config/diag_table/default/v1.0/diag_table"
         with tempfile.TemporaryDirectory() as rundir:
             fv3config.write_run_directory(config, rundir)
             assert "fv3config.yml" in os.listdir(rundir)
