@@ -1,5 +1,6 @@
 import os
 
+import base64
 import yaml
 
 from ._datastore import (
@@ -143,7 +144,7 @@ def get_bytes_asset_dict(
     """
 
     return {
-        "bytes": data,
+        "bytes": base64.b64encode(data).decode("UTF-8"),
         "target_location": target_location,
         "target_name": target_name,
     }
@@ -214,7 +215,7 @@ def write_asset(asset, target_directory):
         copy_file_asset(asset, target_path)
     elif "bytes" in asset:
         with open(target_path, "wb") as f:
-            f.write(asset["bytes"])
+            f.write(base64.b64decode(asset["bytes"]))
     else:
         raise ConfigError(
             "Cannot write asset. Asset must have either a `copy_method` or `bytes` key."
