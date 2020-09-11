@@ -21,10 +21,12 @@ DIAG_TABLE_PATH = "gs://vcm-fv3config/config/diag_table/default/v1.0/diag_table"
 def populate_mock_filesystem(fs):
     for filename in MOCK_FS_FILENAMES:
         fs.mkdir(os.path.dirname(filename))
-        with fs.open(filename, mode='wb') as f:
+        with fs.open(filename, mode="wb") as f:
             f.write(b"mock_data")
-    with open(os.path.join(fv3config.data.DATA_DIR, "diag_table/diag_table_default"), "r") as f_in:
-        with fs.open(DIAG_TABLE_PATH, 'w') as f_out:
+    with open(
+        os.path.join(fv3config.data.DATA_DIR, "diag_table/diag_table_default"), "r"
+    ) as f_in:
+        with fs.open(DIAG_TABLE_PATH, "w") as f_out:
             f_out.write(f_in.read())
     for filename in MOCK_FS_FILENAMES:
         dirname = os.path.dirname(filename)
@@ -39,7 +41,7 @@ class MockGCSFileSystem(MemoryFileSystem):
         path = self._strip_protocol(path)
         result = super().ls(path, **kwargs)
         return super().ls(path, **kwargs)
-    
+
     def mkdir(self, path, create_parents=True, **kwargs):
         path = self._strip_protocol(path)
         return super().mkdir(path, create_parents, **kwargs)
@@ -47,7 +49,7 @@ class MockGCSFileSystem(MemoryFileSystem):
     def rmdir(self, path, *args, **kwargs):
         path = self._strip_protocol(path)
         return super().rmdir(path, *args, **kwargs)
-    
+
     def exists(self, path):
         path = self._strip_protocol(path)
         return path in self.store or path in self.pseudo_dirs
