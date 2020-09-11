@@ -1,6 +1,5 @@
 import pytest
 import os
-import io
 import yaml
 import fsspec
 from fsspec.implementations.memory import MemoryFileSystem
@@ -39,7 +38,6 @@ class MockGCSFileSystem(MemoryFileSystem):
 
     def ls(self, path, recursive=False, **kwargs):
         path = self._strip_protocol(path)
-        result = super().ls(path, **kwargs)
         return super().ls(path, **kwargs)
 
     def mkdir(self, path, create_parents=True, **kwargs):
