@@ -1,4 +1,7 @@
 import os
+
+import yaml
+
 from ._datastore import (
     get_initial_conditions_directory,
     get_orographic_forcing_directory,
@@ -11,6 +14,9 @@ from fv3config._datastore import (
 )
 from ._exceptions import ConfigError
 from . import filesystem
+
+
+FV3CONFIG_YML_NAME = "fv3config.yml"
 
 
 def is_dict_or_list(option):
@@ -74,6 +80,15 @@ def get_field_table_asset(config):
     return get_asset_dict(location, name, target_name="field_table")
 
 
+def get_fv3config_yaml_asset(config):
+    """An asset containing this configuration"""
+    return get_bytes_asset_dict(
+        bytes(yaml.safe_dump(config), "UTF-8"),
+        target_location=".",
+        target_name=FV3CONFIG_YML_NAME,
+    )
+
+
 def get_asset_dict(
     source_location,
     source_name,
@@ -107,6 +122,31 @@ def get_asset_dict(
         "copy_method": copy_method,
     }
     return asset
+
+
+def get_bytes_asset_dict(
+    data: bytes, target_location: str, target_name: str,
+):
+    """Helper function to define the necessary fields for a binary asset to
+    be saved at a given location.
+
+    Args:
+        data: the bytes to save
+        target_location: sub-directory to which file will
+            be written, relative to run directory root. Defaults to empty
+            string (i.e. root of run directory).
+        target_name: filename to which file will be written.
+            Defaults to None, in which case source_name is used.
+
+    Returns:
+        dict: an asset dictionary
+    """
+
+    return {
+        "bytes": data,
+        "target_location": target_location,
+        "target_name": target_name,
+    }
 
 
 def _without_dot(path):
@@ -163,14 +203,28 @@ def write_asset(asset, target_directory):
         asset (dict): an asset dict
         target_directory (str): path to a directory in which all files will be written
     """
-    check_asset_has_required_keys(asset)
-    source_path = os.path.join(asset["source_location"], asset["source_name"])
+
     target_path = os.path.join(
         target_directory, asset["target_location"], asset["target_name"]
     )
+
+    os.makedirs(os.path.dirname(target_path), exist_ok=True)
+
+    if "copy_method" in asset:
+        copy_file_asset(asset, target_path)
+    elif "bytes" in asset:
+        with open(target_path, "wb") as f:
+            f.write(asset["bytes"])
+    else:
+        raise ConfigError(
+            "Cannot write asset. Asset must have either a `copy_method` or `bytes` key."
+        )
+
+
+def copy_file_asset(asset, target_path):
+    check_asset_has_required_keys(asset)
+    source_path = os.path.join(asset["source_location"], asset["source_name"])
     copy_method = asset["copy_method"]
-    if not os.path.exists(os.path.dirname(target_path)):
-        os.makedirs(os.path.dirname(target_path))
     if copy_method == "copy":
         filesystem.get_file(source_path, target_path)
     elif copy_method == "link":
@@ -215,6 +269,7 @@ def config_to_asset_list(config):
     asset_list.append(get_field_table_asset(config))
     asset_list.append(get_diag_table_asset(config))
     asset_list.append(get_data_table_asset(config))
+    asset_list.append(get_fv3config_yaml_asset(config))
     if "patch_files" in config:
         if is_dict_or_list(config["patch_files"]):
             asset_list += ensure_is_list(config["patch_files"])

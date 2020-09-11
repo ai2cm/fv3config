@@ -2,6 +2,19 @@
 History
 =======
 
+latest
+------
+
+Major changes:
+~~~~~~~~~~~~~~
+
+- a new public function `fv3gfs.get_bytes_asset_dict`
+- a new command line interface `write_run_directory`
+
+Minor changes:
+~~~~~~~~~~~~~
+- updated create_rundir example to accept external arguments
+
 v0.4.0 (2020-07-09)
 -------------------
 

@@ -129,3 +129,9 @@ class CacheDirectoryTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as rundir:
             fv3config.write_run_directory(config, rundir)
         assert os.path.getmtime(cache_filename) == modification_time
+
+    def test_rundir_contains_fv3config_yml(self):
+        config = copy.deepcopy(DEFAULT_CONFIG)
+        with tempfile.TemporaryDirectory() as rundir:
+            fv3config.write_run_directory(config, rundir)
+            assert "fv3config.yml" in os.listdir(rundir)
