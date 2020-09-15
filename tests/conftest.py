@@ -27,9 +27,6 @@ def populate_mock_filesystem(fs):
     ) as f_in:
         with fs.open(DIAG_TABLE_PATH, "w") as f_out:
             f_out.write(f_in.read())
-    for filename in MOCK_FS_FILENAMES:
-        dirname = os.path.dirname(filename)
-        fs.ls(dirname)
 
 
 class MockGCSFileSystem(MemoryFileSystem):

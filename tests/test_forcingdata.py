@@ -125,9 +125,7 @@ class ForcingTests(unittest.TestCase):
         rundir = self.make_run_directory("test_rundir")
         config = DEFAULT_CONFIG.copy()
         asset_list = get_initial_conditions_asset_list(config)
-        print("assets", asset_list)
         write_asset_list(asset_list, rundir)
-        print("asset write dir", os.listdir(rundir))
         self.assert_subpaths_present(
             rundir, required_default_initial_conditions_filenames
         )
