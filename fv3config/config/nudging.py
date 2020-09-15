@@ -55,7 +55,7 @@ def get_nudging_assets(
     nudge_filename_pattern: str = "%Y%m%d_%HZ_T85LR.nc",
     input_list_filename: str = "nudging_file_list",
     copy_method: str = "copy",
-) -> List[dict]:
+) -> List[Mapping]:
     """Return list of assets of all nudging files as well as an asset for the text file
     that describes the nudging files (required by fv3gfs to read the nudging files).
     
@@ -96,7 +96,7 @@ def clear_nudging_assets(
     assets: Sequence[Mapping],
     nudge_filename_pattern: str = "%Y%m%d_%HZ_T85LR.nc",
     input_list_filename: str = "nudging_file_list",
-):
+) -> List[Mapping]:
     """Given a list of assets, remove those which are nudging-related assets.
 
     Args:
@@ -118,11 +118,11 @@ def _matches_pattern_or_exact(item, pattern, exact_match):
     target_name = item["target_name"]
     try:
         datetime.strptime(target_name, pattern)
-        item_is_nudging_asset = True
+        match = True
     except ValueError:
         # filename does not fit given pattern
-        item_is_nudging_asset = False
+        match = False
     finally:
         if target_name == exact_match:
-            item_is_nudging_asset = True
-        return item_is_nudging_asset
+            match = True
+        return match
