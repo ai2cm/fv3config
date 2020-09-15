@@ -166,7 +166,7 @@ class TableTests(unittest.TestCase):
         config = DEFAULT_CONFIG.copy()
         config["namelist"]["coupler_nml"]["force_date_from_namelist"] = True
         config["namelist"]["coupler_nml"]["current_date"] = valid_current_date
-        current_date = get_current_date(config, os.path.join(rundir, "INPUT"))
+        current_date = get_current_date(config)
         self.assertEqual(current_date, valid_current_date)
 
     def test_update_diag_table_for_config(self):
@@ -175,9 +175,7 @@ class TableTests(unittest.TestCase):
         diag_table_filename = os.path.join(rundir, "diag_table")
         with open(diag_table_filename, "w") as f:
             f.write(diag_table_test_in)
-        current_date = get_current_date(
-            config_for_update_diag_table_test, input_directory
-        )
+        current_date = get_current_date(config_for_update_diag_table_test)
         update_diag_table_for_config(
             config_for_update_diag_table_test, current_date, diag_table_filename
         )

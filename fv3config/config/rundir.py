@@ -14,7 +14,7 @@ def write_run_directory(config, target_directory):
     """
     write_assets_to_directory(config, target_directory)
     os.makedirs(os.path.join(target_directory, "RESTART"), exist_ok=True)
-    current_date = get_current_date(config, os.path.join(target_directory, "INPUT"))
+    current_date = get_current_date(config)
     update_diag_table_for_config(
         config, current_date, os.path.join(target_directory, "diag_table")
     )

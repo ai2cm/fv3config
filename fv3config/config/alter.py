@@ -19,6 +19,8 @@ def enable_restart(config, initial_conditions=None):
         raise ConfigError("config dictionary must have a 'namelist' key")
     if "fv_core_nml" not in config["namelist"]:
         raise ConfigError("config dictionary must have a 'fv_core_nml' namelist")
+    if "coupler_nml" not in config["namelist"]:
+        raise ConfigError("config dictionary must have a 'coupler_nml' namelist")
     restart_config = copy.deepcopy(config)
     restart_config["namelist"]["fv_core_nml"]["external_ic"] = False
     restart_config["namelist"]["fv_core_nml"]["nggps_ic"] = False

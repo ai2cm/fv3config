@@ -56,7 +56,9 @@ empty_dict = {}
 
 config_with_empty_namelist = {"namelist": {}}
 
-config_with_empty_fv_core_nml = {"namelist": {"fv_core_nml": {}}}
+config_with_empty_fv_core_and_coupler_nml = {
+    "namelist": {"fv_core_nml": {}, "coupler_nml": {}}
+}
 
 
 class ConfigDictTests(unittest.TestCase):
@@ -182,8 +184,8 @@ class EnableRestartTests(unittest.TestCase):
             restart_namelist_settings, restart_config["namelist"]
         )
 
-    def test_enable_restart_from_empty_fv_core_nml(self):
-        restart_config = enable_restart(config_with_empty_fv_core_nml)
+    def test_enable_restart_from_empty_fv_core_and_coupler_nml(self):
+        restart_config = enable_restart(config_with_empty_fv_core_and_coupler_nml)
         self.assert_dict_in_and_equal(
             restart_namelist_settings, restart_config["namelist"]
         )

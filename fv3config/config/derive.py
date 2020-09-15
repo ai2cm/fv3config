@@ -1,8 +1,10 @@
 import os
 import re
 from datetime import timedelta
+import fsspec
 from .._exceptions import ConfigError
 from .default import NAMELIST_DEFAULTS
+from ..filesystem import get_fs
 
 
 def get_n_processes(config):
@@ -40,15 +42,12 @@ def get_run_duration(config):
     )
 
 
-def get_current_date(config, input_directory):
-    """Return current_date from configuration dictionary and the local INPUT
-    directory. The INPUT directory is passed in order to read current_date from
-    any initial conditions files, since config can contain a remote data source
-    and we do not want to download data in this function.
+def get_current_date(config):
+    """Return current_date from configuration dictionary. This function may read from
+    the  remote initial_conditions path in the given configuration dictionary.
 
     Args:
         config (dict): a configuration dictionary
-        input_directory (str): path to local INPUT directory
 
     Returns:
         list: current_date as list of ints [year, month, day, hour, min, sec]
@@ -62,8 +61,8 @@ def get_current_date(config, input_directory):
             "current_date", [0, 0, 0, 0, 0, 0]
         )
     else:
-        coupler_res_filename = os.path.join(input_directory, "coupler.res")
-        if os.path.exists(coupler_res_filename):
+        coupler_res_filename = os.path.join(config["initial_conditions"], "coupler.res")
+        if get_fs(coupler_res_filename).exists(coupler_res_filename):
             current_date = _get_current_date_from_coupler_res(coupler_res_filename)
         else:
             current_date = config["namelist"]["coupler_nml"].get(
@@ -81,7 +80,7 @@ def _get_current_date_from_coupler_res(coupler_res_filename):
     Returns:
         list: current_date as list of ints [year, month, day, hour, min, sec]
     """
-    with open(coupler_res_filename) as f:
+    with fsspec.open(coupler_res_filename, mode="r") as f:
         third_line = f.readlines()[2]
         current_date = [int(d) for d in re.findall(r"\d+", third_line)]
         if len(current_date) != 6:
