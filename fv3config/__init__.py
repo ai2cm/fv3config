@@ -12,6 +12,8 @@ from .config import (
     set_run_duration,
     get_timestep,
     config_from_yaml,
+    get_nudging_assets,
+    clear_nudging_assets,
 )
 from ._exceptions import InvalidFileError, ConfigError
 from ._datastore import ensure_data_is_downloaded
