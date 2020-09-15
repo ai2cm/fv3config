@@ -29,7 +29,7 @@ def enable_restart(config, initial_conditions=None):
     restart_config["namelist"]["fv_core_nml"]["warm_start"] = True
     restart_config["namelist"]["fv_core_nml"]["na_init"] = 0
     restart_config["namelist"]["coupler_nml"]["force_date_from_namelist"] = False
-    if not initial_conditions is None:
+    if initial_conditions is not None:
         restart_config["initial_conditions"] = initial_conditions
     return restart_config
 

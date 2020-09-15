@@ -162,7 +162,6 @@ class TableTests(unittest.TestCase):
             _get_current_date_from_coupler_res(coupler_res_filename)
 
     def test_get_current_date_from_config(self):
-        rundir = self.make_run_directory("test_rundir")
         config = DEFAULT_CONFIG.copy()
         config["namelist"]["coupler_nml"]["force_date_from_namelist"] = True
         config["namelist"]["coupler_nml"]["current_date"] = valid_current_date
@@ -171,7 +170,6 @@ class TableTests(unittest.TestCase):
 
     def test_update_diag_table_for_config(self):
         rundir = self.make_run_directory("test_rundir")
-        input_directory = os.path.join(rundir, "INPUT")
         diag_table_filename = os.path.join(rundir, "diag_table")
         with open(diag_table_filename, "w") as f:
             f.write(diag_table_test_in)
