@@ -63,7 +63,7 @@ def get_nudging_assets(
         run_duration: length of fv3gfs run
         current_date: start date of fv3gfs run as a sequence of 6 integers
         nudge_url: local or remote path to nudging files
-        nudge_filename_pattern: template for nudging filenames. Defaults to 
+        nudge_filename_pattern: template for nudging filenames. Defaults to
             '%Y%m%d_%HZ_T85LR.nc'.
         input_list_filename: filename for text file which lists nudging files. Defaults
             to 'nudging_file_list'.
@@ -117,7 +117,7 @@ def clear_nudging_assets(
 def _matches_pattern_or_exact(item, pattern, exact_match):
     target_name = item["target_name"]
     try:
-        time = datetime.strptime(target_name, pattern)
+        datetime.strptime(target_name, pattern)
         item_is_nudging_asset = True
     except ValueError:
         # filename does not fit given pattern
