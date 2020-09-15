@@ -107,15 +107,15 @@ def clear_nudging_assets(
             'nudging_file_list'.
     """
     is_nudging_file = partial(
-        _matches_pattern_or_exact,
+        _target_name_matches,
         pattern=nudge_filename_pattern,
         exact_match=input_list_filename,
     )
     return [item for item in assets if not is_nudging_file(item)]
 
 
-def _matches_pattern_or_exact(item, pattern, exact_match):
-    target_name = item["target_name"]
+def _target_name_matches(asset, pattern, exact_match):
+    target_name = asset["target_name"]
     try:
         datetime.strptime(target_name, pattern)
         match = True

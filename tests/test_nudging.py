@@ -131,6 +131,6 @@ def test_clear_nudging_assets():
         ("file.txt", "%Y%m%d_%H.nc", "file.txt", True),
     ],
 )
-def test__matches_pattern_or_exact(target_name, pattern, exact_match, expected):
+def test__target_name_matches(target_name, pattern, exact_match, expected):
     asset = fv3config.get_asset_dict("/path", target_name)
-    assert nudging._matches_pattern_or_exact(asset, pattern, exact_match) == expected
+    assert nudging._target_name_matches(asset, pattern, exact_match) == expected
