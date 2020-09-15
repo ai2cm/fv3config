@@ -204,6 +204,11 @@ class EnableRestartTests(unittest.TestCase):
         restart_config["namelist"]["fv_core_nml"]["npx"] = 0
         self.assertEqual(config, DEFAULT_CONFIG)
 
+    def test_enable_restart_initial_conditions(self):
+        config = DEFAULT_CONFIG.copy()
+        restart_config = enable_restart(config, initial_conditions="new_path")
+        self.assertEqual(restart_config["initial_conditions"], "new_path")
+
 
 if __name__ == "__main__":
     unittest.main()

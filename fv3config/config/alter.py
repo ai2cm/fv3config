@@ -4,11 +4,13 @@ from .time_constants import SECONDS_IN_DAY
 from .._exceptions import ConfigError
 
 
-def enable_restart(config):
+def enable_restart(config, initial_conditions=None):
     """Apply namelist settings for initializing from model restart files.
 
     Args:
         config (dict): a configuration dictionary
+        initial_conditions (str): path to desired new initial conditions. Defaults to
+            None, in which case initial condition entry is not modified.
 
     Returns:
         dict: a configuration dictionary
@@ -24,6 +26,9 @@ def enable_restart(config):
     restart_config["namelist"]["fv_core_nml"]["mountain"] = True
     restart_config["namelist"]["fv_core_nml"]["warm_start"] = True
     restart_config["namelist"]["fv_core_nml"]["na_init"] = 0
+    restart_config["namelist"]["coupler_nml"]["force_date_from_namelist"] = False
+    if not initial_conditions is None:
+        restart_config["initial_conditions"] = initial_conditions
     return restart_config
 
 

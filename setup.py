@@ -43,6 +43,7 @@ setup(
         "console_scripts": [
             "fv3run=fv3config.fv3run.__main__:main",
             "write_run_directory=fv3config.cli:write_run_directory",
+            "enable_restart=fv3config.cli:enable_restart",
         ]
     },
     install_requires=requirements,
