@@ -97,7 +97,7 @@ def clear_nudging_assets(
     nudge_filename_pattern: str = "%Y%m%d_%HZ_T85LR.nc",
     input_list_filename: str = "nudging_file_list",
 ) -> List[Mapping]:
-    """Given a list of assets, remove those which are nudging-related assets.
+    """Given list of assets, return filtered list with no nudging assets.
 
     Args:
         assets: sequence of assets
@@ -120,7 +120,7 @@ def _target_name_matches(asset, pattern, exact_match):
         datetime.strptime(target_name, pattern)
         match = True
     except ValueError:
-        # filename does not fit given pattern
+        # target_name does not fit given pattern
         match = False
     finally:
         if target_name == exact_match:
