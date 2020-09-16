@@ -39,11 +39,6 @@ def _parse_update_config_for_nudging_args():
         help="URI to fv3config yaml file. Supports any path used by fsspec. "
         "File will be modified in place.",
     )
-    parser.add_argument(
-        "--copy-method",
-        help="How to include nudging assets. 'copy' or 'link'. Defaults to 'copy'.",
-        default="copy",
-    )
     return parser.parse_args()
 
 
@@ -78,7 +73,7 @@ def update_config_for_nudging():
 
     # only update config if nudging is turned on
     if config["namelist"]["fv_core_nml"].get("nudge", False):
-        fv3config.update_config_for_nudging(config, args.copy_method)
+        fv3config.update_config_for_nudging(config)
 
         with fsspec.open(args.config, mode="w") as f:
             yaml.safe_dump(config, f)
