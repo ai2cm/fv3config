@@ -122,3 +122,29 @@ def test_clear_nudging_assets():
 def test__target_name_matches(target_name, pattern, expected):
     asset = fv3config.get_asset_dict("/path", target_name)
     assert nudging._target_name_matches(asset, pattern) == expected
+
+
+def test_update_config_for_nudging():
+    url = "/path/to/nudging/files"
+    pattern = "%Y%m%d_%H.nc"
+    old_nudging_file = "20151231_18.nc"
+    new_nudging_file = "20160101_06.nc"
+    old_asset = fv3config.get_asset_dict(url, old_nudging_file, target_location="INPUT")
+    new_asset = fv3config.get_asset_dict(url, new_nudging_file, target_location="INPUT")
+    test_config = {
+        "gfs_analysis_data": {"url": url, "filename_pattern": pattern},
+        "initial_conditions": "/path/to/initial_conditions",
+        "namelist": {
+            "coupler_nml": {"current_date": [2016, 1, 1, 0, 0, 0], "hours": 12},
+            "fv_nwp_nudge_nml": {"file_names": [f"INPUT/{old_nudging_file}"],},
+        },
+        "patch_files": [old_asset],
+    }
+
+    fv3config.update_config_for_nudging(test_config)
+
+    updated_file_names = test_config["namelist"]["fv_nwp_nudge_nml"]["file_names"]
+    assert f"INPUT/{old_nudging_file}" not in updated_file_names
+    assert f"INPUT/{new_nudging_file}" in updated_file_names
+    assert old_asset not in test_config["patch_files"]
+    assert new_asset in test_config["patch_files"]

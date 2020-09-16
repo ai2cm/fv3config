@@ -110,18 +110,27 @@ def _target_name_matches(asset, pattern):
         return False
 
 
-def update_config_for_nudging(config, nudge_url, nudge_filename_pattern, copy_method):
-    """Update config object in place to include up-to-date nudging file assets"""
+def update_config_for_nudging(
+    config: Mapping, copy_method: str = "copy",
+):
+    """Update config object in place to include nudging file assets and associated
+    file_names namelist entry. Requires 'gfs_analysis_data' entry in fv3config object
+    with url and filename_pattern entries.
+    
+    Args:
+        config: configuration dictionary
+        copy_method: copy_method for nudging file assets. Defaults to 'copy'.
+    """
     if "patch_files" in config:
         config["patch_files"] = _non_nudging_assets(
-            config["patch_files"], nudge_filename_pattern
+            config["patch_files"], config["gfs_analysis_data"]["filename_pattern"]
         )
 
     nudging_file_assets = get_nudging_assets(
         get_run_duration(config),
         get_current_date(config),
-        nudge_url,
-        nudge_filename_pattern=nudge_filename_pattern,
+        config["gfs_analysis_data"]["url"],
+        nudge_filename_pattern=config["gfs_analysis_data"]["filename_pattern"],
         copy_method=copy_method,
     )
 
