@@ -32,6 +32,27 @@ def _parse_enable_restart_args():
     return parser.parse_args()
 
 
+def _parse_update_nudging_assets_args():
+    parser = argparse.ArgumentParser("update_nudging_assets")
+    parser.add_argument(
+        "config",
+        help="URI to fv3config yaml file. Supports any path used by fsspec. "
+        "File will be modified in place.",
+    )
+    parser.add_argument(
+        "nudge-url", help="Path to nudging files.",
+    )
+    parser.add_argument(
+        "pattern", help="Filename pattern",
+    )
+    parser.add_argument(
+        "--copy-method",
+        help="How to include nudging assets. 'copy' or 'link'.",
+        default="copy",
+    )
+    return parser.parse_args()
+
+
 def write_run_directory():
     args = _parse_write_run_directory_args()
 
@@ -53,3 +74,19 @@ def enable_restart():
 
     with fsspec.open(args.config, mode="w") as f:
         yaml.safe_dump(restart_config, f)
+
+
+def update_nudging_assets():
+    args = _parse_update_nudging_assets_args()
+
+    with fsspec.open(args.config) as f:
+        config = yaml.safe_load(f)
+
+    # only update config if nudging is turned on
+    if config["namelist"]["fv_core_nml"].get("nudge", False):
+        fv3config.update_config_for_nudging(
+            config, args.nudge_url, args.pattern, args.copy_method
+        )
+
+        with fsspec.open(args.config, mode="w") as f:
+            yaml.safe_dump(config, f)
