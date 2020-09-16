@@ -1,11 +1,13 @@
 from datetime import datetime, timedelta
 from functools import partial
+import os
 from typing import Sequence, List, Mapping
 import math
 import fsspec
-from .._asset_list import get_bytes_asset_dict, get_asset_dict
+from .._asset_list import get_asset_dict
 from .._exceptions import ConfigError
 from ..filesystem import get_fs
+from .derive import get_current_date, get_run_duration
 
 # this module assumes that analysis files are at 00Z, 06Z, 12Z and 18Z
 SECONDS_IN_HOUR = 60 * 60
@@ -42,18 +44,11 @@ def _get_nudge_time_list(run_duration, current_date) -> List[datetime]:
     return [first_nudge_time + timedelta(hours=hour) for hour in nudging_hours]
 
 
-def _get_input_list_asset(nudge_filename_list, filename: str) -> Mapping:
-    fname_list_contents = "\n".join(nudge_filename_list)
-    data = fname_list_contents.encode()
-    return get_bytes_asset_dict(data, target_location="", target_name=filename)
-
-
 def get_nudging_assets(
     run_duration: timedelta,
     current_date: Sequence[int],
     nudge_url: str,
     nudge_filename_pattern: str = "%Y%m%d_%HZ_T85LR.nc",
-    input_list_filename: str = "nudging_file_list",
     copy_method: str = "copy",
 ) -> List[Mapping]:
     """Return list of assets of all nudging files as well as an asset for the text file
@@ -65,8 +60,6 @@ def get_nudging_assets(
         nudge_url: local or remote path to nudging files
         nudge_filename_pattern: template for nudging filenames. Defaults to
             '%Y%m%d_%HZ_T85LR.nc'.
-        input_list_filename: filename for text file which lists nudging files. Defaults
-            to 'nudging_file_list'.
         copy_method: copy_method for nudging file assets. Defaults to 'copy'.
 
     Returns:
@@ -88,14 +81,11 @@ def get_nudging_assets(
         )
         for file_ in filename_list
     ]
-    nudging_assets.append(_get_input_list_asset(filename_list, input_list_filename))
     return nudging_assets
 
 
-def clear_nudging_assets(
-    assets: Sequence[Mapping],
-    nudge_filename_pattern: str = "%Y%m%d_%HZ_T85LR.nc",
-    input_list_filename: str = "nudging_file_list",
+def _non_nudging_assets(
+    assets: Sequence[Mapping], nudge_filename_pattern: str,
 ) -> List[Mapping]:
     """Given list of assets, return filtered list with no nudging assets.
 
@@ -106,23 +96,39 @@ def clear_nudging_assets(
         input_list_filename: name of text file listing all nudging files. Defaults to
             'nudging_file_list'.
     """
-    is_nudging_file = partial(
-        _target_name_matches,
-        pattern=nudge_filename_pattern,
-        exact_match=input_list_filename,
-    )
-    return [item for item in assets if not is_nudging_file(item)]
+    is_nudging_asset = partial(_target_name_matches, pattern=nudge_filename_pattern)
+    return [item for item in assets if not is_nudging_asset(item)]
 
 
-def _target_name_matches(asset, pattern, exact_match):
+def _target_name_matches(asset, pattern):
     target_name = asset["target_name"]
     try:
         datetime.strptime(target_name, pattern)
-        match = True
+        return True
     except ValueError:
         # target_name does not fit given pattern
-        match = False
-    finally:
-        if target_name == exact_match:
-            match = True
-        return match
+        return False
+
+
+def update_config_for_nudging(config, nudge_url, nudge_filename_pattern, copy_method):
+    """Update config object in place to include up-to-date nudging file assets"""
+    if "patch_files" in config:
+        config["patch_files"] = _non_nudging_assets(
+            config["patch_files"], nudge_filename_pattern
+        )
+
+    nudging_file_assets = get_nudging_assets(
+        get_run_duration(config),
+        get_current_date(config),
+        nudge_url,
+        nudge_filename_pattern=nudge_filename_pattern,
+        copy_method=copy_method,
+    )
+
+    target_file_paths = [
+        os.path.join(asset["target_location"], asset["target_name"])
+        for asset in nudging_file_assets
+    ]
+
+    config["namelist"]["fv_nwp_nudge_nml"]["file_names"] = target_file_paths
+    config.setdefault("patch_files", []).extend(nudging_file_assets)

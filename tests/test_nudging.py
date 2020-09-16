@@ -69,19 +69,15 @@ def test__get_nudge_time_list(
 def test_get_nudging_assets():
     nudge_url = "/path/to/files"
     pattern = "%Y%m%d_%H.nc"
-    input_fname = "file_list"
-    file_list = b"20160101_00.nc\n20160101_06.nc"
     assets = fv3config.get_nudging_assets(
         timedelta(hours=6),
         [2016, 1, 1, 0, 0, 0],
         nudge_url,
         nudge_filename_pattern=pattern,
-        input_list_filename=input_fname,
     )
     expected = [
         fv3config.get_asset_dict(nudge_url, "20160101_00.nc", target_location="INPUT"),
         fv3config.get_asset_dict(nudge_url, "20160101_06.nc", target_location="INPUT"),
-        fv3config.get_bytes_asset_dict(file_list, "", input_fname),
     ]
     assert assets == expected
 
@@ -97,40 +93,32 @@ def test_get_nudging_assets_raises_config_error():
 
 
 def test_clear_nudging_assets():
-    data = b"20160101_00.nc\n20160101_06.nc"
     pattern = "%Y%m%d_%H.nc"
-    input_fname = "file_list"
     nudging_asset_1 = fv3config.get_asset_dict("/path", "20160101_00.nc")
     nudging_asset_2 = fv3config.get_asset_dict("/path", "20160101_06.nc")
-    non_nudging_asset = fv3config.get_asset_dict("/path", "not nudging file")
-    nudging_bytes_asset = fv3config.get_bytes_asset_dict(data, "", input_fname)
-    non_nudging_bytes_asset = fv3config.get_bytes_asset_dict(
-        data, "", "not nudging bytes assets"
-    )
+    non_nudging_asset_1 = fv3config.get_asset_dict("/path", "not nudging file")
+    non_nudging_asset_2 = fv3config.get_asset_dict("/path", "also not nudging file")
     input_assets = [
+        non_nudging_asset_1,
         nudging_asset_1,
         nudging_asset_2,
-        non_nudging_asset,
-        nudging_bytes_asset,
-        non_nudging_bytes_asset,
+        non_nudging_asset_2,
     ]
-    cleared_assets = fv3config.clear_nudging_assets(input_assets, pattern, input_fname)
-    assert non_nudging_asset in cleared_assets
-    assert non_nudging_bytes_asset in cleared_assets
-    assert nudging_asset_2 not in cleared_assets
+    cleared_assets = nudging._non_nudging_assets(input_assets, pattern)
+    assert non_nudging_asset_1 in cleared_assets
+    assert non_nudging_asset_2 in cleared_assets
     assert nudging_asset_1 not in cleared_assets
-    assert nudging_bytes_asset not in cleared_assets
+    assert nudging_asset_2 not in cleared_assets
 
 
 @pytest.mark.parametrize(
-    "target_name, pattern, exact_match, expected",
+    "target_name, pattern, expected",
     [
-        ("20160101_00.nc", "%Y%m%d_%H.nc", "file.txt", True),
-        ("20160101_06.nc", "%Y%m%d_%H.nc", "file.txt", True),
-        ("not_nudging_file", "%Y%m%d_%H.nc", "file.txt", False),
-        ("file.txt", "%Y%m%d_%H.nc", "file.txt", True),
+        ("20160101_00.nc", "%Y%m%d_%H.nc", True),
+        ("20160101_06.nc", "%Y%m%d_%H.nc", True),
+        ("not_nudging_file", "%Y%m%d_%H.nc", False),
     ],
 )
-def test__target_name_matches(target_name, pattern, exact_match, expected):
+def test__target_name_matches(target_name, pattern, expected):
     asset = fv3config.get_asset_dict("/path", target_name)
-    assert nudging._target_name_matches(asset, pattern, exact_match) == expected
+    assert nudging._target_name_matches(asset, pattern) == expected
