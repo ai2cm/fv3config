@@ -11,15 +11,8 @@ with open("README.rst") as readme_file:
 with open("HISTORY.rst") as history_file:
     history = history_file.read()
 
-requirements = [
-    "f90nml>=1.1.0",
-    "appdirs>=1.4.0",
-    "requests>=2.22.0",
-    "pyyaml>=5.0",
-    "gcsfs>=0.4.0",
-    "fsspec>=0.6.0",
-    "backoff>=1.10",
-]
+with open("requirements.txt") as requirements_file:
+    requirements = requirements_file.read().splitlines()
 
 setup_requirements = []
 
