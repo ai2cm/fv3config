@@ -136,7 +136,7 @@ def test_update_config_for_nudging():
         "initial_conditions": "/path/to/initial_conditions",
         "namelist": {
             "coupler_nml": {"current_date": [2016, 1, 1, 0, 0, 0], "hours": 12},
-            "fv_nwp_nudge_nml": {"file_names": [f"INPUT/{old_nudging_file}"],},
+            "fv_nwp_nudge_nml": {"file_names": [f"INPUT/{old_nudging_file}"]},
         },
         "patch_files": [old_asset],
     }
