@@ -271,3 +271,16 @@ The required namelist settings for a restart run (as opposed to a run initialize
 analysis) can be applied to a configuration dictionary as follows::
 
     config = enable_restart(config)
+
+Nudging
+-------
+
+The fv3gfs model contains a module for nudging the state of the atmosphere towards
+GFS analysis. Two public functions are provided to ease the configuration of nudging runs.
+
+Given the run duration and start date, :py:func:`fv3config.get_nudging_assets`
+returns a list of fv3config assets corresponding to the GFS analysis files required. Given
+an fv3config object, :py:func:`fv3config.update_config_for_nudging` will add the necessary
+assets and namelist options for a nudging run. This function requires that the fv3config
+object contains a `gfs_analysis_data` entry with corresponding `url` and `filename_pattern`
+items.
