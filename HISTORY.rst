@@ -10,6 +10,8 @@ Major changes:
 
 - a new public function `fv3gfs.get_bytes_asset_dict`
 - a new command line interface `write_run_directory`
+- removed integration tests for run_docker and run_native which actually executed the model
+- all tests are now offline, using a mocked in-memory gcsfs to represent remote communication.
 
 Minor changes:
 ~~~~~~~~~~~~~
