@@ -30,7 +30,19 @@ be used to write the run directory from a shell. For example, if the file
 
 will write an FV3 run directory to the path `rundir`.
 
+Two additional command line interfaces are useful for modifying configuration dictionaries
+in order to use them for restart runs:
+
+    enable_restart config.yaml /path/to/initial/conditions
+
+and to provision the necessary files required for a nudged run:
+
+    update_config_for_nudging config.yaml
+
+Both of these shell commands will modify the given configuration dictionary in place.
+
 This module also installs a command line interface `fv3run`, which is further detailed below.
+
 Data Caching
 ------------
 
