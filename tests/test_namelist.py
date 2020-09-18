@@ -184,17 +184,10 @@ class EnableRestartTests(unittest.TestCase):
             restart_namelist_settings, restart_config["namelist"]
         )
 
-    def test_enable_restart_from_empty_fv_core_and_coupler_nml(self):
-        restart_config = enable_restart(
-            config_with_empty_fv_core_and_coupler_nml, "initial_conditions"
-        )
-        self.assert_dict_in_and_equal(
-            restart_namelist_settings, restart_config["namelist"]
-        )
-
     def test_enable_restart_from_empty_namelist(self):
-        with self.assertRaises(ConfigError):
-            enable_restart(config_with_empty_namelist, "initial_conditions")
+        config = enable_restart(config_with_empty_namelist, "initial_conditions")
+        assert config["namelist"]["fv_core_nml"]["warm_start"]
+        assert not config["namelist"]["coupler_nml"]["force_date_from_namelist"]
 
     def test_enable_restart_from_empty_config(self):
         with self.assertRaises(ConfigError):

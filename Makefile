@@ -29,8 +29,6 @@ BROWSER := python -c "$$BROWSER_PYSCRIPT"
 PYTHON_FILES = $(shell git ls-files | grep -e 'py$$' | grep -v -e '__init__.py')
 PYTHON_INIT_FILES = $(shell git ls-files | grep '__init__.py')
 
-VERSION ?= $(shell git rev-parse HEAD)
-
 help:
 	@python -c "$$PRINT_HELP_PYSCRIPT" < $(MAKEFILE_LIST)
 
@@ -92,6 +90,3 @@ dist: clean ## builds source and wheel package
 
 install: clean ## install the package to the active Python's site-packages
 	python3 setup.py install
-
-build_image:
-	docker build -t vcmml/fv3config .

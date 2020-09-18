@@ -6,33 +6,45 @@ import fv3config
 
 
 @pytest.mark.parametrize(
-    "start_time, expected",
+    "start_time, interval, expected",
     [
-        (datetime(2016, 1, 1), datetime(2016, 1, 1, 0)),
-        (datetime(2016, 1, 1, 1), datetime(2016, 1, 1, 0)),
-        (datetime(2016, 1, 1, 7), datetime(2016, 1, 1, 6)),
-        (datetime(2016, 1, 1, 12), datetime(2016, 1, 1, 12)),
-        (datetime(2016, 1, 2, 18, 1), datetime(2016, 1, 2, 18)),
+        (datetime(2016, 1, 1), timedelta(hours=6), datetime(2016, 1, 1, 0)),
+        (datetime(2016, 1, 1, 1), timedelta(hours=6), datetime(2016, 1, 1, 0)),
+        (datetime(2016, 1, 1, 1), timedelta(hours=2), datetime(2016, 1, 1, 0)),
+        (datetime(2016, 1, 1, 3), timedelta(hours=2), datetime(2016, 1, 1, 2)),
+        (datetime(2016, 1, 1, 7), timedelta(hours=6), datetime(2016, 1, 1, 6)),
+        (datetime(2016, 1, 1, 12), timedelta(hours=6), datetime(2016, 1, 1, 12)),
+        (datetime(2016, 1, 2, 18, 1), timedelta(hours=6), datetime(2016, 1, 2, 18)),
     ],
 )
-def test__get_first_nudge_file_time(start_time, expected):
-    assert nudging._most_recent_nudge_time(start_time) == expected
+def test__get_first_nudge_file_time(start_time, interval, expected):
+    assert nudging._most_recent_nudge_time(start_time, interval) == expected
 
 
 @pytest.mark.parametrize(
-    "duration, current_date, expected_length, "
+    "duration, current_date, interval, expected_length, "
     "expected_first_datetime, expected_last_datetime",
     [
         (
             timedelta(days=1),
             [2016, 1, 1, 0, 0, 0],
+            timedelta(hours=6),
             4 + 1,
+            datetime(2016, 1, 1),
+            datetime(2016, 1, 2),
+        ),
+        (
+            timedelta(days=1),
+            [2016, 1, 1, 0, 0, 0],
+            timedelta(hours=2),
+            12 + 1,
             datetime(2016, 1, 1),
             datetime(2016, 1, 2),
         ),
         (
             timedelta(days=1, hours=5),
             [2016, 1, 1, 0, 0, 0],
+            timedelta(hours=6),
             4 + 1 + 1,
             datetime(2016, 1, 1),
             datetime(2016, 1, 2, 6),
@@ -40,6 +52,7 @@ def test__get_first_nudge_file_time(start_time, expected):
         (
             timedelta(days=1, hours=7),
             [2016, 1, 1, 0, 0, 0],
+            timedelta(hours=6),
             4 + 2 + 1,
             datetime(2016, 1, 1),
             datetime(2016, 1, 2, 12),
@@ -47,6 +60,7 @@ def test__get_first_nudge_file_time(start_time, expected):
         (
             timedelta(days=1),
             [2016, 1, 2, 1, 0, 0],
+            timedelta(hours=6),
             4 + 2,
             datetime(2016, 1, 2),
             datetime(2016, 1, 3, 6),
@@ -56,11 +70,12 @@ def test__get_first_nudge_file_time(start_time, expected):
 def test__get_nudge_time_list(
     duration,
     current_date,
+    interval,
     expected_length,
     expected_first_datetime,
     expected_last_datetime,
 ):
-    nudge_file_list = nudging._get_nudge_time_list(duration, current_date)
+    nudge_file_list = nudging._get_nudge_time_list(duration, current_date, interval)
     assert len(nudge_file_list) == expected_length
     assert nudge_file_list[0] == expected_first_datetime
     assert nudge_file_list[-1] == expected_last_datetime
@@ -82,7 +97,7 @@ def test_get_nudging_assets():
     assert assets == expected
 
 
-def test_get_nudging_assets_raises_config_error():
+def test_get_nudging_assets_raises_config_error_if_linking_remote_files():
     with pytest.raises(fv3config.ConfigError):
         fv3config.get_nudging_assets(
             timedelta(hours=6),
@@ -92,36 +107,43 @@ def test_get_nudging_assets_raises_config_error():
         )
 
 
-def test_clear_nudging_assets():
-    pattern = "%Y%m%d_%H.nc"
-    nudging_asset_1 = fv3config.get_asset_dict("/path", "20160101_00.nc")
-    nudging_asset_2 = fv3config.get_asset_dict("/path", "20160101_06.nc")
-    non_nudging_asset_1 = fv3config.get_asset_dict("/path", "not nudging file")
-    non_nudging_asset_2 = fv3config.get_asset_dict("/path", "also not nudging file")
-    input_assets = [
-        non_nudging_asset_1,
-        nudging_asset_1,
-        nudging_asset_2,
-        non_nudging_asset_2,
-    ]
+@pytest.mark.parametrize(
+    "nudging_assets, other_items, pattern",
+    [
+        ([], [], "%Y%m%d_%H.nc"),
+        ([fv3config.get_asset_dict("/path", "20160101_00.nc")], [], "%Y%m%d_%H.nc"),
+        ([], ["non asset item"], "%Y%m%d_%H.nc"),
+        ([], [{"other": "non asset item"}], "%Y%m%d_%H.nc"),
+        (
+            [fv3config.get_asset_dict("/path", "20160101_00.nc")],
+            ["non asset item"],
+            "%Y%m%d_%H.nc",
+        ),
+        (
+            [fv3config.get_asset_dict("/path", "20160101_00.nc")],
+            [fv3config.get_asset_dict("/path", "non nudging asset"), "non asset"],
+            "%Y%m%d_%H.nc",
+        ),
+    ],
+)
+def test__non_nudging_assets(nudging_assets, other_items, pattern):
+    input_assets = nudging_assets + other_items
     cleared_assets = nudging._non_nudging_assets(input_assets, pattern)
-    assert non_nudging_asset_1 in cleared_assets
-    assert non_nudging_asset_2 in cleared_assets
-    assert nudging_asset_1 not in cleared_assets
-    assert nudging_asset_2 not in cleared_assets
+    for item in nudging_assets:
+        assert item not in cleared_assets
+    for item in other_items:
+        assert item in cleared_assets
 
 
 @pytest.mark.parametrize(
-    "target_name, pattern, expected",
+    "item, pattern, expected",
     [
-        ("20160101_00.nc", "%Y%m%d_%H.nc", True),
-        ("20160101_06.nc", "%Y%m%d_%H.nc", True),
-        ("not_nudging_file", "%Y%m%d_%H.nc", False),
+        (fv3config.get_asset_dict("/path", "20160101_00.nc"), "%Y%m%d_%H.nc", True),
+        (fv3config.get_asset_dict("/path", "not_nudging_file"), "%Y%m%d_%H.nc", False),
     ],
 )
-def test__target_name_matches(target_name, pattern, expected):
-    asset = fv3config.get_asset_dict("/path", target_name)
-    assert nudging._target_name_matches(asset, pattern) == expected
+def test__is_nudging_asset(item, pattern, expected):
+    assert nudging._is_nudging_asset(item, pattern) == expected
 
 
 def test_update_config_for_nudging():
