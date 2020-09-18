@@ -51,12 +51,12 @@ def get_nudging_assets(
     nudge_filename_pattern: str = "%Y%m%d_%HZ_T85LR.nc",
     copy_method: str = "copy",
 ) -> List[Mapping]:
-    """Return list of assets of all nudging files as well as an asset for the text file
-    that describes the nudging files (required by fv3gfs to read the nudging files).
+    """Return list of assets of nudging files required for given run duration and
+    start time.
     
     Args:
         run_duration: length of fv3gfs run
-        current_date: start date of fv3gfs run as a sequence of 6 integers
+        current_date: start time of fv3gfs run as a sequence of 6 integers
         nudge_url: local or remote path to nudging files
         nudge_filename_pattern: template for nudging filenames. Defaults to
             '%Y%m%d_%HZ_T85LR.nc'.
@@ -66,7 +66,7 @@ def get_nudging_assets(
         list of all assets required for nudging run
 
     Raises:
-        ConfigError: if a remote path is given for nudge_url and copy_method="link"
+        ConfigError: if copy_method is "link" and a remote path is given for nudge_url
     """
     if get_fs(nudge_url) != fsspec.filesystem("file") and copy_method == "link":
         raise ConfigError(
@@ -113,10 +113,14 @@ def _target_name_matches(asset, pattern):
 def update_config_for_nudging(config: Mapping):
     """Update config object in place to include nudging file assets and associated
     file_names namelist entry. Requires 'gfs_analysis_data' entry in fv3config object
-    with url and filename_pattern entries.
+    with 'url' and 'filename_pattern' entries.
     
     Args:
         config: configuration dictionary
+
+    Note:
+        will delete any existing assets in 'patch_files' that match the given
+        filename_pattern before new assets are added.
     """
     if "patch_files" in config:
         config["patch_files"] = _non_nudging_assets(
