@@ -17,14 +17,14 @@ NUDGE_HOURS = [0, 6, 12, 18]  # hours at which analysis data is available
 def _most_recent_nudge_time(start_time: datetime) -> datetime:
     """Return datetime object for the last nudging time preceding or concurrent
      with start_time"""
-    first_nudge_hour = _most_recent_hour(start_time.hour)
+    first_nudge_hour = _most_recent_hour(start_time.hour, NUDGE_HOURS)
     return datetime(start_time.year, start_time.month, start_time.day, first_nudge_hour)
 
 
-def _most_recent_hour(current_hour: int, hour_array=NUDGE_HOURS) -> int:
+def _most_recent_hour(current_hour: int, hour_array: Sequence[int]) -> int:
     """Return latest hour in hour_array that precedes or is concurrent with
     current_hour"""
-    for hour in hour_array:
+    for hour in sorted(hour_array):
         if hour <= current_hour:
             first_nudge_hour = hour
     return first_nudge_hour
@@ -53,6 +53,9 @@ def get_nudging_assets(
 ) -> List[Mapping]:
     """Return list of assets of nudging files required for given run duration and
     start time.
+    
+    This method defines file paths directly from its arguments, without
+    determining whether the files themselves are present.
     
     Args:
         run_duration: length of fv3gfs run

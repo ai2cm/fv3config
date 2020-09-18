@@ -44,7 +44,7 @@ def get_run_duration(config):
 
 def get_current_date(config):
     """Return current_date from configuration dictionary. This function may read from
-    the  remote initial_conditions path in the given configuration dictionary.
+    the remote initial_conditions path in the given configuration dictionary.
 
     Args:
         config (dict): a configuration dictionary
