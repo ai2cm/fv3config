@@ -124,6 +124,7 @@ def check_run_directory(dirname):
     assert "INPUT" in filenames
 
 
+@pytest.mark.filterwarnings("ignore:could not remove stacksize limit")
 @pytest.mark.parametrize("runner", [config_dict_module_run, config_dict_filename_run])
 def test_fv3run_with_mocked_subprocess(runner, config):
     outdir = os.path.join(TEST_DIR, "outdir")
@@ -157,33 +158,6 @@ def test_fv3run_with_mocked_subprocess(runner, config):
             open(os.path.join(outdir, "fv3config.yml"), "r")
         )
         assert written_config == config
-
-
-@pytest.mark.skipif(
-    not DOCKER_ENABLED,
-    reason=f"docker or docker image {DOCKER_IMAGE_NAME} is not available",
-)
-def test_fv3run_docker(config):
-    """End-to-end test of running a mock runscript inside a docker container.
-    """
-    outdir = os.path.join(TEST_DIR, "outdir")
-
-    with cleaned_up_directory(outdir):
-        fv3config.run_docker(
-            config, outdir, DOCKER_IMAGE_NAME, runfile=MOCK_RUNSCRIPT,
-        )
-        check_run_directory(outdir)
-
-
-@pytest.mark.skipif(not MPI_ENABLED, reason="mpirun must be available")
-@pytest.mark.parametrize(
-    "runner", [subprocess_run, config_dict_module_run, config_dict_filename_run]
-)
-def test_fv3run_with_mpi(runner, config):
-    outdir = os.path.join(TEST_DIR, "outdir")
-    with cleaned_up_directory(outdir):
-        runner(config, outdir)
-        check_run_directory(outdir)
 
 
 @pytest.mark.parametrize(
