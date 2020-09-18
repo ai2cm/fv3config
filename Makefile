@@ -94,8 +94,4 @@ install: clean ## install the package to the active Python's site-packages
 	python3 setup.py install
 
 build_image:
-	docker build -t us.gcr.io/vcm-ml/fv3config .
-
-push_image:
-	docker tag us.gcr.io/vcm-ml/fv3config us.gcr.io/vcm-ml/fv3config:$(VERSION)
-	docker push us.gcr.io/vcm-ml/fv3config:$(VERSION)
+	docker build -t vcmml/fv3config .
