@@ -179,36 +179,38 @@ class EnableRestartTests(unittest.TestCase):
 
     def test_enable_restart_from_default(self):
         config = DEFAULT_CONFIG.copy()
-        restart_config = enable_restart(config)
+        restart_config = enable_restart(config, "initial_conditions")
         self.assert_dict_in_and_equal(
             restart_namelist_settings, restart_config["namelist"]
         )
 
     def test_enable_restart_from_empty_fv_core_and_coupler_nml(self):
-        restart_config = enable_restart(config_with_empty_fv_core_and_coupler_nml)
+        restart_config = enable_restart(
+            config_with_empty_fv_core_and_coupler_nml, "initial_conditions"
+        )
         self.assert_dict_in_and_equal(
             restart_namelist_settings, restart_config["namelist"]
         )
 
     def test_enable_restart_from_empty_namelist(self):
         with self.assertRaises(ConfigError):
-            enable_restart(config_with_empty_namelist)
+            enable_restart(config_with_empty_namelist, "initial_conditions")
 
     def test_enable_restart_from_empty_config(self):
         with self.assertRaises(ConfigError):
-            enable_restart(empty_dict)
+            enable_restart(empty_dict, "initial_conditions")
 
     def test_enable_restart_makes_copy(self):
         config = DEFAULT_CONFIG.copy()
-        restart_config = enable_restart(config)
+        restart_config = enable_restart(config, "initial_conditions")
         self.assertEqual(config, DEFAULT_CONFIG)
-        restart_config["initial_conditions"] = "changed item"
+        restart_config["diag_table"] = "changed item"
         restart_config["namelist"]["fv_core_nml"]["npx"] = 0
         self.assertEqual(config, DEFAULT_CONFIG)
 
     def test_enable_restart_initial_conditions(self):
         config = DEFAULT_CONFIG.copy()
-        restart_config = enable_restart(config, initial_conditions="new_path")
+        restart_config = enable_restart(config, "new_path")
         self.assertEqual(restart_config["initial_conditions"], "new_path")
 
 

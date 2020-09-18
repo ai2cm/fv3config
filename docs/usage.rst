@@ -270,7 +270,7 @@ Restart runs
 The required namelist settings for a restart run (as opposed to a run initialized from an observational
 analysis) can be applied to a configuration dictionary as follows::
 
-    config = enable_restart(config)
+    config = enable_restart(config, initial_conditions)
 
 Nudging
 -------

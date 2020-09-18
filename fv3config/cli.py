@@ -25,9 +25,7 @@ def _parse_enable_restart_args():
         "File will be modified in place.",
     )
     parser.add_argument(
-        "--initial-conditions",
-        help="Path to restart initial conditions.",
-        default=None,
+        "initial-conditions", help="Path to restart initial conditions.",
     )
     return parser.parse_args()
 
@@ -57,9 +55,7 @@ def enable_restart():
     with fsspec.open(args.config) as f:
         config = yaml.safe_load(f)
 
-    restart_config = fv3config.enable_restart(
-        config, initial_conditions=args.initial_conditions
-    )
+    restart_config = fv3config.enable_restart(config, args.initial_conditions)
 
     with fsspec.open(args.config, mode="w") as f:
         yaml.safe_dump(restart_config, f)
