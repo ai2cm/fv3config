@@ -1,6 +1,5 @@
 import collections
 from datetime import datetime, timedelta
-from functools import partial
 import os
 from typing import Sequence, List, Mapping
 import math
@@ -66,7 +65,7 @@ def get_nudging_assets(
         nudge_path: local or remote path to nudging files
         nudge_filename_pattern: template for nudging filenames. Pattern should follow
             style of datetime strptime and strftime 'format' argument. Defaults to
-            '%Y%m%d_%HZ_T85LR.nc'. 
+            '%Y%m%d_%HZ_T85LR.nc'.
         copy_method: copy_method for nudging file assets. Defaults to 'copy'.
         nudge_interval: time between nudging files. Must be multiple of 1 hour.
             Defaults to 6 hours.
