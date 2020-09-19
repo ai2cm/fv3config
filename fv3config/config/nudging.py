@@ -70,7 +70,6 @@ def get_nudging_assets(
         nudge_interval: time between nudging files. Must be multiple of 1 hour.
             Defaults to 6 hours.
 
-
     Returns:
         list of all assets required for nudging run
 
