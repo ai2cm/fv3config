@@ -139,6 +139,7 @@ def update_config_for_nudging(config: Mapping):
         config["gfs_analysis_data"]["url"],
         nudge_filename_pattern=config["gfs_analysis_data"]["filename_pattern"],
         copy_method=config["gfs_analysis_data"].get("copy_method", "copy"),
+        nudge_interval=config["gfs_analysis_data"].get("interval", timedelta(hours=6)),
     )
 
     target_file_paths = [
