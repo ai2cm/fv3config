@@ -25,7 +25,7 @@ def _parse_enable_restart_args():
         "File will be modified in place.",
     )
     parser.add_argument(
-        "initial-conditions", help="Path to restart initial conditions.",
+        "initial_conditions", help="Path to restart initial conditions.",
     )
     return parser.parse_args()
 
