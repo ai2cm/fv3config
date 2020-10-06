@@ -152,7 +152,6 @@ def test__is_nudging_asset(item, pattern, expected):
 
 
 def test_update_config_for_nudging(test_config):
-    # tmpdir.mkdir("C12").join("orographic forcing file")
     url = "/path/to/nudging/files"
     pattern = "%Y%m%d_%H.nc"
     old_nudging_file = "20151231_18.nc"
