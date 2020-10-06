@@ -101,28 +101,6 @@ def _get_coupler_res_filename(config):
     return source_path
 
 
-def get_resolution(config):
-    """Get the model resolution based on a configuration dictionary.
-
-    Args:
-        config (dict): a configuration dictionary
-
-    Returns:
-        resolution (str): a model resolution (e.g. 'C48' or 'C96')
-
-    Raises:
-        ConfigError: if the number of processors in x and y on a tile are unequal
-    """
-    npx = config["namelist"]["fv_core_nml"]["npx"]
-    npy = config["namelist"]["fv_core_nml"]["npy"]
-    if npx != npy:
-        raise ConfigError(
-            f"npx and npy in fv_core_nml must be equal, but are {npx} and {npy}"
-        )
-    resolution = f"C{npx-1}"
-    return resolution
-
-
 def get_timestep(config):
     """Get the model timestep from a configuration dictionary.
 
