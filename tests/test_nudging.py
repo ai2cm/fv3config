@@ -146,7 +146,8 @@ def test__is_nudging_asset(item, pattern, expected):
     assert nudging._is_nudging_asset(item, pattern) == expected
 
 
-def test_update_config_for_nudging():
+def test_update_config_for_nudging(tmpdir):
+    tmpdir.mkdir("C12").join("orographic forcing file")
     url = "/path/to/nudging/files"
     pattern = "%Y%m%d_%H.nc"
     old_nudging_file = "20151231_18.nc"
@@ -154,12 +155,18 @@ def test_update_config_for_nudging():
     old_asset = fv3config.get_asset_dict(url, old_nudging_file, target_location="INPUT")
     new_asset = fv3config.get_asset_dict(url, new_nudging_file, target_location="INPUT")
     test_config = {
+        "data_table": "default",
+        "diag_table": "default",
+        "forcing": str(tmpdir),
         "gfs_analysis_data": {"url": url, "filename_pattern": pattern},
-        "initial_conditions": "/path/to/initial_conditions",
+        "initial_conditions": str(tmpdir),
         "namelist": {
             "coupler_nml": {"current_date": [2016, 1, 1, 0, 0, 0], "hours": 12},
+            "fv_core_nml": {"npx": 13, "npy": 13},
             "fv_nwp_nudge_nml": {"file_names": [f"INPUT/{old_nudging_file}"]},
+            "gfs_physics_nml": {"imp_physics": 11, "ncld": 5},
         },
+        "orographic_forcing": str(tmpdir),
         "patch_files": [old_asset],
     }
 
