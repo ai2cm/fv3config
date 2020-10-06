@@ -4,7 +4,6 @@ from datetime import timedelta
 import fsspec
 from .._exceptions import ConfigError
 from .default import NAMELIST_DEFAULTS
-from ..filesystem import get_fs
 from .._asset_list import config_to_asset_list
 
 
