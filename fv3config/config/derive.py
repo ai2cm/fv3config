@@ -4,7 +4,7 @@ from datetime import timedelta
 import fsspec
 from .._exceptions import ConfigError
 from .default import NAMELIST_DEFAULTS
-from ..filesystem import get_fs
+from .._asset_list import config_to_asset_list
 
 
 def get_n_processes(config):
@@ -61,8 +61,8 @@ def get_current_date(config):
             "current_date", [0, 0, 0, 0, 0, 0]
         )
     else:
-        coupler_res_filename = os.path.join(config["initial_conditions"], "coupler.res")
-        if get_fs(coupler_res_filename).exists(coupler_res_filename):
+        coupler_res_filename = _get_coupler_res_filename(config)
+        if coupler_res_filename is not None:
             current_date = _get_current_date_from_coupler_res(coupler_res_filename)
         else:
             current_date = config["namelist"]["coupler_nml"].get(
@@ -90,26 +90,19 @@ def _get_current_date_from_coupler_res(coupler_res_filename):
     return current_date
 
 
-def get_resolution(config):
-    """Get the model resolution based on a configuration dictionary.
-
-    Args:
-        config (dict): a configuration dictionary
-
-    Returns:
-        resolution (str): a model resolution (e.g. 'C48' or 'C96')
-
-    Raises:
-        ConfigError: if the number of processors in x and y on a tile are unequal
-    """
-    npx = config["namelist"]["fv_core_nml"]["npx"]
-    npy = config["namelist"]["fv_core_nml"]["npy"]
-    if npx != npy:
-        raise ConfigError(
-            f"npx and npy in fv_core_nml must be equal, but are {npx} and {npy}"
-        )
-    resolution = f"C{npx-1}"
-    return resolution
+def _get_coupler_res_filename(config):
+    """Return source path for coupler.res file, if it exists in config assets."""
+    asset_list = config_to_asset_list(config)
+    source_path = None
+    for item in asset_list:
+        if item["target_name"] == "coupler.res" and item["target_location"] == "INPUT":
+            if "bytes" in item:
+                raise NotImplementedError(
+                    "Using a bytes dict to represent a coupler.res file is not "
+                    "implemented yet. Use a standard asset dict for this item."
+                )
+            source_path = os.path.join(item["source_location"], item["source_name"])
+    return source_path
 
 
 def get_timestep(config):

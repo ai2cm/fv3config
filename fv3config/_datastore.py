@@ -1,7 +1,6 @@
 import os
 
 from .caching import get_internal_cache_dir
-from .config.derive import get_resolution
 from .data import DATA_DIR
 from ._exceptions import ConfigError
 from . import filesystem
@@ -20,6 +19,28 @@ FIELD_TABLE_OPTIONS = {
     "GFDLMP": "field_table_GFDLMP",
     "ZhaoCarr": "field_table_ZhaoCarr",
 }
+
+
+def get_resolution(config):
+    """Get the model resolution based on a configuration dictionary.
+
+    Args:
+        config (dict): a configuration dictionary
+
+    Returns:
+        resolution (str): a model resolution (e.g. 'C48' or 'C96')
+
+    Raises:
+        ConfigError: if the number of processors in x and y on a tile are unequal
+    """
+    npx = config["namelist"]["fv_core_nml"]["npx"]
+    npy = config["namelist"]["fv_core_nml"]["npy"]
+    if npx != npy:
+        raise ConfigError(
+            f"npx and npy in fv_core_nml must be equal, but are {npx} and {npy}"
+        )
+    resolution = f"C{npx-1}"
+    return resolution
 
 
 def get_orographic_forcing_directory(config):

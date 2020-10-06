@@ -5,6 +5,11 @@ from fv3config.config import nudging
 import fv3config
 
 
+@pytest.fixture
+def test_config(c12_config):
+    return c12_config
+
+
 @pytest.mark.parametrize(
     "start_time, interval, expected",
     [
@@ -146,22 +151,20 @@ def test__is_nudging_asset(item, pattern, expected):
     assert nudging._is_nudging_asset(item, pattern) == expected
 
 
-def test_update_config_for_nudging():
+def test_update_config_for_nudging(test_config):
     url = "/path/to/nudging/files"
     pattern = "%Y%m%d_%H.nc"
     old_nudging_file = "20151231_18.nc"
     new_nudging_file = "20160101_06.nc"
     old_asset = fv3config.get_asset_dict(url, old_nudging_file, target_location="INPUT")
     new_asset = fv3config.get_asset_dict(url, new_nudging_file, target_location="INPUT")
-    test_config = {
-        "gfs_analysis_data": {"url": url, "filename_pattern": pattern},
-        "initial_conditions": "/path/to/initial_conditions",
-        "namelist": {
-            "coupler_nml": {"current_date": [2016, 1, 1, 0, 0, 0], "hours": 12},
-            "fv_nwp_nudge_nml": {"file_names": [f"INPUT/{old_nudging_file}"]},
-        },
-        "patch_files": [old_asset],
+    test_config["gfs_analysis_data"] = {"url": url, "filename_pattern": pattern}
+    test_config["namelist"]["coupler_nml"]["current_date"] = [2016, 1, 1, 0, 0, 0]
+    test_config["namelist"]["coupler_nml"]["hours"] = 12
+    test_config["namelist"]["fv_nwp_nudge_nml"] = {
+        "file_names": [f"INPUT/{old_nudging_file}"]
     }
+    test_config["patch_files"] = [old_asset]
 
     fv3config.update_config_for_nudging(test_config)
 
