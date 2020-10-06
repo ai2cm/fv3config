@@ -5,6 +5,7 @@ import fsspec
 from .._exceptions import ConfigError
 from .default import NAMELIST_DEFAULTS
 from ..filesystem import get_fs
+from .._asset_list import config_to_asset_list
 
 
 def get_n_processes(config):
@@ -61,8 +62,8 @@ def get_current_date(config):
             "current_date", [0, 0, 0, 0, 0, 0]
         )
     else:
-        coupler_res_filename = os.path.join(config["initial_conditions"], "coupler.res")
-        if get_fs(coupler_res_filename).exists(coupler_res_filename):
+        coupler_res_filename = _get_coupler_res_filename(config)
+        if coupler_res_filename is not None:
             current_date = _get_current_date_from_coupler_res(coupler_res_filename)
         else:
             current_date = config["namelist"]["coupler_nml"].get(
@@ -88,6 +89,16 @@ def _get_current_date_from_coupler_res(coupler_res_filename):
                 f"{coupler_res_filename} does not have a valid current model time (need six integers on third line)"
             )
     return current_date
+
+
+def _get_coupler_res_filename(config):
+    """Return source path for coupler.res file, if it exists in config assets."""
+    asset_list = config_to_asset_list(config)
+    source_path = None
+    for item in asset_list:
+        if item["target_name"] == "coupler.res" and item["target_location"] == "INPUT":
+            source_path = os.path.join(item["source_location"], item["source_name"])
+    return source_path
 
 
 def get_resolution(config):
