@@ -191,6 +191,13 @@ class TableTests(unittest.TestCase):
         current_date = get_current_date(config)
         self.assertEqual(current_date, valid_current_date)
 
+    def test_get_current_date_from_config_empty_initial_conditions(self):
+        config = copy.deepcopy(DEFAULT_CONFIG)
+        config["initial_conditions"] = []
+        config["namelist"]["coupler_nml"]["current_date"] = valid_current_date
+        current_date = get_current_date(config)
+        self.assertEqual(current_date, valid_current_date)
+
     def test_update_diag_table_for_config(self):
         rundir = self.make_run_directory("test_rundir")
         diag_table_filename = os.path.join(rundir, "diag_table")
