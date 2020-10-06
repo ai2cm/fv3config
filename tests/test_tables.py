@@ -7,6 +7,7 @@ from fv3config._tables import update_diag_table_for_config
 from fv3config.config.derive import (
     get_current_date,
     _get_current_date_from_coupler_res,
+    _get_coupler_res_filename,
 )
 from fv3config._datastore import (
     get_microphysics_name,
@@ -190,6 +191,16 @@ class TableTests(unittest.TestCase):
             f.write(valid_coupler_res)
         current_date = get_current_date(config)
         self.assertEqual(current_date, valid_current_date)
+
+    def test_get_coupler_res_filename_from_bytes_coupler_res_asset(self):
+        config = copy.deepcopy(DEFAULT_CONFIG)
+        config["patch_files"] = {
+            "bytes": b"some data",
+            "target_location": "INPUT",
+            "target_name": "coupler.res",
+        }
+        with self.assertRaises(NotImplementedError):
+            _get_coupler_res_filename(config)
 
     def test_get_current_date_from_config_empty_initial_conditions(self):
         config = copy.deepcopy(DEFAULT_CONFIG)
