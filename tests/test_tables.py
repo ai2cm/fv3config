@@ -16,6 +16,7 @@ from fv3config._datastore import (
     get_data_table_filename,
 )
 import yaml
+import tempfile
 
 TEST_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
 
@@ -220,6 +221,16 @@ class TableTests(unittest.TestCase):
         )
         with open(diag_table_filename) as f:
             self.assertEqual(diag_table_test_out, f.read())
+
+def test_get_coupler_res_filename_from_dir():
+    config = copy.deepcopy(DEFAULT_CONFIG)
+    with tempfile.TemporaryDirectory() as initial_conditions_dir:
+        coupler_res_filename = os.path.join(initial_conditions_dir, "coupler.res")
+        with open(coupler_res_filename, "w") as f:
+            f.write(valid_coupler_res)
+        config["initial_conditions"] = initial_conditions_dir
+        result = _get_coupler_res_filename(config)
+        assert result == coupler_res_filename
 
 
 if __name__ == "__main__":
