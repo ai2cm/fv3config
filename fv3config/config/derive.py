@@ -95,7 +95,7 @@ def _get_coupler_res_filename(config):
     asset_list = config_to_asset_list(config)
     source_path = None
     for item in asset_list:
-        target_path = os.path.join(item["target_name"], item["target_location"])
+        target_path = os.path.join(item["target_location"], item["target_name"])
         if target_path == "INPUT/coupler.res":
             if "bytes" in item:
                 raise NotImplementedError(
