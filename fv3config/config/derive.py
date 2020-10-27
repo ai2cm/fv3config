@@ -95,7 +95,8 @@ def _get_coupler_res_filename(config):
     asset_list = config_to_asset_list(config)
     source_path = None
     for item in asset_list:
-        if item["target_name"] == "coupler.res" and item["target_location"] == "INPUT":
+        target_path = os.path.join(item["target_name"], item["target_location"])
+        if target_path == "INPUT/coupler.res":
             if "bytes" in item:
                 raise NotImplementedError(
                     "Using a bytes dict to represent a coupler.res file is not "
