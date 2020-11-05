@@ -72,6 +72,7 @@ if [ ! -f requirements_dev.txt ] ; then
 fi
 python3 -m venv venv
 . ./venv/bin/activate
+pip3 install wheel
 pip3 install -r requirements_dev.txt
 pip3 install -e .
 pytest --junitxml results.xml tests
