@@ -1,7 +1,6 @@
 import os
 import re
 from datetime import timedelta
-import fsspec
 from .._exceptions import ConfigError
 from .default import NAMELIST_DEFAULTS
 from .._asset_list import config_to_asset_list
