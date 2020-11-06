@@ -1,10 +1,10 @@
 import os
 import re
 from datetime import timedelta
-import fsspec
 from .._exceptions import ConfigError
 from .default import NAMELIST_DEFAULTS
 from .._asset_list import config_to_asset_list
+from ..filesystem import get_fs
 
 
 def get_n_processes(config):
@@ -80,7 +80,8 @@ def _get_current_date_from_coupler_res(coupler_res_filename):
     Returns:
         list: current_date as list of ints [year, month, day, hour, min, sec]
     """
-    with fsspec.open(coupler_res_filename, mode="r") as f:
+    fs = get_fs(coupler_res_filename)
+    with fs.open(coupler_res_filename, mode="r") as f:
         third_line = f.readlines()[2]
         current_date = [int(d) for d in re.findall(r"\d+", third_line)]
         if len(current_date) != 6:
