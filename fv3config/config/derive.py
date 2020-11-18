@@ -3,6 +3,8 @@ import re
 from datetime import timedelta
 from .._exceptions import ConfigError
 from .default import NAMELIST_DEFAULTS
+from .._asset_list import config_to_asset_list
+from ..filesystem import get_fs
 
 
 def get_n_processes(config):
@@ -40,15 +42,12 @@ def get_run_duration(config):
     )
 
 
-def get_current_date(config, input_directory):
-    """Return current_date from configuration dictionary and the local INPUT
-    directory. The INPUT directory is passed in order to read current_date from
-    any initial conditions files, since config can contain a remote data source
-    and we do not want to download data in this function.
+def get_current_date(config):
+    """Return current_date from configuration dictionary. This function may read from
+    the remote initial_conditions path in the given configuration dictionary.
 
     Args:
         config (dict): a configuration dictionary
-        input_directory (str): path to local INPUT directory
 
     Returns:
         list: current_date as list of ints [year, month, day, hour, min, sec]
@@ -62,8 +61,8 @@ def get_current_date(config, input_directory):
             "current_date", [0, 0, 0, 0, 0, 0]
         )
     else:
-        coupler_res_filename = os.path.join(input_directory, "coupler.res")
-        if os.path.exists(coupler_res_filename):
+        coupler_res_filename = _get_coupler_res_filename(config)
+        if coupler_res_filename is not None:
             current_date = _get_current_date_from_coupler_res(coupler_res_filename)
         else:
             current_date = config["namelist"]["coupler_nml"].get(
@@ -81,7 +80,8 @@ def _get_current_date_from_coupler_res(coupler_res_filename):
     Returns:
         list: current_date as list of ints [year, month, day, hour, min, sec]
     """
-    with open(coupler_res_filename) as f:
+    fs = get_fs(coupler_res_filename)
+    with fs.open(coupler_res_filename, mode="r") as f:
         third_line = f.readlines()[2]
         current_date = [int(d) for d in re.findall(r"\d+", third_line)]
         if len(current_date) != 6:
@@ -91,26 +91,20 @@ def _get_current_date_from_coupler_res(coupler_res_filename):
     return current_date
 
 
-def get_resolution(config):
-    """Get the model resolution based on a configuration dictionary.
-
-    Args:
-        config (dict): a configuration dictionary
-
-    Returns:
-        resolution (str): a model resolution (e.g. 'C48' or 'C96')
-
-    Raises:
-        ConfigError: if the number of processors in x and y on a tile are unequal
-    """
-    npx = config["namelist"]["fv_core_nml"]["npx"]
-    npy = config["namelist"]["fv_core_nml"]["npy"]
-    if npx != npy:
-        raise ConfigError(
-            f"npx and npy in fv_core_nml must be equal, but are {npx} and {npy}"
-        )
-    resolution = f"C{npx-1}"
-    return resolution
+def _get_coupler_res_filename(config):
+    """Return source path for coupler.res file, if it exists in config assets."""
+    asset_list = config_to_asset_list(config)
+    source_path = None
+    for item in asset_list:
+        target_path = os.path.join(item["target_location"], item["target_name"])
+        if target_path == "INPUT/coupler.res":
+            if "bytes" in item:
+                raise NotImplementedError(
+                    "Using a bytes dict to represent a coupler.res file is not "
+                    "implemented yet. Use a standard asset dict for this item."
+                )
+            source_path = os.path.join(item["source_location"], item["source_name"])
+    return source_path
 
 
 def get_timestep(config):

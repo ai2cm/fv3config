@@ -5,15 +5,27 @@ History
 latest
 ------
 
+Breaking changes:
+~~~~~~~~~~~~~~~~~
+- enable_restart function now requires an initial_conditions argument. It also sets
+  force_date_from_namelist to False.
+
 Major changes:
 ~~~~~~~~~~~~~~
 
 - a new public function `fv3gfs.get_bytes_asset_dict`
 - a new command line interface `write_run_directory`
+- removed integration tests for run_docker and run_native which actually executed the model
+- all tests are now offline, using a mocked in-memory gcsfs to represent remote communication.
+- add a Dockerfile to produce a lightweight image with fv3config installed
+
+- Add new public functions `fv3config.get_nudging_assets` and `fv3config.update_config_for_nudging`.
+- Add CLI entry points for enable_restart and update_config_for_nudging.
 
 Minor changes:
 ~~~~~~~~~~~~~
 - updated create_rundir example to accept external arguments
+- refactor get_current_date function to not require the path to the INPUT directory.
 
 v0.4.0 (2020-07-09)
 -------------------

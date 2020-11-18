@@ -24,8 +24,16 @@ fsspec_backoff = backoff.on_exception(backoff.expo, FSSPEC_ERRORS, max_time=60)
 
 def get_fs(path: str) -> fsspec.AbstractFileSystem:
     """Return the fsspec filesystem required to handle a given path."""
+    return _get_fs(path)
+
+
+def _get_fs(path: str) -> fsspec.AbstractFileSystem:
+    """Private function implementing public get_fs function, used so that if we
+    mock this implementation, it is still used in modules which import using
+    `from filesystem import get_fs`.
+    """
     if path.startswith("gs://"):
-        return fsspec.filesystem("gs")
+        return fsspec.filesystem("gs", requester_pays=True)
     else:
         return fsspec.filesystem("file")
 

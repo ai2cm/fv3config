@@ -4,26 +4,29 @@ from .time_constants import SECONDS_IN_DAY
 from .._exceptions import ConfigError
 
 
-def enable_restart(config):
+def enable_restart(config, initial_conditions):
     """Apply namelist settings for initializing from model restart files.
 
     Args:
         config (dict): a configuration dictionary
+        initial_conditions (str): path to desired new initial conditions.
 
     Returns:
         dict: a configuration dictionary
     """
     if "namelist" not in config:
         raise ConfigError("config dictionary must have a 'namelist' key")
-    if "fv_core_nml" not in config["namelist"]:
-        raise ConfigError("config dictionary must have a 'fv_core_nml' namelist")
     restart_config = copy.deepcopy(config)
-    restart_config["namelist"]["fv_core_nml"]["external_ic"] = False
+    restart_config["namelist"].setdefault("fv_core_nml", {})["external_ic"] = False
     restart_config["namelist"]["fv_core_nml"]["nggps_ic"] = False
     restart_config["namelist"]["fv_core_nml"]["make_nh"] = False
     restart_config["namelist"]["fv_core_nml"]["mountain"] = True
     restart_config["namelist"]["fv_core_nml"]["warm_start"] = True
     restart_config["namelist"]["fv_core_nml"]["na_init"] = 0
+    restart_config["namelist"].setdefault("coupler_nml", {})[
+        "force_date_from_namelist"
+    ] = False
+    restart_config["initial_conditions"] = initial_conditions
     return restart_config
 
 

@@ -30,7 +30,19 @@ be used to write the run directory from a shell. For example, if the file
 
 will write an FV3 run directory to the path `rundir`.
 
+Two additional command line interfaces are useful for modifying configuration dictionaries
+in order to use them for restart runs:
+
+    enable_restart config.yaml /path/to/initial/conditions
+
+and to provision the necessary files required for a nudged run:
+
+    update_config_for_nudging config.yaml
+
+Both of these shell commands will modify the given configuration dictionary in place.
+
 This module also installs a command line interface `fv3run`, which is further detailed below.
+
 Data Caching
 ------------
 
@@ -270,4 +282,17 @@ Restart runs
 The required namelist settings for a restart run (as opposed to a run initialized from an observational
 analysis) can be applied to a configuration dictionary as follows::
 
-    config = enable_restart(config)
+    config = enable_restart(config, initial_conditions)
+
+Nudging
+-------
+
+The fv3gfs model contains a module for nudging the state of the atmosphere towards
+GFS analysis. Two public functions are provided to ease the configuration of nudging runs.
+
+Given the run duration and start date, :py:func:`fv3config.get_nudging_assets`
+returns a list of fv3config assets corresponding to the GFS analysis files required. Given
+an fv3config object, :py:func:`fv3config.update_config_for_nudging` will add the necessary
+assets and namelist options for a nudging run. This function requires that the fv3config
+object contains a `gfs_analysis_data` entry with corresponding `url` and `filename_pattern`
+items.

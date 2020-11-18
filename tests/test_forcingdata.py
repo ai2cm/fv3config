@@ -24,44 +24,11 @@ with open(os.path.join(TEST_DIRECTORY, "c12_config.yml"), "r") as f:
 
 required_run_directory_subdirectories = ["INPUT", "RESTART"]
 
-required_base_forcing_filenames = (
-    [f"co2historicaldata_{year}.txt" for year in range(2010, 2017)]
-    + [
-        "sfc_emissivity_idx.txt",
-        "solarconstant_noaa_an.txt",
-        "aerosol.dat",
-        "INPUT/global_o3prdlos.f77",
-    ]
-    + [
-        "grb/CFSR.SEAICE.1982.2012.monthly.clim.grb",
-        "grb/global_snoclim.1.875.grb",
-        "grb/RTGSST.1982.2012.monthly.clim.grb",
-        "grb/global_snowfree_albedo.bosu.t1534.3072.1536.rg.grb",
-        "grb/global_albedo4.1x1.grb",
-        "grb/global_soilmgldas.t1534.3072.1536.grb",
-        "grb/global_glacier.2x2.grb",
-        "grb/global_soiltype.statsgo.t1534.3072.1536.rg.grb",
-        "grb/global_maxice.2x2.grb",
-        "grb/global_tg3clim.2.6x1.5.grb",
-        "grb/global_mxsnoalb.uariz.t1534.3072.1536.rg.grb",
-        "grb/global_vegfrac.0.144.decpercent.grb",
-        "grb/global_shdmax.0.144x0.144.grb",
-        "grb/global_vegtype.igbp.t1534.3072.1536.rg.grb",
-        "grb/global_shdmin.0.144x0.144.grb",
-        "grb/seaice_newland.grb",
-        "grb/global_slope.1x1.grb",
-    ]
-)
+required_base_forcing_filenames = ["forcing_file", "grb/grb_forcing_file"]
 
-required_orographic_forcing_filenames = [
-    f"INPUT/oro_data.tile{tile}.nc" for tile in range(1, 7)
-]
+required_orographic_forcing_filenames = ["INPUT/orographic_file"]
 
-required_default_initial_conditions_filenames = (
-    ["INPUT/gfs_ctrl.nc"]
-    + [f"INPUT/gfs_data.tile{n}.nc" for n in range(1, 7)]
-    + [f"INPUT/sfc_data.tile{n}.nc" for n in range(1, 7)]
-)
+required_default_initial_conditions_filenames = ["INPUT/initial_conditions_file"]
 
 required_restart_initial_conditions_filenames = (
     ["INPUT/coupler.res"]
