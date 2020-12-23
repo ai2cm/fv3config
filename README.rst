@@ -1,7 +1,8 @@
 FV3Config
 =========
 
-![Documentation Status](https://readthedocs.org/projects/fv3config/badge/?version=latest)]
+[![Documentation Status](https://readthedocs.org/projects/ansicolortags/badge/?version=latest)](http://ansicolortags.readthedocs.io/?badge=latest)
+
 FV3Config is used to configure and manipulate run directories for FV3GFS.
 
 * Free software: BSD license
