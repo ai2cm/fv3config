@@ -1,8 +1,7 @@
 FV3Config
 =========
 
-[![Documentation Status](https://readthedocs.org/projects/fv3config/badge/?version=latest)](https://fv3config.readthedocs.io/en/latest/?badge=latest)
-
+![Documentation Status](https://readthedocs.org/projects/fv3config/badge/?version=latest)]
 FV3Config is used to configure and manipulate run directories for FV3GFS.
 
 * Free software: BSD license
