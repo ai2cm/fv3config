@@ -1,9 +1,9 @@
 FV3Config
 =========
 
-```markdown
-[![Documentation Status](https://readthedocs.org/projects/fv3config/badge/?version=latest)](http://fv3config.readthedocs.io/?badge=latest)
-```
+.. image:: https://readthedocs.org/projects/fv3config/badge/?version=latest
+:target: https://fv3config.readthedocs.io/en/latest/?badge=latest
+:alt: Documentation Status
 
 FV3Config is used to configure and manipulate run directories for FV3GFS.
 
