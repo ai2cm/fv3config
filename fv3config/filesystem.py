@@ -9,7 +9,7 @@ from concurrent.futures import ThreadPoolExecutor, Executor
 try:
     import gcsfs
 
-    FSSPEC_ERRORS = (RuntimeError, gcsfs.utils.HttpError)
+    FSSPEC_ERRORS = (RuntimeError, gcsfs.utils.HttpError, gcsfs.utils.ChecksumError)
 except ImportError as err:
     gcsfs = DelayedImportError(err)
     FSSPEC_ERRORS = RuntimeError
@@ -33,7 +33,7 @@ def _get_fs(path: str) -> fsspec.AbstractFileSystem:
     `from filesystem import get_fs`.
     """
     if path.startswith("gs://"):
-        return fsspec.filesystem("gs", requester_pays=True)
+        return fsspec.filesystem("gs", requester_pays=True, consistency="md5")
     else:
         return fsspec.filesystem("file")
 
