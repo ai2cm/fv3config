@@ -1,6 +1,12 @@
 History
 =======
 
+
+v0.5.1
+------
+
+- Fix formatting of this changelog for PyPI
+
 v0.5.0
 ------
 
