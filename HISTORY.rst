@@ -1,6 +1,10 @@
 History
 =======
 
+Latest
+------
+
+- Add logging to write_run_directory command
 
 v0.5.1
 ------
