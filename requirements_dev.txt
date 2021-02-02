@@ -15,7 +15,7 @@ requests
 sphinx_rtd_theme
 pytest==5.2.2
 pytest-cov==2.8.1
-gcsfs==0.6.2
+gcsfs==0.7.0
 google-cloud-storage
 fsspec==0.8.0
 kubernetes==10.0.1
