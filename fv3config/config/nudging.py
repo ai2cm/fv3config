@@ -100,7 +100,7 @@ def _non_nudging_assets(
 
 
 def _is_nudging_asset(item, pattern):
-    if not isinstance(item, collections.Mapping):
+    if not isinstance(item, collections.abc.Mapping):
         # not an asset
         return False
     try:

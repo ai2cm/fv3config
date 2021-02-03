@@ -1,3 +1,4 @@
+import logging
 import os
 
 import yaml
@@ -17,6 +18,7 @@ from . import filesystem
 
 
 FV3CONFIG_YML_NAME = "fv3config.yml"
+logger = logging.getLogger("fv3config")
 
 
 def is_dict_or_list(option):
@@ -213,6 +215,7 @@ def write_asset(asset, target_directory):
     if "copy_method" in asset:
         copy_file_asset(asset, target_path)
     elif "bytes" in asset:
+        logger.debug(f"Writing asset bytes to {target_path}.")
         with open(target_path, "wb") as f:
             f.write(asset["bytes"])
     else:
@@ -226,8 +229,10 @@ def copy_file_asset(asset, target_path):
     source_path = os.path.join(asset["source_location"], asset["source_name"])
     copy_method = asset["copy_method"]
     if copy_method == "copy":
+        logger.debug(f"Copying asset from {source_path} to {target_path}.")
         filesystem.get_file(source_path, target_path)
     elif copy_method == "link":
+        logger.debug(f"Linking asset from {source_path} to {target_path}.")
         link_file(source_path, target_path)
     else:
         raise ConfigError(
