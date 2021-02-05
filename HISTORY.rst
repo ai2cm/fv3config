@@ -4,6 +4,10 @@ History
 Latest
 ------
 
+
+v0.5.2 (2021-02-04)
+-------------------
+
 - Add logging to write_run_directory command
 
 v0.5.1

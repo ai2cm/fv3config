@@ -24,7 +24,7 @@ from .caching import CACHE_REMOTE_FILES, do_remote_caching, set_cache_dir, get_c
 
 __author__ = """Vulcan Technologies LLC"""
 __email__ = "jeremym@vulcan.com"
-__version__ = "0.5.1"
+__version__ = "0.5.2"
 
 # necessary for auto-doc generation of API for public methods
 __all__ = dir()

@@ -20,3 +20,6 @@ version, while "v1" is not and "0.3.0" is not.
    followed by `git tag <version>`.
 
 8. Run `git push origin --tags` to push all local tags to Github.
+
+9. Run `make release` to push latest release to PyPI. Contact a core developer to get the
+   necessary API token.
