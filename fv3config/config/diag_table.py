@@ -1,3 +1,4 @@
+import logging
 from typing import Sequence, Optional, Union
 import dataclasses
 from datetime import datetime, timedelta
@@ -5,6 +6,8 @@ import re
 import sys
 
 from .._exceptions import ConfigError
+
+logger = logging.getLogger("fv3config")
 
 
 @dataclasses.dataclass
@@ -131,7 +134,6 @@ class DiagTable:
 
     @staticmethod
     def _parse_line(line: str) -> Sequence[Union[str, int]]:
-
         token_strings = line.replace(" ", "").strip(",").split(",")
         return list(map(DiagTable._str_to_token, token_strings))
 
@@ -151,7 +153,7 @@ class DiagTable:
                 file_name = tokens[0]
                 file_lines.append(tokens)
                 field_lines[file_name] = []
-            else:
+            elif len(tokens) == 8:
                 # line corresponds to definition of a field
                 file_name = tokens[3]
                 if file_name not in field_lines:
@@ -160,6 +162,10 @@ class DiagTable:
                         f"diag_table. {file_name} has not been defined yet."
                     )
                 field_lines[file_name].append(tokens)
+            else:
+                logger.warning(
+                    f"Ignoring a line that could not be parsed in diag_table: {tokens}"
+                )
 
         files = []
         for file_tokens in file_lines:
