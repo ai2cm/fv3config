@@ -10,14 +10,14 @@ def diag_field():
 
 
 def diag_file(name):
-    return DiagTableFile(name, 1, "hours", (diag_field(), diag_field()))
+    return DiagTableFile(name, 1, "hours", [diag_field(), diag_field()])
 
 
 def test_DiagTable_string_round_trip():
     diag_table = DiagTable(
         "experiment",
         datetime(2000, 1, 1),
-        (diag_file("first_diagnostics"), diag_file("second_diagnostics")),
+        [diag_file("first_diagnostics"), diag_file("second_diagnostics")],
     )
     round_tripped_diag_table = DiagTable.from_str(str(diag_table))
     assert str(diag_table) == str(round_tripped_diag_table)
@@ -27,7 +27,7 @@ def test_DiagTable_dict_round_trip():
     diag_table = DiagTable(
         "experiment",
         datetime(2000, 1, 1),
-        (diag_file("first_diagnostics"), diag_file("second_diagnostics")),
+        [diag_file("first_diagnostics"), diag_file("second_diagnostics")],
     )
     round_tripped_diag_table = DiagTable.from_dict(diag_table.asdict())
     assert str(diag_table) == str(round_tripped_diag_table)

@@ -5,6 +5,8 @@ import dataclasses
 import datetime
 import re
 
+import dacite
+
 from .._exceptions import ConfigError
 
 logger = logging.getLogger("fv3config")
@@ -146,16 +148,7 @@ class DiagTable:
 
     @classmethod
     def from_dict(cls, diag_table: dict):
-        files = []
-        for file_ in diag_table["files"]:
-            # this recursion would be handled by the from_dict method of the dacite
-            # package. Consider adding dependence? Would also provide type checking.
-            fields = []
-            for field in file_["fields"]:
-                fields.append(DiagTableField(**field))
-            file_copy = deepcopy(file_)
-            file_copy.update(fields=fields)
-            files.append(DiagTableFile(**file_copy))
+        files = [dacite.from_dict(DiagTableFile, f) for f in diag_table["files"]]
         return cls(diag_table["name"], diag_table["base_time"], files)
 
     @classmethod
