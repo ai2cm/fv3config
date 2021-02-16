@@ -1,4 +1,3 @@
-import dataclasses
 import os
 import f90nml
 import fsspec

@@ -2,9 +2,8 @@ from copy import deepcopy
 import logging
 from typing import Sequence, Optional, Union
 import dataclasses
-from datetime import datetime, timedelta
+import datetime
 import re
-import sys
 
 from .._exceptions import ConfigError
 
@@ -39,7 +38,7 @@ class DiagTableFile:
 
 class DiagTable:
     def __init__(
-        self, name: str, base_time: datetime, files: Sequence[DiagTableFile],
+        self, name: str, base_time: datetime.datetime, files: Sequence[DiagTableFile],
     ):
         """Representation of diag_table, which controls Fortran diagnostics manager.
 
@@ -111,14 +110,14 @@ class DiagTable:
         return ", ".join(self._token_to_str(t) for t in tokens)
 
     @staticmethod
-    def _time_to_str(time: datetime) -> str:
+    def _time_to_str(time: datetime.datetime) -> str:
         times = [time.year, time.month, time.day, time.hour, time.minute, time.second]
         return " ".join([str(t) for t in times])
 
     @staticmethod
-    def _str_to_time(line: str) -> datetime:
+    def _str_to_time(line: str) -> datetime.datetime:
         time_sequence = [int(d) for d in re.findall(r"\d+", line)]
-        return datetime(*time_sequence)
+        return datetime.datetime(*time_sequence)
 
     @staticmethod
     def _str_to_token(arg: str) -> Union[str, int]:
