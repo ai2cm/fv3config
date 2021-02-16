@@ -1,3 +1,4 @@
+from copy import deepcopy
 import logging
 from typing import Sequence, Optional, Union
 import dataclasses
@@ -55,7 +56,7 @@ class DiagTable:
             files: sequence of DiagTableFile's defining the diagnostics to be output.
         """
         if " " in name:
-            raise ConfigError(f"Name for diag_table cannot have spaces. Got '{name}''.")
+            raise ConfigError(f"Name for diag_table cannot have spaces. Got '{name}'.")
         self.name = name
         self.base_time = base_time
         self.files = files
@@ -77,6 +78,13 @@ class DiagTable:
             lines.append("")
 
         return "\n".join(lines)
+
+    def asdict(self):
+        return {
+            "name": self.name,
+            "base_time": self.base_time,
+            "files": [dataclasses.asdict(file_) for file_ in self.files],
+        }
 
     def _file_repr(self, file_: DiagTableFile) -> str:
         tokens = (
@@ -138,6 +146,20 @@ class DiagTable:
         return list(map(DiagTable._str_to_token, token_strings))
 
     @classmethod
+    def from_dict(cls, diag_table: dict):
+        files = []
+        for file_ in diag_table["files"]:
+            # this recursion would be handled by the from_dict method of the dacite
+            # package. Consider adding dependence? Would also provide type checking.
+            fields = []
+            for field in file_["fields"]:
+                fields.append(DiagTableField(**field))
+            file_copy = deepcopy(file_)
+            file_copy.update(fields=fields)
+            files.append(DiagTableFile(**file_copy))
+        return cls(diag_table["name"], diag_table["base_time"], files)
+
+    @classmethod
     def from_str(cls, diag_table: str):
         """Initialize DiagTable class from Fortran string representation."""
         lines = diag_table.split("\n")
@@ -197,14 +219,3 @@ class DiagTable:
         name = lines[0]
         base_time = cls._str_to_time(lines[1])
         return cls(name, base_time, files)
-
-
-if __name__ == "__main__":
-    path = sys.argv[1]
-
-    with open(path) as f:
-        input_ = f.read()
-
-    diag_table = DiagTable.from_str(input_)
-
-    print(diag_table)

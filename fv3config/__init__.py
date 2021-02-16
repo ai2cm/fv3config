@@ -14,6 +14,9 @@ from .config import (
     config_from_yaml,
     get_nudging_assets,
     update_config_for_nudging,
+    DiagTable,
+    DiagTableField,
+    DiagTableFile,
 )
 from ._exceptions import InvalidFileError, ConfigError
 from ._datastore import ensure_data_is_downloaded
