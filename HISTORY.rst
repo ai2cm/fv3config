@@ -4,6 +4,11 @@ History
 Latest
 ------
 
+Major changes:
+~~~~~~~~~~~~~~
+
+- add DiagTable class with associated DiagTableFile and DiagTableField dataclasses.
+
 
 v0.5.2 (2021-02-04)
 -------------------
