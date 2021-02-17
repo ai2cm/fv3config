@@ -75,17 +75,17 @@ Configuration
 
 The ``config`` dictionary must have at least the following items:
 
-==================== ======== ============================================
-Key                  Type     Description
-==================== ======== ============================================
-namelist             dict     Model namelist
-experiment_name      str      Name of experiment to use in output
-diag_table           str      location of diag_table file, or one of ("default", "grid_spec", "no_output")
-data_table           str      location of data_table file, or "default"
-initial_conditions   str      location of directory containing initial conditions data
-forcing              str      location of directory containing forcing data
-orographic_forcing   str      location of directory containing orographic data
-==================== ======== ============================================
+==================== ======================================== ============================================
+Key                  Type                                     Description
+==================== ======================================== ============================================
+namelist             dict                                     Model namelist
+experiment_name      str                                      Name of experiment to use in output
+diag_table           str or :py:class:`~fv3config.DiagTable`  location of diag_table file, or one of ("default", "grid_spec", "no_output"), or DiagTable object
+data_table           str                                      location of data_table file, or "default"
+initial_conditions   str                                      location of directory containing initial conditions data
+forcing              str                                      location of directory containing forcing data
+orographic_forcing   str                                      location of directory containing orographic data
+==================== ======================================== ============================================
 
 Paths to files or directories on the local
 filesystem must be given as absolute paths. If paths are given that begin with ``gs://`` then ``fv3config`` will
@@ -95,6 +95,10 @@ must be installed and authorized to download from the specified bucket.
 The ``namelist`` item is special in that it is explicitly stored in the ``config`` dictionary. For the
 fv3gfs model, individual namelists are specified for various components of the model. As an example, the
 vertical resolution can be accessed via ``config['namelist']['fv_core_nml']['npz']``.
+
+The ``diag_table`` can be either be a tag or path to a file, or it can explicitly represent
+the desired output diagnostics with a :py:class:`~fv3config.DiagTable` object. See a more complete
+description of this object below.
 
 By default, fv3config attempts to automatically select the ``field_table`` file
 to use for the model based on the selected microphysics scheme in the
@@ -144,6 +148,60 @@ One can use a directory to specify the initial conditions or forcing files and r
 subset of the files within the that directory with the optional ``config['patch_files']`` item.
 All assets defined in ``config['patch_files']`` will overwrite any files specified in the
 initial conditions or forcing if they have the same target location and name.
+
+DiagTable configuration
+-----------------------
+
+The ``diag_table`` specifies the diagnostics to be output by the Fortran model. See documentation
+for the string representation of the ``diag_table``
+`here <https://mom6.readthedocs.io/en/latest/api/generated/pages/Diagnostics.html>`_. The fv3config
+package defines a python representation of this object, :py:class:`~fv3config.DiagTable`, which can
+be used to explicitly represent the ``diag_table`` within an fv3config configuration dictionary.
+
+The ``DiagTable`` object can be initialized from a dict as follows:
+
+.. code-block:: python
+
+    >>> import fv3config
+    >>> from datetime import datetime
+    >>> diag_table_dict = {
+        "name": "example_diag_table",
+        "base_time": datetime(2000, 1, 1),
+        "files": [
+            {
+                "name": "physics_diagnostics",
+                "frequency": 1,
+                "frequency_units": "hours",
+                "fields": [
+                    {
+                        "module_name": "gfs_phys",
+                        "field_name": "totprcpb_ave",
+                        "output_name": "surface_precipitation_rate",
+                    },
+                    {
+                        "module_name": "gfs_phys",
+                        "field_name": "ULWRFtoa",
+                        "output_name": "upward_longwave_radiative_flux_at_toa",
+                    }
+                ]
+            }
+        ]
+    }
+    >>> diag_table = fv3config.DiagTable.from_dict(diag_table_dict)
+    >>> print(diag_table)  # will output diag_table format expected by Fortran model
+    example_diag_table
+    2000 1 1 0 0 0
+
+    "physics_diagnostics", 1, "hours", 1, "hours", "time"
+
+    "gfs_phys", "totprcpb_ave", "surface_precipitation_rate", "physics_diagnostics", "all", "none", "none", 2
+    "gfs_phys", "ULWRFtoa", "upward_longwave_radiative_flux_at_toa", "physics_diagnostics", "all", "none", "none", 2
+
+String representations of the `diag_table` can be parsed with the :py:meth:`fv3config.DiagTable.from_str` method.
+
+If serializing an `fv3config` configuration object to yaml, it is recommended to use the
+:py:meth:`fv3config.DiagTable.asdict` method before dumping the configuration dictionary. This is implemented
+by :py:meth:`fv3config.config_to_yaml`.
 
 
 Running the model with fv3run
