@@ -5,16 +5,6 @@ import datetime
 from enum import Enum
 import re
 
-
-# using Literal from typing_extensions to allow use of python 3.7
-# overloading typing.Literal since dacite does not recognize typing_extensions.Literal
-# see https://github.com/konradhalas/dacite/issues/100
-from typing_extensions import Literal
-import typing
-
-typing.Literal = Literal
-from typing import Literal
-
 import dacite
 
 from .._exceptions import ConfigError
@@ -49,6 +39,10 @@ class FrequencyUnits(Enum):
     SECONDS = "seconds"
 
 
+class FileFormat(Enum):
+    NETCDF = 1
+
+
 @dataclasses.dataclass
 class DiagFieldConfig:
     """Object representing configuration for a field of a diagnostics file."""
@@ -70,7 +64,7 @@ class DiagFileConfig:
     frequency: int
     frequency_units: FrequencyUnits
     field_configs: Sequence[DiagFieldConfig]
-    file_format: Literal[1] = 1
+    file_format: FileFormat = FileFormat.NETCDF
     time_axis_units: FrequencyUnits = FrequencyUnits.HOURS
     time_axis_name: str = "time"
 
@@ -133,7 +127,7 @@ class DiagTable:
             file_.name,
             file_.frequency,
             file_.frequency_units.value,
-            file_.file_format,
+            file_.file_format.value,
             file_.time_axis_units.value,
             file_.time_axis_name,
         )
@@ -240,7 +234,7 @@ class DiagTable:
                     frequency=file_tokens[1],
                     frequency_units=FrequencyUnits(file_tokens[2]),
                     field_configs=field_configs,
-                    file_format=file_tokens[3],
+                    file_format=FileFormat(file_tokens[3]),
                     time_axis_units=FrequencyUnits(file_tokens[4]),
                     time_axis_name=file_tokens[5],
                 )
