@@ -1,16 +1,22 @@
 from datetime import datetime
 import pytest
 
-from fv3config.config.diag_table import DiagTable, DiagTableField, DiagTableFile
+from fv3config.config.diag_table import (
+    DiagTable,
+    DiagFieldConfig,
+    DiagFileConfig,
+    ReductionMethod,
+    FrequencyUnits,
+)
 from fv3config._exceptions import ConfigError
 
 
 def diag_field():
-    return DiagTableField("dynamics", "u850", "zonal_wind_at_850hPa")
+    return DiagFieldConfig("dynamics", "u850", "zonal_wind_at_850hPa")
 
 
 def diag_file(name):
-    return DiagTableFile(name, 1, "hours", [diag_field(), diag_field()])
+    return DiagFileConfig(name, 1, FrequencyUnits.HOURS, [diag_field(), diag_field()])
 
 
 def test_DiagTable_string_round_trip():
@@ -38,10 +44,10 @@ def test_from_str():
 2016 08 01 00 0 0
 #output files
 "atmos_static",           -1,  "hours",    1, "hours", "time",
-"atmos_dt_atmos",          2,  "hours",    1, "hours",  "time"
+"atmos_dt_atmos",          2,  "hours",    1, "hours",  "time" #inline comment
 "empty_file",              2,  "hours",    1, "hours",  "time"
 #
-#output variables
+ #output variables
 #
 
 ###
@@ -51,24 +57,27 @@ def test_from_str():
 ###
 # atmos_dt_atmos
 ###
-"dynamics",  "us",          "UGRDlowest",    "atmos_dt_atmos", "all", .false.,  "none", 2
+"dynamics",  "us",          "UGRDlowest",    "atmos_dt_atmos", "all", .false.,  "none", 2, # inline comment
 "dynamics",  "u850",        "UGRD850",       "atmos_dt_atmos", "all", .true.,  "none", 2
 """
 
     diag_table = DiagTable.from_str(input_str)
     assert diag_table.name == "default_experiment"
     assert diag_table.base_time == datetime(2016, 8, 1)
-    assert len(diag_table.files) == 3
-    assert diag_table.files[0] == DiagTableFile(
-        "atmos_static", -1, "hours", [DiagTableField("dynamics", "zsurf", "HGTsfc")]
+    assert len(diag_table.file_configs) == 3
+    assert diag_table.file_configs[0] == DiagFileConfig(
+        "atmos_static",
+        -1,
+        FrequencyUnits.HOURS,
+        [DiagFieldConfig("dynamics", "zsurf", "HGTsfc")],
     )
-    assert diag_table.files[1] == DiagTableFile(
+    assert diag_table.file_configs[1] == DiagFileConfig(
         "atmos_dt_atmos",
         2,
-        "hours",
+        FrequencyUnits.HOURS,
         [
-            DiagTableField("dynamics", "us", "UGRDlowest"),
-            DiagTableField("dynamics", "u850", "UGRD850", "average"),
+            DiagFieldConfig("dynamics", "us", "UGRDlowest"),
+            DiagFieldConfig("dynamics", "u850", "UGRD850", ReductionMethod.AVERAGE),
         ],
     )
 
@@ -96,7 +105,14 @@ def test_from_str_raises_config_error(diag_table_str):
 
 @pytest.mark.parametrize(
     "input_,expected_output",
-    [('"name"', "name"), (".true.", "average"), (".false.", "none"), ("3", 3)],
+    [
+        ('"name"', "name"),
+        (".true.", "average"),
+        (".TRUE.", "average"),
+        (".false.", "none"),
+        (".FALSE.", "none"),
+        ("3", 3),
+    ],
 )
 def test__str_to_token(input_, expected_output):
     output = DiagTable._str_to_token(input_)
