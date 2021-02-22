@@ -4,7 +4,6 @@ import f90nml
 import fsspec
 import yaml
 from .._exceptions import InvalidFileError
-from .._datastore import get_diag_table_filename
 from .diag_table import DiagTable
 
 
