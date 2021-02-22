@@ -13,6 +13,7 @@ from fv3config._datastore import (
     get_diag_table_filename,
     get_data_table_filename,
 )
+from .config.diag_table import DiagTable
 from ._exceptions import ConfigError
 from . import filesystem
 
@@ -70,9 +71,14 @@ def get_data_table_asset(config):
 
 def get_diag_table_asset(config):
     """Return asset for diag_table"""
-    diag_table_filename = get_diag_table_filename(config)
-    location, name = os.path.split(diag_table_filename)
-    return get_asset_dict(location, name, target_name="diag_table")
+    if isinstance(config["diag_table"], DiagTable):
+        return get_bytes_asset_dict(
+            bytes(str(config["diag_table"]), "UTF-8"), ".", "diag_table"
+        )
+    else:
+        diag_table_filename = get_diag_table_filename(config)
+        location, name = os.path.split(diag_table_filename)
+        return get_asset_dict(location, name, target_name="diag_table")
 
 
 def get_field_table_asset(config):

@@ -1,3 +1,4 @@
+import datetime
 import unittest
 import os
 import shutil
@@ -324,6 +325,22 @@ def test_get_fv3config_yaml_asset(tmpdir):
         loaded = yaml.safe_load(f)
 
     assert loaded == config
+
+
+def test_get_diag_table_asset_from_class(tmpdir):
+    field = fv3config.DiagFieldConfig("dycore", "u850", "u850")
+    diag_table = fv3config.DiagTable(
+        "experiment",
+        datetime.datetime(2000, 1, 1),
+        [fv3config.DiagFileConfig("name", 1, "hours", [field])],
+    )
+    asset = get_diag_table_asset({"diag_table": diag_table})
+    write_asset(asset, str(tmpdir))
+
+    with open(str(tmpdir.join("diag_table"))) as f:
+        loaded = f.read()
+
+    assert loaded == str(diag_table)
 
 
 if __name__ == "__main__":

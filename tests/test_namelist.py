@@ -5,7 +5,13 @@ from fv3config import (
     InvalidFileError,
     ConfigError,
     enable_restart,
+    config_to_yaml,
+    config_from_yaml,
+    DiagTable,
+    DiagFieldConfig,
+    DiagFileConfig,
 )
+import datetime
 import os
 from copy import deepcopy
 import yaml
@@ -59,6 +65,16 @@ config_with_empty_namelist = {"namelist": {}}
 config_with_empty_fv_core_and_coupler_nml = {
     "namelist": {"fv_core_nml": {}, "coupler_nml": {}}
 }
+
+sample_diag_table = DiagTable(
+    "sample_diag_table",
+    datetime.datetime(2000, 1, 1),
+    file_configs=[
+        DiagFileConfig(
+            "filename", 1, "days", [DiagFieldConfig("dynamics", "u", "zonal_wind")]
+        )
+    ],
+)
 
 
 class ConfigDictTests(unittest.TestCase):
@@ -205,6 +221,24 @@ class EnableRestartTests(unittest.TestCase):
         config = DEFAULT_CONFIG.copy()
         restart_config = enable_restart(config, "new_path")
         self.assertEqual(restart_config["initial_conditions"], "new_path")
+
+
+def test_config_to_from_yaml_round_trip(tmpdir):
+    config = DEFAULT_CONFIG.copy()
+    config_to_yaml(config, tmpdir.join("config.yaml"))
+    round_tripped_config = config_from_yaml(tmpdir.join("config.yaml"))
+    assert config == round_tripped_config
+
+
+def test_config_to_from_yaml_round_trip_with_DiagTable(tmpdir):
+    config = DEFAULT_CONFIG.copy()
+    config["diag_table"] = sample_diag_table
+    config_to_yaml(config, tmpdir.join("config.yaml"))
+    round_tripped_config = config_from_yaml(tmpdir.join("config.yaml"))
+    diag_table = config.pop("diag_table")
+    round_tripped_diag_table = round_tripped_config.pop("diag_table")
+    assert str(diag_table) == str(round_tripped_diag_table)
+    assert config == round_tripped_config
 
 
 if __name__ == "__main__":

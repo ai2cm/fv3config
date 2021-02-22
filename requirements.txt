@@ -5,3 +5,4 @@ pyyaml>=5.0
 gcsfs>=0.7.0
 fsspec>=0.8.0
 backoff>=1.10
+dacite>=1.6.0

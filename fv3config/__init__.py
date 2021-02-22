@@ -11,9 +11,15 @@ from .config import (
     get_run_duration,
     set_run_duration,
     get_timestep,
+    config_to_yaml,
     config_from_yaml,
     get_nudging_assets,
     update_config_for_nudging,
+    DiagTable,
+    DiagFieldConfig,
+    DiagFileConfig,
+    Packing,
+    FileFormat,
 )
 from ._exceptions import InvalidFileError, ConfigError
 from ._datastore import ensure_data_is_downloaded

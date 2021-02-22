@@ -4,6 +4,14 @@ History
 Latest
 ------
 
+Major changes:
+~~~~~~~~~~~~~~
+
+- add `DiagTable` class with associated `DiagFileConfig` and `DiagFieldConfig` dataclasses.
+- make `fv3config.config_to_yaml` a public function.
+- update `fv3config.config_to_yaml` and `fv3config.config_from_yaml` to go between
+  `fv3config.DiagTable` and `dict` types as necessary when serializing/deserializing
+
 
 v0.5.2 (2021-02-04)
 -------------------
@@ -26,7 +34,7 @@ Breaking changes:
 Major changes:
 ~~~~~~~~~~~~~~
 
-- a new public function `fv3gfs.get_bytes_asset_dict`
+- a new public function `fv3config.get_bytes_asset_dict`
 - a new command line interface `write_run_directory`
 - removed integration tests for run_docker and run_native which actually executed the model
 - all tests are now offline, using a mocked in-memory gcsfs to represent remote communication.
