@@ -11,6 +11,7 @@ from .config import (
     get_run_duration,
     set_run_duration,
     get_timestep,
+    config_to_yaml,
     config_from_yaml,
     get_nudging_assets,
     update_config_for_nudging,
