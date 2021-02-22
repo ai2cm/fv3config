@@ -186,7 +186,7 @@ Then a ``DiagTable`` object can be initialized as:
     >>> with open("sample_diag_table.yaml") as f:
             diag_table_dict = yaml.safe_load(f)
     >>> diag_table = fv3config.DiagTable.from_dict(diag_table_dict)
-    >>> print(diag_table)  # will output diag_table format expected by Fortran model
+    >>> print(diag_table)  # will output diag_table in format expected by Fortran model
     example_diag_table
     2000 1 1 0 0 0
 

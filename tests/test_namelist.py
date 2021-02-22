@@ -235,7 +235,7 @@ def test_config_to_from_yaml_round_trip_with_DiagTable(tmpdir):
     config["diag_table"] = diag_table
     config_to_yaml(config, tmpdir.join("config.yaml"))
     round_tripped_config = config_from_yaml(tmpdir.join("config.yaml"))
-    assert config["diag_table"] == round_tripped_config["diag_table"]
+    assert config == round_tripped_config
 
 
 if __name__ == "__main__":
