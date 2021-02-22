@@ -116,9 +116,6 @@ class DiagTable:
 
         return "\n".join(lines)
 
-    def __eq__(self, other):
-        return isinstance(other, self.__class__) and self.__repr__() == other.__repr__()
-
     def asdict(self):
         return {
             "name": self.name,

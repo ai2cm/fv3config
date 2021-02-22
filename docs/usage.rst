@@ -228,10 +228,9 @@ The same ``DiagTable`` can also be initialized programmatically as follows:
 String representations of the ``diag_table`` (i.e. those expected by the Fortran model) can be parsed
 with the :py:meth:`fv3config.DiagTable.from_str` method.
 
-If serializing an ``fv3config`` configuration object to yaml, it is recommended to use the
-:py:meth:`fv3config.DiagTable.asdict` method before dumping the configuration dictionary. This
-method is called by :py:meth:`fv3config.config_to_yaml` if the ``diag_table`` item of the
-configuration dictionary is a ``DiagTable`` instance.
+If serializing an ``fv3config`` configuration object to yaml it is recommended to use
+:py:meth:`fv3config.config_to_yaml`. This method will convert any ``DiagTable`` instances to
+dicts (using :py:meth:`fv3config.DiagTable.asdict`), which can be safely serialized.
 
 
 Running the model with fv3run
