@@ -5,8 +5,6 @@ from fv3config.config.diag_table import (
     DiagTable,
     DiagFieldConfig,
     DiagFileConfig,
-    ReductionMethod,
-    FrequencyUnits,
 )
 from fv3config._exceptions import ConfigError
 
@@ -16,27 +14,108 @@ def diag_field():
 
 
 def diag_file(name):
-    return DiagFileConfig(name, 1, FrequencyUnits.HOURS, [diag_field(), diag_field()])
+    return DiagFileConfig(name, 1, "hours", [diag_field(), diag_field()])
 
 
-def test_DiagTable_string_round_trip():
-    diag_table = DiagTable(
+@pytest.fixture
+def diag_table():
+    return DiagTable(
         "experiment",
         datetime(2000, 1, 1),
         [diag_file("first_diagnostics"), diag_file("second_diagnostics")],
     )
+
+
+def test_DiagTable_string_round_trip(diag_table):
     round_tripped_diag_table = DiagTable.from_str(str(diag_table))
     assert str(diag_table) == str(round_tripped_diag_table)
 
 
-def test_DiagTable_dict_round_trip():
-    diag_table = DiagTable(
-        "experiment",
-        datetime(2000, 1, 1),
-        [diag_file("first_diagnostics"), diag_file("second_diagnostics")],
-    )
+def test_DiagTable_dict_round_trip(diag_table):
     round_tripped_diag_table = DiagTable.from_dict(diag_table.asdict())
     assert str(diag_table) == str(round_tripped_diag_table)
+
+
+def test_DiagTable__repr__(diag_table):
+    expected_str = """experiment
+2000 1 1 0 0 0
+
+"first_diagnostics", 1, "hours", 1, "hours", "time"
+"second_diagnostics", 1, "hours", 1, "hours", "time"
+
+"dynamics", "u850", "zonal_wind_at_850hPa", "first_diagnostics", "all", "none", "none", 2
+"dynamics", "u850", "zonal_wind_at_850hPa", "first_diagnostics", "all", "none", "none", 2
+
+"dynamics", "u850", "zonal_wind_at_850hPa", "second_diagnostics", "all", "none", "none", 2
+"dynamics", "u850", "zonal_wind_at_850hPa", "second_diagnostics", "all", "none", "none", 2
+"""
+    assert str(diag_table) == expected_str
+
+
+def test_DiagTable_as_dict(diag_table):
+    expected_dict = {
+        "name": "experiment",
+        "base_time": datetime(2000, 1, 1, 0, 0),
+        "file_configs": [
+            {
+                "name": "first_diagnostics",
+                "frequency": 1,
+                "frequency_units": "hours",
+                "field_configs": [
+                    {
+                        "module_name": "dynamics",
+                        "field_name": "u850",
+                        "output_name": "zonal_wind_at_850hPa",
+                        "reduction_method": "none",
+                        "time_sampling": "all",
+                        "regional_section": "none",
+                        "packing": 2,
+                    },
+                    {
+                        "module_name": "dynamics",
+                        "field_name": "u850",
+                        "output_name": "zonal_wind_at_850hPa",
+                        "reduction_method": "none",
+                        "time_sampling": "all",
+                        "regional_section": "none",
+                        "packing": 2,
+                    },
+                ],
+                "file_format": 1,
+                "time_axis_units": "hours",
+                "time_axis_name": "time",
+            },
+            {
+                "name": "second_diagnostics",
+                "frequency": 1,
+                "frequency_units": "hours",
+                "field_configs": [
+                    {
+                        "module_name": "dynamics",
+                        "field_name": "u850",
+                        "output_name": "zonal_wind_at_850hPa",
+                        "reduction_method": "none",
+                        "time_sampling": "all",
+                        "regional_section": "none",
+                        "packing": 2,
+                    },
+                    {
+                        "module_name": "dynamics",
+                        "field_name": "u850",
+                        "output_name": "zonal_wind_at_850hPa",
+                        "reduction_method": "none",
+                        "time_sampling": "all",
+                        "regional_section": "none",
+                        "packing": 2,
+                    },
+                ],
+                "file_format": 1,
+                "time_axis_units": "hours",
+                "time_axis_name": "time",
+            },
+        ],
+    }
+    assert expected_dict == diag_table.asdict()
 
 
 def test_from_str():
@@ -66,18 +145,15 @@ def test_from_str():
     assert diag_table.base_time == datetime(2016, 8, 1)
     assert len(diag_table.file_configs) == 3
     assert diag_table.file_configs[0] == DiagFileConfig(
-        "atmos_static",
-        -1,
-        FrequencyUnits.HOURS,
-        [DiagFieldConfig("dynamics", "zsurf", "HGTsfc")],
+        "atmos_static", -1, "hours", [DiagFieldConfig("dynamics", "zsurf", "HGTsfc")],
     )
     assert diag_table.file_configs[1] == DiagFileConfig(
         "atmos_dt_atmos",
         2,
-        FrequencyUnits.HOURS,
+        "hours",
         [
             DiagFieldConfig("dynamics", "us", "UGRDlowest"),
-            DiagFieldConfig("dynamics", "u850", "UGRD850", ReductionMethod.AVERAGE),
+            DiagFieldConfig("dynamics", "u850", "UGRD850", reduction_method="average"),
         ],
     )
 

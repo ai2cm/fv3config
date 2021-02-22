@@ -19,53 +19,54 @@ class Packing(Enum):
     SINGLE_PRECISION = 2
 
 
-class ReductionMethod(Enum):
-    NONE = "none"
-    AVERAGE = "average"
-    MINIMUM = "min"
-    MAXIMUM = "max"
-
-
-class TimeSampling(Enum):
-    ALL = "all"
-
-
-class FrequencyUnits(Enum):
-    YEARS = "years"
-    MONTHS = "months"
-    DAYS = "days"
-    HOURS = "hours"
-    MINUTES = "minutes"
-    SECONDS = "seconds"
-
-
 class FileFormat(Enum):
     NETCDF = 1
 
 
 @dataclasses.dataclass
 class DiagFieldConfig:
-    """Object representing configuration for a field of a diagnostics file."""
+    """Object representing configuration for a field of a diagnostics file.
+    
+    Args:
+        module_name: Name of Fortran module containing diagnostic.
+        field_name: Name of diagnostic within Fortran code.
+        output_name: Name of diagnostic to use in output NetCDF.
+        time_sampling: Always set to 'all'.
+        reduction_method: One of 'none', 'average', 'min', 'max'.
+        regional_section: 'none' or region specification.
+        packing: precision for output data.
+    """
 
     module_name: str
     field_name: str
     output_name: str
-    reduction_method: ReductionMethod = ReductionMethod.NONE
-    time_sampling: TimeSampling = TimeSampling.ALL
+    time_sampling: str = "all"
+    reduction_method: str = "none"
     regional_section: str = "none"
     packing: Packing = Packing.SINGLE_PRECISION
 
 
 @dataclasses.dataclass
 class DiagFileConfig:
-    """Object representing a diagnostics file configuration."""
+    """Object representing a diagnostics file configuration.
+    
+    Args:
+        name: Name to use for NetCDF files, not including '.tile?.nc'.
+        frequency: Period between records in file.
+        frequency_units: One of 'years', 'months', 'days', 'hours', 'minutes', 'seconds'
+        field_configs: Sequence of DiagFieldConfigs defining fields to save.
+        file_format: Always FileFormat.NETCDF.
+        time_axis_units: Units for time coordinate in output files. One of 'years', 
+            'months', 'days', 'hours', 'minutes', 'seconds'.
+        time_axis_name: Name for time coordinate in output files.
+    """
 
     name: str
     frequency: int
-    frequency_units: FrequencyUnits
+    frequency_units: str
     field_configs: Sequence[DiagFieldConfig]
     file_format: FileFormat = FileFormat.NETCDF
-    time_axis_units: FrequencyUnits = FrequencyUnits.HOURS
+    time_axis_units: str = "hours"
     time_axis_name: str = "time"
 
 
@@ -119,16 +120,28 @@ class DiagTable:
         return {
             "name": self.name,
             "base_time": self.base_time,
-            "file_configs": [dataclasses.asdict(file_) for file_ in self.file_configs],
+            "file_configs": [
+                dataclasses.asdict(file_, dict_factory=self._dict_with_enums_factory)
+                for file_ in self.file_configs
+            ],
         }
+
+    @staticmethod
+    def _dict_with_enums_factory(data):
+        def convert_value(obj):
+            if isinstance(obj, Enum):
+                return obj.value
+            return obj
+
+        return dict((k, convert_value(v)) for k, v in data)
 
     def _file_repr(self, file_: DiagFileConfig) -> str:
         tokens = (
             file_.name,
             file_.frequency,
-            file_.frequency_units.value,
+            file_.frequency_units,
             file_.file_format.value,
-            file_.time_axis_units.value,
+            file_.time_axis_units,
             file_.time_axis_name,
         )
         return ", ".join(self._token_to_str(t) for t in tokens)
@@ -139,8 +152,8 @@ class DiagTable:
             field.field_name,
             field.output_name,
             file_name,
-            field.time_sampling.value,
-            field.reduction_method.value,
+            field.time_sampling,
+            field.reduction_method,
             field.regional_section,
             field.packing.value,
         )
@@ -222,8 +235,8 @@ class DiagTable:
                         module_name=field_tokens[0],
                         field_name=field_tokens[1],
                         output_name=field_tokens[2],
-                        time_sampling=TimeSampling(field_tokens[4]),
-                        reduction_method=ReductionMethod(field_tokens[5]),
+                        time_sampling=field_tokens[4],
+                        reduction_method=field_tokens[5],
                         regional_section=field_tokens[6],
                         packing=Packing(field_tokens[7]),
                     )
@@ -232,10 +245,10 @@ class DiagTable:
                 DiagFileConfig(
                     name=file_name,
                     frequency=file_tokens[1],
-                    frequency_units=FrequencyUnits(file_tokens[2]),
+                    frequency_units=file_tokens[2],
                     field_configs=field_configs,
                     file_format=FileFormat(file_tokens[3]),
-                    time_axis_units=FrequencyUnits(file_tokens[4]),
+                    time_axis_units=file_tokens[4],
                     time_axis_name=file_tokens[5],
                 )
             )
@@ -244,7 +257,8 @@ class DiagTable:
     @classmethod
     def from_dict(cls, diag_table: dict):
         file_configs = [
-            dacite.from_dict(DiagFileConfig, f) for f in diag_table["file_configs"]
+            dacite.from_dict(DiagFileConfig, f, config=dacite.Config(cast=[Enum]))
+            for f in diag_table["file_configs"]
         ]
         return cls(diag_table["name"], diag_table["base_time"], file_configs)
 
