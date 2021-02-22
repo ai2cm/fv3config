@@ -1,5 +1,5 @@
 import logging
-from typing import Sequence, Optional, Union, Tuple, Mapping
+from typing import Sequence, Union, Tuple, Mapping
 import dataclasses
 import datetime
 from enum import Enum
@@ -56,7 +56,7 @@ class DiagFileConfig:
         frequency_units: One of 'years', 'months', 'days', 'hours', 'minutes', 'seconds'
         field_configs: Sequence of DiagFieldConfigs defining fields to save.
         file_format: Always FileFormat.NETCDF.
-        time_axis_units: Units for time coordinate in output files. One of 'years', 
+        time_axis_units: Units for time coordinate in output files. One of 'years',
             'months', 'days', 'hours', 'minutes', 'seconds'.
         time_axis_name: Name for time coordinate in output files.
     """
