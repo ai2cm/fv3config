@@ -158,35 +158,33 @@ for the string representation of the ``diag_table``
 package defines a python representation of this object, :py:class:`~fv3config.DiagTable`, which can
 be used to explicitly represent the ``diag_table`` within an fv3config configuration dictionary.
 
-The ``DiagTable`` object can be initialized from a dict as follows:
+The ``DiagTable`` object can be initialized from a dict (serialized as YAML) as follows. Suppose
+the following is saved within ``sample_diag_table.yaml``:
+
+.. code-block:: yaml
+
+    name: example_diag_table
+    base_time: 2000-01-01 00:00:00
+    file_configs:
+    - name: physics_diagnostics
+      frequency: 1
+      frequency_units: hours
+      field_configs:
+      - field_name: totprcpb_ave
+        module_name: gfs_phys
+        output_name: surface_precipitation_rate
+      - field_name: ULWRFtoa
+        module_name: gfs_phys
+        output_name: upward_longwave_radiative_flux_at_toa
+
+Then:
 
 .. code-block:: python
 
     >>> import fv3config
-    >>> from datetime import datetime
-    >>> diag_table_dict = {
-        "name": "example_diag_table",
-        "base_time": datetime(2000, 1, 1),
-        "files": [
-            {
-                "name": "physics_diagnostics",
-                "frequency": 1,
-                "frequency_units": "hours",
-                "fields": [
-                    {
-                        "module_name": "gfs_phys",
-                        "field_name": "totprcpb_ave",
-                        "output_name": "surface_precipitation_rate",
-                    },
-                    {
-                        "module_name": "gfs_phys",
-                        "field_name": "ULWRFtoa",
-                        "output_name": "upward_longwave_radiative_flux_at_toa",
-                    }
-                ]
-            }
-        ]
-    }
+    >>> import yaml
+    >>> with open("sample_diag_table.yaml") as f:
+            diag_table_dict = yaml.safe_load(f)
     >>> diag_table = fv3config.DiagTable.from_dict(diag_table_dict)
     >>> print(diag_table)  # will output diag_table format expected by Fortran model
     example_diag_table
@@ -197,10 +195,41 @@ The ``DiagTable`` object can be initialized from a dict as follows:
     "gfs_phys", "totprcpb_ave", "surface_precipitation_rate", "physics_diagnostics", "all", "none", "none", 2
     "gfs_phys", "ULWRFtoa", "upward_longwave_radiative_flux_at_toa", "physics_diagnostics", "all", "none", "none", 2
 
-String representations of the `diag_table` can be parsed with the :py:meth:`fv3config.DiagTable.from_str` method.
+The same ``DiagTable`` can also be initialized programmatically as follows:
+
+.. code-block:: python
+
+    >>> import fv3config
+    >>> import datetime
+    >>> diag_table = fv3config.DiagTable(
+        name="example_diag_table",
+        base_time=datetime.datetime(2000, 1, 1)
+        file_configs=[
+            fv3config.DiagFileConfig(
+                name="physics_diagnostics",
+                frequency=1,
+                frequency_units="hours",
+                field_configs=[
+                    fv3config.DiagFieldConfig(
+                        "gfs_phys",
+                        "totprcb_ave"
+                        "surface_precipitation_rate"
+                    ),
+                    fv3config.DiagFieldConfig(
+                        "gfs_phys",
+                        "ULWRFtoa"
+                        "upward_longwave_radiative_flux_at_toa"
+                    ),
+                ]
+            )
+        ]
+    )
+
+String representations of the `diag_table` (i.e. those expected by the Fortran model) can be parsed
+with the :py:meth:`fv3config.DiagTable.from_str` method.
 
 If serializing an `fv3config` configuration object to yaml, it is recommended to use the
-:py:meth:`fv3config.DiagTable.asdict` method before dumping the configuration dictionary. This is implemented
+:py:meth:`fv3config.DiagTable.asdict` method before dumping the configuration dictionary. This is called by
 by :py:meth:`fv3config.config_to_yaml`.
 
 
