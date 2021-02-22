@@ -28,12 +28,12 @@ def diag_table():
 
 def test_DiagTable_string_round_trip(diag_table):
     round_tripped_diag_table = DiagTable.from_str(str(diag_table))
-    assert str(diag_table) == str(round_tripped_diag_table)
+    assert diag_table == round_tripped_diag_table
 
 
 def test_DiagTable_dict_round_trip(diag_table):
     round_tripped_diag_table = DiagTable.from_dict(diag_table.asdict())
-    assert str(diag_table) == str(round_tripped_diag_table)
+    assert diag_table == round_tripped_diag_table
 
 
 def test_DiagTable__repr__(diag_table):
