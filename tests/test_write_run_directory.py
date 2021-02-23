@@ -135,3 +135,14 @@ class CacheDirectoryTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as rundir:
             fv3config.write_run_directory(config, rundir)
             assert "fv3config.yml" in os.listdir(rundir)
+
+    def test_rundir_contains_nudging_asset_if_enabled(self):
+        config = copy.deepcopy(DEFAULT_CONFIG)
+        config["gfs_analysis_data"] = {
+            "url": "gs://vcm-fv3config/data/gfs_nudging_data/v1.0",
+            "filename_pattern": "%Y%m%d_%H.nc",
+        }
+        with tempfile.TemporaryDirectory() as rundir:
+            fv3config.write_run_directory(config, rundir)
+            assert "20160801_00.nc" in os.listdir(os.path.join(rundir, "INPUT"))
+            assert "20160801_06.nc" in os.listdir(os.path.join(rundir, "INPUT"))
