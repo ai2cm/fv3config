@@ -11,6 +11,8 @@ Major changes:
 - make `fv3config.config_to_yaml` a public function.
 - update `fv3config.config_to_yaml` and `fv3config.config_from_yaml` to go between
   `fv3config.DiagTable` and `dict` types as necessary when serializing/deserializing
+- `write_run_directory` provisions necessary `patch_files` for config if the 
+  `fv_core_nml.nudge` option is set to `True`.
 
 
 v0.5.2 (2021-02-04)
