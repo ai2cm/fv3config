@@ -17,7 +17,7 @@ def write_run_directory(config, target_directory):
         target_directory (str): target directory, will be created if it does not exist
     """
     logger.debug(f"Writing run directory to {target_directory}")
-    if "gfs_analysis_data" in config:
+    if config["namelist"]["fv_core_nml"].get("nudge", False):
         update_config_for_nudging(config)
     write_assets_to_directory(config, target_directory)
     os.makedirs(os.path.join(target_directory, "RESTART"), exist_ok=True)

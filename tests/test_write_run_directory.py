@@ -142,6 +142,7 @@ class CacheDirectoryTests(unittest.TestCase):
             "url": "gs://vcm-fv3config/data/gfs_nudging_data/v1.0",
             "filename_pattern": "%Y%m%d_%H.nc",
         }
+        config["namelist"]["fv_core_nml"]["nudge"] = True
         with tempfile.TemporaryDirectory() as rundir:
             fv3config.write_run_directory(config, rundir)
             assert "20160801_00.nc" in os.listdir(os.path.join(rundir, "INPUT"))
