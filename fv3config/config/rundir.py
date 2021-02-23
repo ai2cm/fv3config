@@ -4,6 +4,7 @@ from .namelist import config_to_namelist
 from .._asset_list import write_assets_to_directory
 from .._tables import update_diag_table_for_config
 from .derive import get_current_date
+from .nudging import update_config_for_nudging
 
 logger = logging.getLogger("fv3config")
 
@@ -16,6 +17,8 @@ def write_run_directory(config, target_directory):
         target_directory (str): target directory, will be created if it does not exist
     """
     logger.debug(f"Writing run directory to {target_directory}")
+    if config["namelist"]["fv_core_nml"].get("nudge", False):
+        update_config_for_nudging(config)
     write_assets_to_directory(config, target_directory)
     os.makedirs(os.path.join(target_directory, "RESTART"), exist_ok=True)
     current_date = get_current_date(config)

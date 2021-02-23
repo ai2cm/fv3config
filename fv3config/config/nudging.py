@@ -127,19 +127,29 @@ def update_config_for_nudging(config: Mapping):
     Args:
         config: configuration dictionary
 
+    Raises:
+        ConfigError: if provided config does not contain "gfs_analysis_data" section.
+
     Note:
         will delete any existing assets in 'patch_files' that match the given
         filename_pattern before new assets are added.
     """
+    gfs_analysis_data = config.get("gfs_analysis_data", {})
+    if "url" not in gfs_analysis_data or "filename_pattern" not in gfs_analysis_data:
+        raise ConfigError(
+            "Config must contain 'gfs_analysis_data' section with 'url' and"
+            "'filename_pattern' items if 'namelist.fv_core_nml.nudge' is True."
+        )
+
     _clear_nudging_assets(config)
 
     nudging_file_assets = get_nudging_assets(
         get_run_duration(config),
         get_current_date(config),
-        config["gfs_analysis_data"]["url"],
-        nudge_filename_pattern=config["gfs_analysis_data"]["filename_pattern"],
-        copy_method=config["gfs_analysis_data"].get("copy_method", "copy"),
-        nudge_interval=config["gfs_analysis_data"].get("interval", timedelta(hours=6)),
+        gfs_analysis_data["url"],
+        nudge_filename_pattern=gfs_analysis_data["filename_pattern"],
+        copy_method=gfs_analysis_data.get("copy_method", "copy"),
+        nudge_interval=gfs_analysis_data.get("interval", timedelta(hours=6)),
     )
 
     target_file_paths = [

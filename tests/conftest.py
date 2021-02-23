@@ -13,6 +13,8 @@ MOCK_FS_FILENAMES = [
     "vcm-fv3config/data/base_forcing/v1.1/forcing_file",
     "vcm-fv3config/data/base_forcing/v1.1/grb/grb_forcing_file",
     "vcm-fv3config/data/orographic_data/v1.0/C12/orographic_file",
+    "vcm-fv3config/data/gfs_nudging_data/v1.0/20160801_00.nc",
+    "vcm-fv3config/data/gfs_nudging_data/v1.0/20160801_06.nc",
 ]
 DIAG_TABLE_PATH = "gs://vcm-fv3config/config/diag_table/default/v1.0/diag_table"
 
