@@ -1,6 +1,15 @@
 History
 =======
 
+v0.6.1 (2021-02-23)
+-------------------
+
+Minor changes:
+~~~~~~~~~~~~~~
+
+- use `crc32c` for gcsfs consistency check instead of `md5`
+- update gcsfs requirement to gcsfs[crc]>=0.7.2
+
 v0.6.0 (2021-02-22)
 -------------------
 
