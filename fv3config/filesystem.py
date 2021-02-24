@@ -33,7 +33,7 @@ def _get_fs(path: str) -> fsspec.AbstractFileSystem:
     `from filesystem import get_fs`.
     """
     if path.startswith("gs://"):
-        return fsspec.filesystem("gs", requester_pays=True, consistency="crc32c")
+        return fsspec.filesystem("gs", requester_pays=True)
     else:
         return fsspec.filesystem("file")
 
