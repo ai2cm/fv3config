@@ -1,6 +1,14 @@
 History
 =======
 
+v0.6.1 (2021-02-23)
+-------------------
+
+Minor changes:
+~~~~~~~~~~~~~~
+
+- don't specify a consistency in the `fsspec.filesystem` instantiation
+
 v0.6.0 (2021-02-22)
 -------------------
 
