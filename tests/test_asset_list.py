@@ -18,15 +18,15 @@ from fv3config._asset_list import (
     write_asset,
 )
 import yaml
-
 import pytest
+from .mocks import c12_config
 
 
 TEST_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
 DATA_DIRECTORY = os.path.join(os.path.dirname(TEST_DIRECTORY), "fv3config", "data")
 
-with open(os.path.join(TEST_DIRECTORY, "c12_config.yml"), "r") as f:
-    DEFAULT_CONFIG = yaml.safe_load(f)
+
+DEFAULT_CONFIG = c12_config()
 
 
 DEFAULT_DATA_TABLE_ASSET = {

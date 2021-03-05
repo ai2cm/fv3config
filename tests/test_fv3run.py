@@ -10,7 +10,6 @@ import unittest.mock
 
 import gcsfs
 import pytest
-import yaml
 
 import fv3config
 from fv3config.fv3run._native import (
@@ -42,7 +41,7 @@ except (subprocess.CalledProcessError, FileNotFoundError):
 
 def subprocess_run(config_dict, outdir):
     with tempfile.NamedTemporaryFile(mode="w") as config_file:
-        config_file.write(yaml.dump(config_dict))
+        fv3config.dump(config_dict, config_file)
         config_file.flush()
         subprocess.check_call(
             [
@@ -58,7 +57,7 @@ def subprocess_run(config_dict, outdir):
 
 def docker_run(config_dict, outdir):
     with tempfile.NamedTemporaryFile(mode="w") as config_file:
-        config_file.write(yaml.dump(config_dict))
+        fv3config.dump(config_dict, config_file)
         config_file.flush()
         try:
             subprocess.check_call(
@@ -88,7 +87,7 @@ def config_dict_module_run(config_dict, outdir):
 
 def config_dict_filename_run(config_dict, outdir):
     with tempfile.NamedTemporaryFile(mode="w") as config_file:
-        config_file.write(yaml.dump(config_dict))
+        fv3config.dump(config_dict, config_file)
         config_file.flush()
         fv3config.run_native(config_file.name, outdir, runfile=MOCK_RUNSCRIPT)
 
@@ -154,9 +153,8 @@ def test_fv3run_with_mocked_subprocess(runner, config):
                 "mock_runscript.py",
             ]
         ]
-        written_config = yaml.safe_load(
-            open(os.path.join(outdir, "fv3config.yml"), "r")
-        )
+        with open(os.path.join(outdir, "fv3config.yml"), "r") as f:
+            written_config = fv3config.load(f)
         assert written_config == config
 
 

@@ -4,14 +4,14 @@ import pytest
 import fv3config
 import os
 import shutil
-import yaml
 import copy
 
+from .mocks import c12_config
 
 TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 
-with open(os.path.join(TEST_DIR, "c12_config.yml"), "r") as f:
-    DEFAULT_CONFIG = yaml.safe_load(f)
+
+DEFAULT_CONFIG = c12_config()
 
 
 @pytest.mark.parametrize(

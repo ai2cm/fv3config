@@ -1,27 +1,6 @@
-from copy import deepcopy
 import os
 import f90nml
-import fsspec
-import yaml
 from .._exceptions import InvalidFileError
-from .diag_table import DiagTable
-
-
-def config_to_yaml(config, config_out_filename):
-    config_copy = deepcopy(config)
-    if isinstance(config["diag_table"], DiagTable):
-        config_copy["diag_table"] = config["diag_table"].asdict()
-    with fsspec.open(config_out_filename, "w") as outfile:
-        outfile.write(yaml.dump(config_copy))
-
-
-def config_from_yaml(path):
-    """Return fv3config dictionary at path"""
-    with fsspec.open(path) as yaml_file:
-        config = yaml.safe_load(yaml_file)
-    if isinstance(config["diag_table"], dict):
-        config["diag_table"] = DiagTable.from_dict(config["diag_table"])
-    return config
 
 
 def config_to_namelist(config, namelist_filename):

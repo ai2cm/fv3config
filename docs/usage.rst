@@ -7,11 +7,11 @@ Quickstart
 
 The following code would write a run directory based on the contents of a yaml file::
 
-    from fv3config import write_run_directory
+    import fv3config
 
     with open("config.yml", "r") as f:
-        config = yaml.safe_load(f)
-    write_run_directory(config, './rundir')
+        config = fv3config.load(f)
+    fv3config.write_run_directory(config, './rundir')
 
 :code:`config` is a configuration dictionary which contains namelists, input data specifications,
 and other options, as described further below. It can be edited just like any dictionary. Namelists are specified as
@@ -203,7 +203,7 @@ The same ``DiagTable`` can also be initialized programmatically as follows:
     >>> import datetime
     >>> diag_table = fv3config.DiagTable(
             name="example_diag_table",
-            base_time=datetime.datetime(2000, 1, 1)
+            base_time=datetime.datetime(2000, 1, 1),
             file_configs=[
                 fv3config.DiagFileConfig(
                     name="physics_diagnostics",
@@ -212,12 +212,12 @@ The same ``DiagTable`` can also be initialized programmatically as follows:
                     field_configs=[
                         fv3config.DiagFieldConfig(
                             "gfs_phys",
-                            "totprcb_ave"
+                            "totprcb_ave",
                             "surface_precipitation_rate"
                         ),
                         fv3config.DiagFieldConfig(
                             "gfs_phys",
-                            "ULWRFtoa"
+                            "ULWRFtoa",
                             "upward_longwave_radiative_flux_at_toa"
                         ),
                     ]
@@ -229,7 +229,7 @@ String representations of the ``diag_table`` (i.e. those expected by the Fortran
 with the :py:meth:`fv3config.DiagTable.from_str` method.
 
 If serializing an ``fv3config`` configuration object to yaml it is recommended to use
-:py:meth:`fv3config.config_to_yaml`. This method will convert any ``DiagTable`` instances to
+:py:meth:`fv3config.dump`. This method will convert any ``DiagTable`` instances to
 dicts (using :py:meth:`fv3config.DiagTable.asdict`), which can be safely serialized.
 
 
@@ -247,9 +247,8 @@ a call to :py:func:`fv3config.run_docker`:
 .. code-block:: python
 
     >>> import fv3config
-    >>> import yaml
-    >>> with open("config.yml", 'r') as f:
-    >>>     config = yaml.safe_load(f)
+    >>> with open("config.yml", "r") as f:
+    >>>     config = fv3config.load(f)
     >>> fv3config.run_docker(config, 'outdir', docker_image='us.gcr.io/vcm-ml/fv3gfs-python')
 
 If the ``fv3gfs-python`` package is installed natively, the model could be run
@@ -330,7 +329,6 @@ A python interface :py:func:`fv3config.run_kubernetes` is provided for
 submitting `fv3run` jobs to Kubernetes. Here's an example for submitting a job
 based on a config dictionary stored in Google cloud storage::
 
-    import yaml
     import gcsfs
     import fv3config
 

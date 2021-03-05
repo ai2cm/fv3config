@@ -15,14 +15,13 @@ from fv3config._datastore import (
     get_diag_table_filename,
     get_data_table_filename,
 )
-import yaml
 import tempfile
+from .mocks import c12_config
 
 TEST_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
 
-with open(os.path.join(TEST_DIRECTORY, "c12_config.yml"), "r") as f:
-    DEFAULT_CONFIG = yaml.safe_load(f)
 
+DEFAULT_CONFIG = c12_config()
 
 valid_coupler_res = """    2        (Calendar: no_calendar=0, thirty_day_months=1, julian=2, gregorian=3, noleap=4)
   2016     8     1     0     0     0        Model start time:   year, month, day, hour, minute, second

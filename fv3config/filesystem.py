@@ -163,3 +163,6 @@ def _get_cache_filename(source_filename):
         raise ValueError(f"no file path given in source filename {source_filename}")
     cache_dir = caching.get_internal_cache_dir()
     return os.path.join(cache_dir, prefix, path)
+
+
+open = fsspec.open

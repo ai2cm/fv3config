@@ -1,8 +1,6 @@
 from .namelist import (
     config_to_namelist,
     config_from_namelist,
-    config_to_yaml,
-    config_from_yaml,
 )
 from .rundir import write_run_directory
 from .alter import enable_restart, set_run_duration
@@ -15,6 +13,8 @@ from .diag_table import (
     Packing,
     FileFormat,
 )
+
+from ._serialization import load, dump
 
 
 def get_default_config():

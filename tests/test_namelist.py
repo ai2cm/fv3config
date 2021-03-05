@@ -5,8 +5,6 @@ from fv3config import (
     InvalidFileError,
     ConfigError,
     enable_restart,
-    config_to_yaml,
-    config_from_yaml,
     DiagTable,
     DiagFieldConfig,
     DiagFileConfig,
@@ -14,14 +12,15 @@ from fv3config import (
 import datetime
 import os
 from copy import deepcopy
-import yaml
 import tempfile
+
+from .mocks import c12_config
 
 
 TEST_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
 
-with open(os.path.join(TEST_DIRECTORY, "c12_config.yml"), "r") as f:
-    DEFAULT_CONFIG = yaml.safe_load(f)
+
+DEFAULT_CONFIG = c12_config()
 
 one_item_namelist = """&fms_io_nml
     checksum_required = .false.
@@ -221,24 +220,6 @@ class EnableRestartTests(unittest.TestCase):
         config = DEFAULT_CONFIG.copy()
         restart_config = enable_restart(config, "new_path")
         self.assertEqual(restart_config["initial_conditions"], "new_path")
-
-
-def test_config_to_from_yaml_round_trip(tmpdir):
-    config = DEFAULT_CONFIG.copy()
-    config_to_yaml(config, tmpdir.join("config.yaml"))
-    round_tripped_config = config_from_yaml(tmpdir.join("config.yaml"))
-    assert config == round_tripped_config
-
-
-def test_config_to_from_yaml_round_trip_with_DiagTable(tmpdir):
-    config = DEFAULT_CONFIG.copy()
-    config["diag_table"] = sample_diag_table
-    config_to_yaml(config, tmpdir.join("config.yaml"))
-    round_tripped_config = config_from_yaml(tmpdir.join("config.yaml"))
-    diag_table = config.pop("diag_table")
-    round_tripped_diag_table = round_tripped_config.pop("diag_table")
-    assert str(diag_table) == str(round_tripped_diag_table)
-    assert config == round_tripped_config
 
 
 if __name__ == "__main__":

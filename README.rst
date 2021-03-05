@@ -16,11 +16,12 @@ Basic usage
 
 .. code-block:: python
 
-    from fv3config import write_run_directory
+    import fv3config
 
-    with open("config.yml", 'r') as f:
-        config = yaml.safe_load(f)
-    write_run_directory(config, './rundir')
+    with open("config.yml", "r") as f:
+        config = fv3config.load(f)
+    fv3config.write_run_directory(config, './rundir')
+
 
 :code:`config` is a configuration dictionary which contains namelists, input data specifications,
 and other options. It can be edited just like any dictionary.
