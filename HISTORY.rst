@@ -1,6 +1,19 @@
 History
 =======
 
+Latest
+------
+
+Major changes:
+~~~~~~~~~~~~~~
+- Modify the serialization APIs
+  - add ``fv3config.load/dump``
+  - remove ``fv3config.config_to_yaml`` and ``fv3config.config_from_yaml``
+
+Bug Fixes:
+~~~~~~~~~~
+- use ``DiagFile`` aware serialization routines inside the CLIs
+
 v0.6.1 (2021-02-23)
 -------------------
 
