@@ -14,7 +14,7 @@ from .diag_table import (
     FileFormat,
 )
 
-from ._serialization import load, dump, config_to_yaml, config_from_yaml
+from ._serialization import load, dump
 
 
 def get_default_config():

@@ -11,7 +11,7 @@ import tempfile
 import warnings
 import yaml
 import json
-from ..config import write_run_directory, get_n_processes, config_to_yaml
+from ..config import write_run_directory, get_n_processes, dump
 from .. import filesystem
 
 STDOUT_FILENAME = "stdout.log"
@@ -200,7 +200,8 @@ def _run_experiment(
 def _get_config_dict_and_write(config_dict_or_location, config_out_filename):
     if isinstance(config_dict_or_location, dict):
         config_dict = config_dict_or_location
-        config_to_yaml(config_dict, config_out_filename)
+        with filesystem.open(config_out_filename, "w") as f:
+            dump(config_dict, f)
     else:
         config_dict = _copy_and_load_config_dict(
             config_dict_or_location, config_out_filename

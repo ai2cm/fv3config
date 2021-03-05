@@ -1,28 +1,12 @@
 from copy import deepcopy
 import yaml
+from typing import TextIO
 
 from .types import Config
 from .diag_table import DiagTable
 
-import fsspec
 
-def config_to_yaml(config: Config, config_out_filename: str):
-    with fsspec.open(config_out_filename, "w") as outfile:
-        dump(config, outfile)
-
-
-def config_from_yaml(path: str) -> Config:
-    """Return fv3config dictionary at path"""
-    with fsspec.open(path) as yaml_file:
-        return load(yaml_file)
-
-
-def loads(s: str) -> Config:
-    import io
-    io.StringIO()
-
-
-def load(f) -> Config:
+def load(f: TextIO) -> Config:
     """Load a configuration from a file-like object f"""
     config = yaml.safe_load(f)
     if isinstance(config["diag_table"], dict):
@@ -30,7 +14,7 @@ def load(f) -> Config:
     return config
 
 
-def dump(config: Config, f):
+def dump(config: Config, f: TextIO):
     """Serialize config to a file-like object using yaml encoding
 
     Args:

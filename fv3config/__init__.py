@@ -20,8 +20,6 @@ from .config import (
     FileFormat,
     dump,
     load,
-    config_from_yaml,
-    config_to_yaml,
 )
 from ._exceptions import InvalidFileError, ConfigError
 from ._datastore import ensure_data_is_downloaded
