@@ -12,7 +12,7 @@ Major changes:
 
 Bug Fixes:
 ~~~~~~~~~~
-- use ``DiagFile`` aware serialization routines inside the CLIs
+- use ``DiagTable`` aware serialization routines inside the CLIs
 
 v0.6.1 (2021-02-23)
 -------------------
