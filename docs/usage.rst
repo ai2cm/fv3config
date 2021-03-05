@@ -203,7 +203,7 @@ The same ``DiagTable`` can also be initialized programmatically as follows:
     >>> import datetime
     >>> diag_table = fv3config.DiagTable(
             name="example_diag_table",
-            base_time=datetime.datetime(2000, 1, 1)
+            base_time=datetime.datetime(2000, 1, 1),
             file_configs=[
                 fv3config.DiagFileConfig(
                     name="physics_diagnostics",
@@ -212,12 +212,12 @@ The same ``DiagTable`` can also be initialized programmatically as follows:
                     field_configs=[
                         fv3config.DiagFieldConfig(
                             "gfs_phys",
-                            "totprcb_ave"
+                            "totprcb_ave",
                             "surface_precipitation_rate"
                         ),
                         fv3config.DiagFieldConfig(
                             "gfs_phys",
-                            "ULWRFtoa"
+                            "ULWRFtoa",
                             "upward_longwave_radiative_flux_at_toa"
                         ),
                     ]

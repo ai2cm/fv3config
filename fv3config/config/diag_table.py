@@ -70,33 +70,33 @@ class DiagFileConfig:
     time_axis_name: str = "time"
 
 
+@dataclasses.dataclass
 class DiagTable:
-    def __init__(
-        self,
-        name: str,
-        base_time: datetime.datetime,
-        file_configs: Sequence[DiagFileConfig],
-    ):
-        """Representation of diag_table, which controls Fortran diagnostics manager.
+    """Representation of diag_table, which controls Fortran diagnostics manager.
 
-        Note:
-            This implementation is based on the diag_table specification described in
-      https://data1.gfdl.noaa.gov/summer-school/Lectures/July16/03_Seth1_DiagManager.pdf
-            The MOM6 documentation has a useful description as well:
-            https://mom6.readthedocs.io/en/latest/api/generated/pages/Diagnostics.html.
+    Note:
+        This implementation is based on the diag_table specification described in
+    https://data1.gfdl.noaa.gov/summer-school/Lectures/July16/03_Seth1_DiagManager.pdf
+        The MOM6 documentation has a useful description as well:
+        https://mom6.readthedocs.io/en/latest/api/generated/pages/Diagnostics.html.
 
-        Args:
-            name: label used as attribute in output diagnostic files. Cannot contain
-                spaces.
-            base_time: time to be used as reference for time coordinate units.
-            file_configs: sequence of DiagFileConfig's defining the diagnostics to be
-                output.
-        """
-        if " " in name:
-            raise ConfigError(f"Name for diag_table cannot have spaces. Got '{name}'.")
-        self.name = name
-        self.base_time = base_time
-        self.file_configs = file_configs
+    Args:
+        name: label used as attribute in output diagnostic files. Cannot contain
+            spaces.
+        base_time: time to be used as reference for time coordinate units.
+        file_configs: sequence of DiagFileConfig's defining the diagnostics to be
+            output.
+    """
+
+    name: str
+    base_time: datetime.datetime
+    file_configs: Sequence[DiagFileConfig]
+
+    def __post_init__(self,):
+        if " " in self.name:
+            raise ConfigError(
+                f"Name for diag_table cannot have spaces. Got '{self.name}'."
+            )
 
     def __repr__(self):
         """Representation of diag_table expected by the Fortran model."""
