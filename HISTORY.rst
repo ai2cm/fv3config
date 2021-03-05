@@ -4,8 +4,8 @@ History
 Latest
 ------
 
-Major changes:
-~~~~~~~~~~~~~~
+Breaking changes:
+~~~~~~~~~~~~~~~~~
 - Modify the serialization APIs
   - add ``fv3config.load/dump``
   - remove ``fv3config.config_to_yaml`` and ``fv3config.config_from_yaml``
