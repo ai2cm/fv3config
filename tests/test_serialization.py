@@ -2,7 +2,7 @@ import fv3config
 import io
 import datetime
 import pytest
-from toolz import assoc
+import copy
 
 diag_table_obj = fv3config.DiagTable(
     name="example_diag_table",
@@ -27,8 +27,9 @@ diag_table_obj = fv3config.DiagTable(
 
 @pytest.mark.parametrize("diag_table", [diag_table_obj, "default"])
 def test_dump_load(c12_config, diag_table):
+    config = copy.deepcopy(c12_config)
+    config["diag_table"] = diag_table
     f = io.StringIO()
-    config = assoc(c12_config, "diag_table", diag_table)
     fv3config.dump(config, f)
     f.seek(0)
     loaded = fv3config.load(f)
