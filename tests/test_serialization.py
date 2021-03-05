@@ -2,7 +2,7 @@ import fv3config
 import io
 import datetime
 import pytest
-from toolz import assoc, dissoc
+from toolz import assoc
 
 diag_table_obj = fv3config.DiagTable(
     name="example_diag_table",
@@ -32,8 +32,4 @@ def test_dump_load(c12_config, diag_table):
     fv3config.dump(config, f)
     f.seek(0)
     loaded = fv3config.load(f)
-
-    if isinstance(config["diag_table"], fv3config.DiagTable):
-        assert config == loaded
-    else:
-        assert dissoc(config, "diag_table") == dissoc(loaded, "diag_table")
+    assert config == loaded
