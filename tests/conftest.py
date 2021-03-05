@@ -1,10 +1,10 @@
 import pytest
 import os
-import yaml
 import fsspec
 from fsspec.implementations.memory import MemoryFileSystem
 import fv3config.filesystem
 import fv3config.data
+from . import mocks
 
 TEST_DIR = os.path.dirname(os.path.realpath(__file__))
 
@@ -73,7 +73,4 @@ def mock_gs_fs():
     fv3config.filesystem._get_fs = _get_fs
 
 
-@pytest.fixture
-def c12_config():
-    with open(os.path.join(TEST_DIR, "c12_config.yml"), "r") as f:
-        return yaml.safe_load(f)
+c12_config = pytest.fixture(mocks.c12_config)

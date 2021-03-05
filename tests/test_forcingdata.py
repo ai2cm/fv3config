@@ -15,12 +15,12 @@ from fv3config._asset_list import (
     get_initial_conditions_asset_list,
     write_asset_list,
 )
-import yaml
+from .mocks import c12_config
 
 TEST_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
 
-with open(os.path.join(TEST_DIRECTORY, "c12_config.yml"), "r") as f:
-    DEFAULT_CONFIG = yaml.safe_load(f)
+
+DEFAULT_CONFIG = c12_config()
 
 required_run_directory_subdirectories = ["INPUT", "RESTART"]
 

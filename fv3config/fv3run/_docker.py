@@ -1,8 +1,7 @@
 import subprocess
 import os
-import fsspec
-import yaml
 from .. import filesystem
+from ..config._serialization import load
 from ._native import CONFIG_OUT_FILENAME, run_native
 
 DOCKER_OUTDIR = "/outdir"
@@ -75,8 +74,8 @@ def run_docker(
 
 
 def _load_yaml(url):
-    with fsspec.open(url) as f:
-        return yaml.safe_load(f.read())
+    with filesystem.open(url) as f:
+        return load(f)
 
 
 def _get_runfile_args(runfile, bind_mount_args) -> str:

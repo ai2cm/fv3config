@@ -7,11 +7,11 @@ Quickstart
 
 The following code would write a run directory based on the contents of a yaml file::
 
-    from fv3config import write_run_directory
+    import fv3config
 
     with open("config.yml", "r") as f:
-        config = yaml.safe_load(f)
-    write_run_directory(config, './rundir')
+        config = fv3config.load(f)
+    fv3config.write_run_directory(config, './rundir')
 
 :code:`config` is a configuration dictionary which contains namelists, input data specifications,
 and other options, as described further below. It can be edited just like any dictionary. Namelists are specified as
@@ -182,9 +182,8 @@ Then a ``DiagTable`` object can be initialized as:
 .. code-block:: python
 
     >>> import fv3config
-    >>> import yaml
     >>> with open("sample_diag_table.yaml") as f:
-            diag_table_dict = yaml.safe_load(f)
+            diag_table_dict = fv3config.load(f)
     >>> diag_table = fv3config.DiagTable.from_dict(diag_table_dict)
     >>> print(diag_table)  # will output diag_table in format expected by Fortran model
     example_diag_table
@@ -247,9 +246,8 @@ a call to :py:func:`fv3config.run_docker`:
 .. code-block:: python
 
     >>> import fv3config
-    >>> import yaml
-    >>> with open("config.yml", 'r') as f:
-    >>>     config = yaml.safe_load(f)
+    >>> with open("config.yml", "r") as f:
+    >>>     config = fv3config.load(f)
     >>> fv3config.run_docker(config, 'outdir', docker_image='us.gcr.io/vcm-ml/fv3gfs-python')
 
 If the ``fv3gfs-python`` package is installed natively, the model could be run
@@ -330,7 +328,6 @@ A python interface :py:func:`fv3config.run_kubernetes` is provided for
 submitting `fv3run` jobs to Kubernetes. Here's an example for submitting a job
 based on a config dictionary stored in Google cloud storage::
 
-    import yaml
     import gcsfs
     import fv3config
 
