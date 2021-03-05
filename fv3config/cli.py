@@ -1,6 +1,4 @@
 import argparse
-
-import yaml
 import fsspec
 
 import fv3config
@@ -44,7 +42,7 @@ def write_run_directory():
     args = _parse_write_run_directory_args()
 
     with fsspec.open(args.config) as f:
-        config = yaml.safe_load(f)
+        config = fv3config.load(f)
 
     fv3config.write_run_directory(config, args.rundir)
 
@@ -53,23 +51,23 @@ def enable_restart():
     args = _parse_enable_restart_args()
 
     with fsspec.open(args.config) as f:
-        config = yaml.safe_load(f)
+        config = fv3config.load(f)
 
     restart_config = fv3config.enable_restart(config, args.initial_conditions)
 
     with fsspec.open(args.config, mode="w") as f:
-        yaml.safe_dump(restart_config, f)
+        fv3config.dump(restart_config, f)
 
 
 def update_config_for_nudging():
     args = _parse_update_config_for_nudging_args()
 
     with fsspec.open(args.config) as f:
-        config = yaml.safe_load(f)
+        config = fv3config.load(f)
 
     # only update config if nudging is turned on
     if config["namelist"]["fv_core_nml"].get("nudge", False):
         fv3config.update_config_for_nudging(config)
 
         with fsspec.open(args.config, mode="w") as f:
-            yaml.safe_dump(config, f)
+            fv3config.dump(config, f)
