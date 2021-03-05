@@ -25,4 +25,4 @@ def dump(config: Config, f: TextIO):
     config_copy = deepcopy(config)
     if isinstance(config["diag_table"], DiagTable):
         config_copy["diag_table"] = config["diag_table"].asdict()
-    yaml.dump(config_copy, f)
+    yaml.safe_dump(config_copy, f)
