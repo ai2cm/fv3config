@@ -229,7 +229,7 @@ String representations of the ``diag_table`` (i.e. those expected by the Fortran
 with the :py:meth:`fv3config.DiagTable.from_str` method.
 
 If serializing an ``fv3config`` configuration object to yaml it is recommended to use
-:py:meth:`fv3config.load`. This method will convert any ``DiagTable`` instances to
+:py:meth:`fv3config.dump`. This method will convert any ``DiagTable`` instances to
 dicts (using :py:meth:`fv3config.DiagTable.asdict`), which can be safely serialized.
 
 
