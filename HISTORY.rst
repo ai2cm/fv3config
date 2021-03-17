@@ -4,11 +4,15 @@ History
 Latest
 ------
 
+
+v0.7.0 (2021-03-17)
+-------------------
+
 Breaking changes:
 ~~~~~~~~~~~~~~~~~
 - Modify the serialization APIs
-  - add ``fv3config.load/dump``
-  - remove ``fv3config.config_to_yaml`` and ``fv3config.config_from_yaml``
+- add ``fv3config.load/dump``
+- remove ``fv3config.config_to_yaml`` and ``fv3config.config_from_yaml``
 
 Bug Fixes:
 ~~~~~~~~~~
