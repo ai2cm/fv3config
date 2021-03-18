@@ -317,7 +317,7 @@ def test_bytes_asset_serializes_with_yaml():
 
 
 def test_get_fv3config_yaml_asset(tmpdir):
-    config = {"some": "dict"}
+    config = {"some": "dict", "diag_table": "/path/to/diag_table"}
     asset = get_fv3config_yaml_asset(config)
     write_asset(asset, str(tmpdir))
 

@@ -11,7 +11,7 @@ import tempfile
 import warnings
 import yaml
 import json
-from ..config import write_run_directory, get_n_processes, dump
+from ..config import write_run_directory, get_n_processes, dump, load
 from .. import filesystem
 
 STDOUT_FILENAME = "stdout.log"
@@ -212,7 +212,7 @@ def _get_config_dict_and_write(config_dict_or_location, config_out_filename):
 def _copy_and_load_config_dict(config_location, local_target_location):
     filesystem.get_file(config_location, local_target_location)
     with open(local_target_location, "r") as infile:
-        config_dict = yaml.load(infile.read(), Loader=yaml.SafeLoader)
+        config_dict = load(infile)
     return config_dict
 
 
