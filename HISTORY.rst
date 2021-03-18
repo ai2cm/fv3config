@@ -4,6 +4,12 @@ History
 Latest
 ------
 
+v0.7.1 (2021-03-18)
+-------------------
+
+Bug Fixes:
+~~~~~~~~~~
+- replace a couple instances of yaml.dump/load with fv3config.dump/load
 
 v0.7.0 (2021-03-17)
 -------------------
