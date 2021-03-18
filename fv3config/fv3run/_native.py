@@ -9,7 +9,6 @@ import multiprocessing
 import os
 import tempfile
 import warnings
-import yaml
 import json
 from ..config import write_run_directory, get_n_processes, dump, load
 from .. import filesystem
