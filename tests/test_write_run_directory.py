@@ -5,6 +5,7 @@ import fv3config
 import os
 import shutil
 import copy
+import datetime
 
 from .mocks import c12_config
 
@@ -135,6 +136,13 @@ class CacheDirectoryTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as rundir:
             fv3config.write_run_directory(config, rundir)
             assert "fv3config.yml" in os.listdir(rundir)
+
+    def test_write_run_directory_succeeds_with_diag_table_class(self):
+        config = copy.deepcopy(DEFAULT_CONFIG)
+        start_time = datetime.datetime(2000, 1, 1)
+        config["diag_table"] = fv3config.DiagTable("name", start_time, [])
+        with tempfile.TemporaryDirectory() as rundir:
+            fv3config.write_run_directory(config, rundir)
 
     def test_rundir_contains_nudging_asset_if_enabled(self):
         config = copy.deepcopy(DEFAULT_CONFIG)
