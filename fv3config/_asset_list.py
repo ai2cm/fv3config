@@ -1,7 +1,6 @@
+import io
 import logging
 import os
-
-import yaml
 
 from ._datastore import (
     get_initial_conditions_directory,
@@ -14,6 +13,7 @@ from fv3config._datastore import (
     get_data_table_filename,
 )
 from .config.diag_table import DiagTable
+from .config._serialization import dump
 from ._exceptions import ConfigError
 from . import filesystem
 
@@ -90,8 +90,10 @@ def get_field_table_asset(config):
 
 def get_fv3config_yaml_asset(config):
     """An asset containing this configuration"""
+    f = io.StringIO()
+    dump(config, f)
     return get_bytes_asset_dict(
-        bytes(yaml.safe_dump(config), "UTF-8"),
+        bytes(f.getvalue(), "UTF-8"),
         target_location=".",
         target_name=FV3CONFIG_YML_NAME,
     )
