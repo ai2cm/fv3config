@@ -1,6 +1,6 @@
 import io
 import logging
-import osyaml
+import os
 
 from ._datastore import (
     get_initial_conditions_directory,
