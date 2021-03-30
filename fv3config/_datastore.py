@@ -51,6 +51,8 @@ def get_orographic_forcing_directory(config):
     if "orographic_forcing" not in config:
         raise ConfigError("config dictionary must have an 'orographic_forcing' key")
     parent_dirname = config["orographic_forcing"]
+    if not len(parent_dirname):
+        return ""
     ensure_exists(parent_dirname, "orographic_forcing")
     dirname = os.path.join(parent_dirname, resolution)
     fs = filesystem.get_fs(dirname)
