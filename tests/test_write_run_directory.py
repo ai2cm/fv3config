@@ -155,3 +155,35 @@ class CacheDirectoryTests(unittest.TestCase):
             fv3config.write_run_directory(config, rundir)
             assert "20160801_00.nc" in os.listdir(os.path.join(rundir, "INPUT"))
             assert "20160801_06.nc" in os.listdir(os.path.join(rundir, "INPUT"))
+
+    def test_write_run_directory_does_not_mutate_config(self):
+        config = copy.deepcopy(DEFAULT_CONFIG)
+        with tempfile.TemporaryDirectory() as rundir:
+            fv3config.write_run_directory(config, rundir)
+            assert config == DEFAULT_CONFIG
+
+    def test_write_run_directory_does_not_mutate_config_with_nudging_enabled(self):
+        config = copy.deepcopy(DEFAULT_CONFIG)
+        config["gfs_analysis_data"] = {
+            "url": "gs://vcm-fv3config/data/gfs_nudging_data/v1.0",
+            "filename_pattern": "%Y%m%d_%H.nc",
+        }
+        config["namelist"]["fv_core_nml"]["nudge"] = True
+        config_copy = copy.deepcopy(config)
+        with tempfile.TemporaryDirectory() as rundir:
+            fv3config.write_run_directory(config, rundir)
+            assert config == config_copy
+
+    def test_write_run_dir_does_not_mutate_config_with_initial_condition_list(self):
+        config = copy.deepcopy(DEFAULT_CONFIG)
+        config["initial_conditions"] = [
+            fv3config.get_asset_dict(
+                "gs://vcm-fv3config/data/initial_conditions/gfs_c12_example/v1.0",
+                "initial_conditions_file",
+                target_location="explicit",
+            )
+        ]
+        config_copy = copy.deepcopy(config)
+        with tempfile.TemporaryDirectory() as rundir:
+            fv3config.write_run_directory(config, rundir)
+            assert config == config_copy

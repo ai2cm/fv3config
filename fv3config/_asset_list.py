@@ -276,7 +276,8 @@ def check_asset_has_required_keys(asset):
 def config_to_asset_list(config):
     """Convert a configuration dictionary to an asset list. The asset list
     will contain all files for the run directory except the namelist."""
-    asset_list = get_initial_conditions_asset_list(config)
+    asset_list = []
+    asset_list += get_initial_conditions_asset_list(config)
     asset_list += get_base_forcing_asset_list(config)
     asset_list += get_orographic_forcing_asset_list(config)
     asset_list.append(get_field_table_asset(config))

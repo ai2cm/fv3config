@@ -166,10 +166,10 @@ def test_update_config_for_nudging(test_config):
     }
     test_config["patch_files"] = [old_asset]
 
-    fv3config.update_config_for_nudging(test_config)
+    updated_config = fv3config.update_config_for_nudging(test_config)
 
-    updated_file_names = test_config["namelist"]["fv_nwp_nudge_nml"]["file_names"]
+    updated_file_names = updated_config["namelist"]["fv_nwp_nudge_nml"]["file_names"]
     assert f"INPUT/{old_nudging_file}" not in updated_file_names
     assert f"INPUT/{new_nudging_file}" in updated_file_names
-    assert old_asset not in test_config["patch_files"]
-    assert new_asset in test_config["patch_files"]
+    assert old_asset not in updated_config["patch_files"]
+    assert new_asset in updated_config["patch_files"]

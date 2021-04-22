@@ -67,7 +67,7 @@ def update_config_for_nudging():
 
     # only update config if nudging is turned on
     if config["namelist"]["fv_core_nml"].get("nudge", False):
-        fv3config.update_config_for_nudging(config)
+        updated_config = fv3config.update_config_for_nudging(config)
 
         with fsspec.open(args.config, mode="w") as f:
-            fv3config.dump(config, f)
+            fv3config.dump(updated_config, f)

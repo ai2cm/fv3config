@@ -18,7 +18,7 @@ def write_run_directory(config, target_directory):
     """
     logger.debug(f"Writing run directory to {target_directory}")
     if config["namelist"]["fv_core_nml"].get("nudge", False):
-        update_config_for_nudging(config)
+        config = update_config_for_nudging(config)
     write_assets_to_directory(config, target_directory)
     os.makedirs(os.path.join(target_directory, "RESTART"), exist_ok=True)
     current_date = get_current_date(config)

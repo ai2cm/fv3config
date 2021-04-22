@@ -1,4 +1,5 @@
 import collections
+from copy import deepcopy
 from datetime import datetime, timedelta
 import os
 from typing import Sequence, List, Mapping
@@ -119,8 +120,8 @@ def _clear_nudging_assets(config):
         config["patch_files"] = _non_nudging_assets(config["patch_files"], pattern)
 
 
-def update_config_for_nudging(config: Mapping):
-    """Update config object in place to include nudging file assets and associated
+def update_config_for_nudging(config: Mapping) -> Mapping:
+    """Return config object with necessary nudging file assets and associated
     file_names namelist entry. Requires 'gfs_analysis_data' entry in fv3config object
     with 'url' and 'filename_pattern' entries.
     
@@ -141,11 +142,12 @@ def update_config_for_nudging(config: Mapping):
             "'filename_pattern' items if 'namelist.fv_core_nml.nudge' is True."
         )
 
-    _clear_nudging_assets(config)
+    config_copy = deepcopy(config)
+    _clear_nudging_assets(config_copy)
 
     nudging_file_assets = get_nudging_assets(
-        get_run_duration(config),
-        get_current_date(config),
+        get_run_duration(config_copy),
+        get_current_date(config_copy),
         gfs_analysis_data["url"],
         nudge_filename_pattern=gfs_analysis_data["filename_pattern"],
         copy_method=gfs_analysis_data.get("copy_method", "copy"),
@@ -157,6 +159,7 @@ def update_config_for_nudging(config: Mapping):
         for asset in nudging_file_assets
     ]
 
-    namelist = config["namelist"]
+    namelist = config_copy["namelist"]
     namelist.setdefault("fv_nwp_nudge_nml", {})["file_names"] = target_file_paths
-    config.setdefault("patch_files", []).extend(nudging_file_assets)
+    config_copy.setdefault("patch_files", []).extend(nudging_file_assets)
+    return config_copy
