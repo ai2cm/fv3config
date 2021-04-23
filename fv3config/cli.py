@@ -28,8 +28,8 @@ def _parse_enable_restart_args():
     return parser.parse_args()
 
 
-def _parse_update_config_for_nudging_args():
-    parser = argparse.ArgumentParser("update_config_for_nudging")
+def _parse_enable_nudging_args():
+    parser = argparse.ArgumentParser("enable_nudging")
     parser.add_argument(
         "config",
         help="URI to fv3config yaml file. Supports any path used by fsspec. "
@@ -59,15 +59,15 @@ def enable_restart():
         fv3config.dump(restart_config, f)
 
 
-def update_config_for_nudging():
-    args = _parse_update_config_for_nudging_args()
+def enable_nudging():
+    args = _parse_enable_nudging_args()
 
     with fsspec.open(args.config) as f:
         config = fv3config.load(f)
 
     # only update config if nudging is turned on
     if config["namelist"]["fv_core_nml"].get("nudge", False):
-        fv3config.update_config_for_nudging(config)
+        updated_config = fv3config.enable_nudging(config)
 
         with fsspec.open(args.config, mode="w") as f:
-            fv3config.dump(config, f)
+            fv3config.dump(updated_config, f)
