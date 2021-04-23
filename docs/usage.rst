@@ -37,7 +37,7 @@ in order to use them for restart runs:
 
 and to provision the necessary files required for a nudged run:
 
-    update_config_for_nudging config.yaml
+    enable_nudging config.yaml
 
 Both of these shell commands will modify the given configuration dictionary in place.
 
@@ -377,7 +377,7 @@ GFS analysis. Two public functions are provided to ease the configuration of nud
 
 Given the run duration and start date, :py:func:`fv3config.get_nudging_assets`
 returns a list of fv3config assets corresponding to the GFS analysis files required. Given
-an fv3config object, :py:func:`fv3config.update_config_for_nudging` will add the necessary
+an fv3config object, :py:func:`fv3config.enable_nudging` return a new config with the necessary
 assets and namelist options for a nudging run. This function requires that the fv3config
 object contains a `gfs_analysis_data` entry with corresponding `url` and `filename_pattern`
 items.

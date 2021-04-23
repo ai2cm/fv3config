@@ -4,6 +4,16 @@ History
 Latest
 ------
 
+Breaking changes:
+~~~~~~~~~~~~~~~~~
+- rename ``fv3config.update_config_for_nudging`` to ``fv3config.enable_nudging`` and make this function return a new config instead of mutating the input
+- rename ``update_config_for_nudging`` command line entrypoint to ``enable_nudging``
+
+Bug fixes:
+~~~~~~~~~~
+- ensure ``fv3config.write_run_directory`` does not mutate input config
+
+
 v0.7.1 (2021-03-18)
 -------------------
 

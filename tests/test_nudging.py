@@ -151,7 +151,7 @@ def test__is_nudging_asset(item, pattern, expected):
     assert nudging._is_nudging_asset(item, pattern) == expected
 
 
-def test_update_config_for_nudging(test_config):
+def test_enable_nudging(test_config):
     url = "/path/to/nudging/files"
     pattern = "%Y%m%d_%H.nc"
     old_nudging_file = "20151231_18.nc"
@@ -166,7 +166,7 @@ def test_update_config_for_nudging(test_config):
     }
     test_config["patch_files"] = [old_asset]
 
-    updated_config = fv3config.update_config_for_nudging(test_config)
+    updated_config = fv3config.enable_nudging(test_config)
 
     updated_file_names = updated_config["namelist"]["fv_nwp_nudge_nml"]["file_names"]
     assert f"INPUT/{old_nudging_file}" not in updated_file_names

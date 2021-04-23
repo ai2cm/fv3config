@@ -120,7 +120,7 @@ def _clear_nudging_assets(config):
         config["patch_files"] = _non_nudging_assets(config["patch_files"], pattern)
 
 
-def update_config_for_nudging(config: Mapping) -> Mapping:
+def enable_nudging(config: Mapping) -> Mapping:
     """Return config object with necessary nudging file assets and associated
     file_names namelist entry. Requires 'gfs_analysis_data' entry in fv3config object
     with 'url' and 'filename_pattern' entries.

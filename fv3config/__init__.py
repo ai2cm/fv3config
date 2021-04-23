@@ -12,7 +12,7 @@ from .config import (
     set_run_duration,
     get_timestep,
     get_nudging_assets,
-    update_config_for_nudging,
+    enable_nudging,
     DiagTable,
     DiagFieldConfig,
     DiagFileConfig,
