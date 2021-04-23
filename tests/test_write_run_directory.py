@@ -1,3 +1,4 @@
+import collections
 import unittest
 import tempfile
 import pytest
@@ -17,7 +18,7 @@ DEFAULT_CONFIG = c12_config()
 
 def update_recursive(base, update):
     for k, v in update.items():
-        if isinstance(v, dict):
+        if isinstance(v, collections.abc.Mapping):
             base[k] = update_recursive(base.get(k, {}), v)
         else:
             base[k] = v
