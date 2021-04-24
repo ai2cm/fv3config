@@ -28,12 +28,12 @@ def diag_table():
 
 def test_DiagTable_string_round_trip(diag_table):
     round_tripped_diag_table = DiagTable.from_str(str(diag_table))
-    assert str(diag_table) == str(round_tripped_diag_table)
+    assert diag_table == round_tripped_diag_table
 
 
 def test_DiagTable_dict_round_trip(diag_table):
     round_tripped_diag_table = DiagTable.from_dict(diag_table.asdict())
-    assert str(diag_table) == str(round_tripped_diag_table)
+    assert diag_table == round_tripped_diag_table
 
 
 def test_DiagTable__repr__(diag_table):
@@ -139,15 +139,10 @@ def test_from_str():
 "dynamics",  "us",          "UGRDlowest",    "atmos_dt_atmos", "all", .false.,  "none", 2, # inline comment
 "dynamics",  "u850",        "UGRD850",       "atmos_dt_atmos", "all", .true.,  "none", 2
 """
-
-    diag_table = DiagTable.from_str(input_str)
-    assert diag_table.name == "default_experiment"
-    assert diag_table.base_time == datetime(2016, 8, 1)
-    assert len(diag_table.file_configs) == 3
-    assert diag_table.file_configs[0] == DiagFileConfig(
+    atmos_static = DiagFileConfig(
         "atmos_static", -1, "hours", [DiagFieldConfig("dynamics", "zsurf", "HGTsfc")],
     )
-    assert diag_table.file_configs[1] == DiagFileConfig(
+    atmos_dt_atmos = DiagFileConfig(
         "atmos_dt_atmos",
         2,
         "hours",
@@ -156,6 +151,24 @@ def test_from_str():
             DiagFieldConfig("dynamics", "u850", "UGRD850", reduction_method="average"),
         ],
     )
+    empty_file = DiagFileConfig("empty_file", 2, "hours", [])
+    expected_diag_table = DiagTable(
+        "default_experiment",
+        datetime(2016, 8, 1),
+        [atmos_static, atmos_dt_atmos, empty_file],
+    )
+
+    diag_table = DiagTable.from_str(input_str)
+    assert diag_table == expected_diag_table
+
+
+def test_from_str_including_line_with_only_spaces():
+    input_str = """default_experiment
+2016 08 01 00 0 0
+  """
+    expected_diag_table = DiagTable("default_experiment", datetime(2016, 8, 1), [])
+    diag_table = DiagTable.from_str(input_str)
+    assert diag_table == expected_diag_table
 
 
 @pytest.mark.parametrize(

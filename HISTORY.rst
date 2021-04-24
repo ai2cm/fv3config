@@ -12,6 +12,7 @@ Breaking changes:
 Bug fixes:
 ~~~~~~~~~~
 - ensure ``fv3config.write_run_directory`` does not mutate input config
+- fix bug in which ``DiagTable.from_str`` failed on lines that contain only whitespace
 
 
 v0.7.1 (2021-03-18)
