@@ -38,10 +38,13 @@ def ensure_is_list(asset):
 
 def get_orographic_forcing_asset_list(config):
     """Return asset_list for orographic forcing"""
-    source_directory = get_orographic_forcing_directory(config)
-    return asset_list_from_path(
-        source_directory, target_location="INPUT", copy_method="link"
-    )
+    if is_dict_or_list(config["orographic_forcing"]):
+        return ensure_is_list(config["orographic_forcing"])
+    else:
+        source_directory = get_orographic_forcing_directory(config)
+        return asset_list_from_path(
+            source_directory, target_location="INPUT", copy_method="link"
+        )
 
 
 def get_base_forcing_asset_list(config):

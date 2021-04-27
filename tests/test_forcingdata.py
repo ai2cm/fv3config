@@ -19,6 +19,7 @@ from .mocks import c12_config
 
 TEST_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
 
+ASSET_LIST_EMPTY = []
 
 DEFAULT_CONFIG = c12_config()
 
@@ -120,6 +121,12 @@ class ForcingTests(unittest.TestCase):
         config = {"namelist": {"fv_core_nml": {"npx": -1, "npy": -1}}}
         with self.assertRaises(fv3config.ConfigError):
             get_orographic_forcing_directory(config)
+
+    def test_empty_orographic_forcing_list(self):
+        config = DEFAULT_CONFIG.copy()
+        config["orographic_forcing"] = []
+        asset_list = get_orographic_forcing_asset_list(config)
+        self.assertEqual(asset_list, ASSET_LIST_EMPTY)
 
     def test_write_default_initial_conditions_directory(self):
         rundir = self.make_run_directory("test_rundir")
