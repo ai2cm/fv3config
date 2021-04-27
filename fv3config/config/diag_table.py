@@ -195,6 +195,12 @@ class DiagTable:
         return list(map(DiagTable._str_to_token, token_strings))
 
     @staticmethod
+    def _filter_empty_lines(lines: Sequence[str]) -> Sequence[str]:
+        filtered_lines = [line for line in lines if len(line.strip(" ")) > 0]
+        filtered_lines = [line for line in filtered_lines if line.strip(" ")[0] != "#"]
+        return filtered_lines
+
+    @staticmethod
     def _organize_lines(
         parsed_lines: Sequence[str],
     ) -> Tuple[Sequence[str], Mapping[str, Sequence[str]]]:
@@ -266,7 +272,7 @@ class DiagTable:
     def from_str(cls, diag_table: str):
         """Initialize DiagTable class from Fortran string representation."""
         lines = diag_table.split("\n")
-        lines = [line for line in lines if line and line.strip(" ")[0] != "#"]
+        lines = cls._filter_empty_lines(lines)
         name = lines[0]
         base_time = cls._str_to_time(lines[1])
         parsed_lines = list(map(cls._parse_line, lines[2:]))

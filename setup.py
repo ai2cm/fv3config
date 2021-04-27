@@ -37,7 +37,7 @@ setup(
             "fv3run=fv3config.fv3run.__main__:main",
             "write_run_directory=fv3config.cli:write_run_directory",
             "enable_restart=fv3config.cli:enable_restart",
-            "update_config_for_nudging=fv3config.cli:update_config_for_nudging",
+            "enable_nudging=fv3config.cli:enable_nudging",
         ]
     },
     install_requires=requirements,
