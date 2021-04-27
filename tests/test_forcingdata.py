@@ -123,7 +123,6 @@ class ForcingTests(unittest.TestCase):
             get_orographic_forcing_directory(config)
 
     def test_empty_orographic_forcing_list(self):
-        rundir = self.make_run_directory("test_rundir")
         config = DEFAULT_CONFIG.copy()
         config["orographic_forcing"] = []
         asset_list = get_orographic_forcing_asset_list(config)
