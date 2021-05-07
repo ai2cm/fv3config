@@ -14,6 +14,10 @@ Bug fixes:
 - ensure ``fv3config.write_run_directory`` does not mutate input config
 - fix bug in which ``DiagTable.from_str`` failed on lines that contain only whitespace
 
+Minor changes
+~~~~~~~~~~~~~
+- The responsibility of retrying gcsfs operations is now delegated to gcsfs.
+  
 
 v0.7.1 (2021-03-18)
 -------------------

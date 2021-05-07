@@ -8,7 +8,6 @@ import tempfile
 import unittest
 import unittest.mock
 
-import gcsfs
 import pytest
 
 import fv3config
@@ -221,7 +220,7 @@ def test__output_stream_context_uncaptured(tmpdir):
 def maybe_get_file(*args, **kwargs):
     try:
         _original_get_file(*args, **kwargs)
-    except (OSError, gcsfs.utils.HttpError):
+    except OSError:
         pass
 
 
