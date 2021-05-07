@@ -17,7 +17,6 @@ Bug fixes:
 Minor changes
 ~~~~~~~~~~~~~
 - The responsibility of retrying gcsfs operations is now delegated to gcsfs.
-  References to private gcsfs exceptions in fv3config have been removed.
   
 
 v0.7.1 (2021-03-18)
