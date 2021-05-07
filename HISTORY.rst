@@ -1,7 +1,7 @@
 History
 =======
 
-Latest
+v0.8.0
 ------
 
 Breaking changes:
