@@ -72,9 +72,9 @@ if [ ! -f requirements.txt ] ; then
 fi
 python3 -m venv venv
 . ./venv/bin/activate
-pip3 install wheel
+pip3 install -c constraints.txt wheel
 pip3 install -c constraints.txt -r requirements.txt
-pip3 install -e .
+pip3 install -c constraints.txt -e .
 pytest --junitxml results.xml tests
 deactivate
 \rm -rf venv
@@ -83,8 +83,8 @@ deactivate
 echo "### run install and example"
 python3 -m venv venv
 . ./venv/bin/activate
-pip3 install wheel
-pip3 install -e .
+pip3 install -c constraints.txt wheel
+pip3 install -c constraints.txt -e .
 cd examples/
 ./create_rundir.sh
 test -d example_rundir || exit 1

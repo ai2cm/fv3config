@@ -56,7 +56,7 @@ jobs:
           name: run tests
           command: |
             . venv/bin/activate
-            pip3 install -e .
+            pip3 install -c constraints.txt -e .
             pytest
 
       - store_artifacts:
