@@ -32,7 +32,7 @@ jobs:
       # Download and cache dependencies
       - restore_cache:
           keys:
-            - v1-dependencies-{{ checksum "requirements_dev.txt" }}
+            - v1-dependencies-{{ checksum "requirements.txt" }}
             # fallback to using the latest cache if no exact match is found
             - v1-dependencies-
       - run:
@@ -40,12 +40,12 @@ jobs:
           command: |
             python3 -m venv venv
             . venv/bin/activate
-            pip3 install -r requirements_dev.txt
+            pip3 install -r requirements.txt
 
       - save_cache:
           paths:
             - ./venv
-          key: v1-dependencies-{{ checksum "requirements_dev.txt" }}
+          key: v1-dependencies-{{ checksum "requirements.txt" }}
 
       # run tests!
       # this example uses Django's built-in test-runner
