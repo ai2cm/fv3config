@@ -67,13 +67,13 @@ fi
 
 # run tests
 echo "### run tests"
-if [ ! -f requirements_dev.txt ] ; then
-    exitError 1205 ${LINENO} "could not find requirements_dev.txt, run from top directory"
+if [ ! -f requirements.txt ] ; then
+    exitError 1205 ${LINENO} "could not find requirements.txt, run from top directory"
 fi
 python3 -m venv venv
 . ./venv/bin/activate
 pip3 install wheel
-pip3 install -r requirements_dev.txt
+pip3 install -r requirements.txt
 pip3 install -e .
 pytest --junitxml results.xml tests
 deactivate
