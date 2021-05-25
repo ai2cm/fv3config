@@ -8,7 +8,6 @@ coverage==4.5.4
 Sphinx==1.8.5
 twine==1.14.0
 Click==7.0
-requests>=2.22.0
 sphinx_rtd_theme
 pytest==5.2.2
 pytest-cov==2.8.1
