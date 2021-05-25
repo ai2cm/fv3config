@@ -25,7 +25,7 @@ Once you have a copy of the source, you can install it interactively with:
 
 .. code-block:: console
 
-    $ pip install -e .
+    $ pip install -c constraints.txt -e .
 
 The `-e` flag will set up the directory so that python uses the local folder including
 any modifications, instead of copying the sources to an installation directory. This
