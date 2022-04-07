@@ -82,8 +82,8 @@ def _get_current_date_from_coupler_res(coupler_res_filename):
     """
     fs = get_fs(coupler_res_filename)
     with fs.open(coupler_res_filename, mode="r") as f:
-        third_line = f.readlines()[2]
-        current_date = [int(d) for d in re.findall(r"\d+", third_line)]
+        second_line = f.readlines()[1]
+        current_date = [int(d) for d in re.findall(r"\d+", second_line)]
         if len(current_date) != 6:
             raise ConfigError(
                 f"{coupler_res_filename} does not have a valid current model time (need six integers on third line)"
