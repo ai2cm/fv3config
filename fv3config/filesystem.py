@@ -1,6 +1,7 @@
 import os
 import pathlib
 import fsspec
+import re
 from ._exceptions import DelayedImportError
 from . import caching
 from concurrent.futures import ThreadPoolExecutor, Executor
@@ -22,10 +23,8 @@ def _get_fs(path: str) -> fsspec.AbstractFileSystem:
     mock this implementation, it is still used in modules which import using
     `from filesystem import get_fs`.
     """
-    if path.startswith("gs://"):
-        return fsspec.filesystem("gs", requester_pays=True)
-    else:
-        return fsspec.filesystem("file")
+    protocol = _Location(path).get_protocol()
+    return fsspec.filesystem(protocol)
 
 
 def isabs(path: str) -> bool:
@@ -41,15 +40,24 @@ def is_existing_absolute_path(path: str) -> bool:
     return isabs(path) and get_fs(path).exists(path)
 
 
+class _Location:
+    def __init__(self, location: str) -> None:
+        self.match = re.match(r"(?P<prefix>(?P<protocol>.*?)://)?", location)
+        if self.match is None:
+            raise ValueError(f"protocol could not be inferred from {location}")
+
+    def get_protocol(self) -> str:
+        return self.match.group("protocol") or "file"
+
+    def get_protocol_prefix(self) -> str:
+        return self.match.group("prefix") or ""
+
+
 def _get_protocol_prefix(location):
     """If a string starts with "<protocol>://"", return that part of the string.
     Otherwise, return an empty string.
     """
-    separator = "://"
-    if separator in location:
-        return location[: location.index(separator) + len(separator)]
-    else:
-        return ""
+    return _Location(location).get_protocol_prefix()
 
 
 def _get_path(location):
