@@ -4,7 +4,6 @@ import tempfile
 import pytest
 import fv3config
 import os
-import shutil
 import copy
 import datetime
 
