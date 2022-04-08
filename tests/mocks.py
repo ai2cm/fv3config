@@ -1,3 +1,6 @@
+from fsspec.implementations.memory import MemoryFileSystem
+
+
 def c12_config():
     return {
         "data_table": "default",
@@ -268,3 +271,28 @@ def c12_config():
             },
         },
     }
+
+
+class MockGCSFileSystem(MemoryFileSystem):
+
+    protocol = "gcs", "gs"
+
+    def ls(self, path, recursive=False, **kwargs):
+        path = self._strip_protocol(path)
+        return super().ls(path, **kwargs)
+
+    def mkdir(self, path, create_parents=True, **kwargs):
+        path = self._strip_protocol(path)
+        return super().mkdir(path, create_parents, **kwargs)
+
+    def rmdir(self, path, *args, **kwargs):
+        path = self._strip_protocol(path)
+        return super().rmdir(path, *args, **kwargs)
+
+    def exists(self, path):
+        path = self._strip_protocol(path)
+        return path in self.store or path in self.pseudo_dirs
+
+    def open(self, path, *args, **kwargs):
+        path = self._strip_protocol(path)
+        return super().open(path, *args, **kwargs)
