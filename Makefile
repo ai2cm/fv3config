@@ -92,4 +92,8 @@ install: clean ## install the package to the active Python's site-packages
 	python3 setup.py install
 
 constraints.txt: requirements.txt setup.py
-	pip-compile $^ --output-file constraints.txt
+	pip-compile $^ --output-file $@
+	# strip extras from constraints file
+	# the new pypi complains
+	sed -i.bak 's/\[.*\]//g' $@
+	rm $@.bak
