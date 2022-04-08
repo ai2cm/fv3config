@@ -44,7 +44,7 @@ class _Location:
     def __init__(self, location: str) -> None:
         self.match = re.match(r"(?P<prefix>(?P<protocol>.*?)://)?", location)
         if self.match is None:
-            return f"protocol could not be inferred from {location}"
+            raise ValueError(f"protocol could not be inferred from {location}")
 
     def get_protocol(self) -> str:
         return self.match.group("protocol") or "file"
