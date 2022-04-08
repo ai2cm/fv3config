@@ -16,12 +16,15 @@ MOCK_FS_FILENAMES = [
     "vcm-fv3config/data/gfs_nudging_data/v1.0/20160801_00.nc",
     "vcm-fv3config/data/gfs_nudging_data/v1.0/20160801_06.nc",
 ]
-DIAG_TABLE_PATH = "gs://vcm-fv3config/config/diag_table/default/v1.0/diag_table"
+DIAG_TABLE_PATH = "vcm-fv3config/config/diag_table/default/v1.0/diag_table"
 
 
 def populate_mock_filesystem(fs):
     for filename in MOCK_FS_FILENAMES:
-        fs.mkdir(os.path.dirname(filename))
+
+        parent_dir = os.path.dirname(filename)
+        if not fs.exists(parent_dir):
+            fs.mkdir(parent_dir)
         with fs.open(filename, mode="wb") as f:
             f.write(b"mock_data")
     with open(
@@ -31,46 +34,23 @@ def populate_mock_filesystem(fs):
             f_out.write(f_in.read())
 
 
-class MockGCSFileSystem(MemoryFileSystem):
-
-    protocol = "gcs", "gs"
-
-    def ls(self, path, recursive=False, **kwargs):
-        path = self._strip_protocol(path)
-        return super().ls(path, **kwargs)
-
-    def mkdir(self, path, create_parents=True, **kwargs):
-        path = self._strip_protocol(path)
-        return super().mkdir(path, create_parents, **kwargs)
-
-    def rmdir(self, path, *args, **kwargs):
-        path = self._strip_protocol(path)
-        return super().rmdir(path, *args, **kwargs)
-
-    def exists(self, path):
-        path = self._strip_protocol(path)
-        return path in self.store or path in self.pseudo_dirs
-
-    def open(self, path, *args, **kwargs):
-        path = self._strip_protocol(path)
-        return super().open(path, *args, **kwargs)
-
-
 @pytest.fixture(autouse=True)
-def mock_gs_fs():
-    memory_fs = MockGCSFileSystem()
+def mock_fs():
+    memory_fs = MemoryFileSystem()
     populate_mock_filesystem(memory_fs)
+
+    original_get_fs = fv3config.filesystem._get_fs
 
     def mock_get_fs(path: str) -> fsspec.AbstractFileSystem:
         """Return the fsspec filesystem required to handle a given path."""
-        if path.startswith("gs://"):
+        if path.startswith("memory://"):
             return memory_fs  # mock gs storage using a memory filesystem
         else:
-            return fsspec.filesystem("file")
+            return original_get_fs(path)
 
-    _get_fs, fv3config.filesystem._get_fs = fv3config.filesystem._get_fs, mock_get_fs
+    fv3config.filesystem._get_fs = mock_get_fs
     yield
-    fv3config.filesystem._get_fs = _get_fs
+    fv3config.filesystem._get_fs = original_get_fs
 
 
 c12_config = pytest.fixture(mocks.c12_config)

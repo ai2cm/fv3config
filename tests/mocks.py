@@ -1,11 +1,11 @@
-def c12_config():
+def c12_config(proto="memory://"):
     return {
         "data_table": "default",
         "diag_table": "default",
         "experiment_name": "default",
-        "forcing": "gs://vcm-fv3config/data/base_forcing/v1.1/",
-        "orographic_forcing": "gs://vcm-fv3config/data/orographic_data/v1.0",
-        "initial_conditions": "gs://vcm-fv3config/data/initial_conditions/gfs_c12_example/v1.0",
+        "forcing": f"{proto}vcm-fv3config/data/base_forcing/v1.1/",
+        "orographic_forcing": f"{proto}vcm-fv3config/data/orographic_data/v1.0",
+        "initial_conditions": f"{proto}vcm-fv3config/data/initial_conditions/gfs_c12_example/v1.0",
         "namelist": {
             "amip_interp_nml": {
                 "data_set": "reynolds_oi",
