@@ -39,9 +39,11 @@ charset-normalizer==2.0.12
     # via
     #   aiohttp
     #   requests
-click==8.1.2
-    # via black
-coverage==6.3.2
+click==8.0.4
+    # via
+    #   -r requirements.txt
+    #   black
+coverage[toml]==6.3.2
     # via
     #   -r requirements.txt
     #   pytest-cov
