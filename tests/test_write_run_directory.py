@@ -27,9 +27,9 @@ def update_recursive(base, update):
 @pytest.mark.parametrize(
     "source_filename, cache_subpath",
     [
-        ("gs://my-bucket/my_filename.txt", "REL/gs/my-bucket/my_filename.txt"),
-        ("http://www.mysite.com/dir/file.nc", "REL/http/www.mysite.com/dir/file.nc"),
-        ("memory:///some/path", "ABS/memory/some/path"),
+        ("gs://my-bucket/my_filename.txt", "rel/gs/my-bucket/my_filename.txt"),
+        ("http://www.mysite.com/dir/file.nc", "rel/http/www.mysite.com/dir/file.nc"),
+        ("memory:///some/path", "abs/memory/some/path"),
     ],
 )
 def test_cache_filename(source_filename, cache_subpath):
