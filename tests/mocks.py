@@ -1,6 +1,3 @@
-from fsspec.implementations.memory import MemoryFileSystem
-
-
 def c12_config(proto="memory://"):
     return {
         "data_table": "default",
