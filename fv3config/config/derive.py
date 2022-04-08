@@ -42,6 +42,35 @@ def get_run_duration(config):
     )
 
 
+def _get_date(config, coupler_res_parser):
+    """Return date from configuration dictionary.  This function may read from
+    the remote initial_conditions path in the given configuration dictionary.
+
+    Args:
+        config (dict): a configuration dictionary
+        coupler_res_parser (func): a function that parses a coupler.res file
+            for a date
+
+    Returns:
+        list: date as list of ints [year, month, day, hour, min, sec]
+    """
+    force_date_from_namelist = config["namelist"]["coupler_nml"].get(
+        "force_date_from_namelist", False
+    )
+    # following code replicates the logic that the fv3gfs model uses to determine the current_date
+    if force_date_from_namelist:
+        date = config["namelist"]["coupler_nml"].get("current_date", [0, 0, 0, 0, 0, 0])
+    else:
+        coupler_res_filename = _get_coupler_res_filename(config)
+        if coupler_res_filename is not None:
+            date = coupler_res_parser(coupler_res_filename)
+        else:
+            date = config["namelist"]["coupler_nml"].get(
+                "current_date", [0, 0, 0, 0, 0, 0]
+            )
+    return date
+
+
 def get_current_date(config):
     """Return current_date from configuration dictionary. This function may read from
     the remote initial_conditions path in the given configuration dictionary.
@@ -52,27 +81,11 @@ def get_current_date(config):
     Returns:
         list: current_date as list of ints [year, month, day, hour, min, sec]
     """
-    force_date_from_namelist = config["namelist"]["coupler_nml"].get(
-        "force_date_from_namelist", False
-    )
-    # following code replicates the logic that the fv3gfs model uses to determine the current_date
-    if force_date_from_namelist:
-        current_date = config["namelist"]["coupler_nml"].get(
-            "current_date", [0, 0, 0, 0, 0, 0]
-        )
-    else:
-        coupler_res_filename = _get_coupler_res_filename(config)
-        if coupler_res_filename is not None:
-            current_date = _get_current_date_from_coupler_res(coupler_res_filename)
-        else:
-            current_date = config["namelist"]["coupler_nml"].get(
-                "current_date", [0, 0, 0, 0, 0, 0]
-            )
-    return current_date
+    return _get_date(config, _get_current_date_from_coupler_res)
 
 
 def get_diag_table_base_date(config):
-    """Return date from configuration dictionary. This function may read from
+    """Return base_date from configuration dictionary. This function may read from
     the remote initial_conditions path in the given configuration dictionary.
 
     Args:
@@ -81,23 +94,7 @@ def get_diag_table_base_date(config):
     Returns:
         list: base_date as list of ints [year, month, day, hour, min, sec]
     """
-    force_date_from_namelist = config["namelist"]["coupler_nml"].get(
-        "force_date_from_namelist", False
-    )
-    # following code replicates the logic that the fv3gfs model uses to determine the base_date
-    if force_date_from_namelist:
-        base_date = config["namelist"]["coupler_nml"].get(
-            "base_date", [0, 0, 0, 0, 0, 0]
-        )
-    else:
-        coupler_res_filename = _get_coupler_res_filename(config)
-        if coupler_res_filename is not None:
-            base_date = _get_initialization_date_from_coupler_res(coupler_res_filename)
-        else:
-            base_date = config["namelist"]["coupler_nml"].get(
-                "base_date", [0, 0, 0, 0, 0, 0]
-            )
-    return base_date
+    return _get_date(config, _get_initialization_date_from_coupler_res)
 
 
 def _parse_coupler_res_date(coupler_res_filename, line_index):
@@ -116,7 +113,7 @@ def _parse_coupler_res_date(coupler_res_filename, line_index):
         date = [int(d) for d in re.findall(r"\d+", line)]
         if len(date) != 6:
             raise ConfigError(
-                f"{coupler_res_filename} does not have a valid current model time (line must contain six integers)"
+                f"{coupler_res_filename} does not have a valid time at line {line_index} (line must contain six integers)"
             )
     return date
 
