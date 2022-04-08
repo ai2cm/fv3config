@@ -71,6 +71,35 @@ def get_current_date(config):
     return current_date
 
 
+def get_diag_table_base_date(config):
+    """Return date from configuration dictionary. This function may read from
+    the remote initial_conditions path in the given configuration dictionary.
+
+    Args:
+        config (dict): a configuration dictionary
+
+    Returns:
+        list: base_date as list of ints [year, month, day, hour, min, sec]
+    """
+    force_date_from_namelist = config["namelist"]["coupler_nml"].get(
+        "force_date_from_namelist", False
+    )
+    # following code replicates the logic that the fv3gfs model uses to determine the base_date
+    if force_date_from_namelist:
+        base_date = config["namelist"]["coupler_nml"].get(
+            "base_date", [0, 0, 0, 0, 0, 0]
+        )
+    else:
+        coupler_res_filename = _get_coupler_res_filename(config)
+        if coupler_res_filename is not None:
+            base_date = _get_initialization_date_from_coupler_res(coupler_res_filename)
+        else:
+            base_date = config["namelist"]["coupler_nml"].get(
+                "base_date", [0, 0, 0, 0, 0, 0]
+            )
+    return base_date
+
+
 def _get_current_date_from_coupler_res(coupler_res_filename):
     """Return current_date specified in coupler.res file
 
@@ -82,13 +111,33 @@ def _get_current_date_from_coupler_res(coupler_res_filename):
     """
     fs = get_fs(coupler_res_filename)
     with fs.open(coupler_res_filename, mode="r") as f:
-        second_line = f.readlines()[1]
-        current_date = [int(d) for d in re.findall(r"\d+", second_line)]
+        third_line = f.readlines()[2]
+        current_date = [int(d) for d in re.findall(r"\d+", third_line)]
         if len(current_date) != 6:
             raise ConfigError(
                 f"{coupler_res_filename} does not have a valid current model time (need six integers on third line)"
             )
     return current_date
+
+
+def _get_initialization_date_from_coupler_res(coupler_res_filename):
+    """Return initialization_date specified in coupler.res file
+
+    Args:
+        coupler_res_filename (str): a coupler.res filename
+
+    Returns:
+        list: initialization_date as list of ints [year, month, day, hour, min, sec]
+    """
+    fs = get_fs(coupler_res_filename)
+    with fs.open(coupler_res_filename, mode="r") as f:
+        second_line = f.readlines()[1]
+        initialization_date = [int(d) for d in re.findall(r"\d+", second_line)]
+        if len(initialization_date) != 6:
+            raise ConfigError(
+                f"{coupler_res_filename} does not have a valid current model time (need six integers on third line)"
+            )
+    return initialization_date
 
 
 def _get_coupler_res_filename(config):
