@@ -171,7 +171,9 @@ class TableTests(unittest.TestCase):
         coupler_res_filename = os.path.join(rundir, "coupler.res")
         with open(coupler_res_filename, "w") as f:
             f.write(valid_coupler_res)
-        initialization_date = _get_initialization_date_from_coupler_res(coupler_res_filename)
+        initialization_date = _get_initialization_date_from_coupler_res(
+            coupler_res_filename
+        )
         self.assertEqual(initialization_date, valid_initialization_date)
 
     def test_get_initialization_date_from_bad_coupler_res(self):
@@ -225,7 +227,9 @@ class TableTests(unittest.TestCase):
         base_date = get_diag_table_base_date(config)
         self.assertEqual(base_date, valid_current_date)
 
-    def test_get_diag_table_base_date_from_config_which_includes_coupler_res_asset(self):
+    def test_get_diag_table_base_date_from_config_which_includes_coupler_res_asset(
+        self,
+    ):
         config = copy.deepcopy(DEFAULT_CONFIG)
         tmpdir = self.make_run_directory("test_dir")
         config["patch_files"] = {
