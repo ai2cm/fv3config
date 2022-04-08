@@ -21,8 +21,6 @@ TEST_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
 
 ASSET_LIST_EMPTY = []
 
-DEFAULT_CONFIG = c12_config()
-
 required_run_directory_subdirectories = ["INPUT", "RESTART"]
 
 required_base_forcing_filenames = ["forcing_file", "grb/grb_forcing_file"]
@@ -100,14 +98,14 @@ class ForcingTests(unittest.TestCase):
 
     def test_write_default_base_forcing_directory(self):
         rundir = self.make_run_directory("test_rundir")
-        config = DEFAULT_CONFIG.copy()
+        config = c12_config()
         asset_list = get_base_forcing_asset_list(config)
         write_asset_list(asset_list, rundir)
         self.assert_subpaths_present(rundir, required_base_forcing_filenames)
 
     def test_write_default_orographic_forcing_directory(self):
         rundir = self.make_run_directory("test_rundir")
-        config = DEFAULT_CONFIG.copy()
+        config = c12_config()
         asset_list = get_orographic_forcing_asset_list(config)
         write_asset_list(asset_list, rundir)
         self.assert_subpaths_present(rundir, required_orographic_forcing_filenames)
@@ -123,14 +121,14 @@ class ForcingTests(unittest.TestCase):
             get_orographic_forcing_directory(config)
 
     def test_empty_orographic_forcing_list(self):
-        config = DEFAULT_CONFIG.copy()
+        config = c12_config()
         config["orographic_forcing"] = []
         asset_list = get_orographic_forcing_asset_list(config)
         self.assertEqual(asset_list, ASSET_LIST_EMPTY)
 
     def test_write_default_initial_conditions_directory(self):
         rundir = self.make_run_directory("test_rundir")
-        config = DEFAULT_CONFIG.copy()
+        config = c12_config()
         asset_list = get_initial_conditions_asset_list(config)
         write_asset_list(asset_list, rundir)
         self.assert_subpaths_present(
@@ -139,35 +137,35 @@ class ForcingTests(unittest.TestCase):
 
     def test_get_specified_initial_conditions_directory(self):
         source_rundir = self.make_run_directory("source_rundir")
-        config = DEFAULT_CONFIG.copy()
+        config = c12_config()
         config["initial_conditions"] = source_rundir
         dirname = get_initial_conditions_directory(config)
         self.assertEqual(dirname, source_rundir)
 
     def test_get_bad_initial_conditions_directory(self):
         source_rundir = "/not/a/real/directory"
-        config = DEFAULT_CONFIG.copy()
+        config = c12_config()
         config["initial_conditions"] = source_rundir
         with self.assertRaises(fv3config.ConfigError):
             get_initial_conditions_directory(config)
 
     def test_get_specified_forcing_directory(self):
         source_rundir = self.make_run_directory("source_rundir")
-        config = DEFAULT_CONFIG.copy()
+        config = c12_config()
         config["forcing"] = source_rundir
         dirname = get_base_forcing_directory(config)
         self.assertEqual(dirname, source_rundir)
 
     def test_get_bad_forcing_directory(self):
         source_rundir = "/not/a/real/directory"
-        config = DEFAULT_CONFIG.copy()
+        config = c12_config()
         config["forcing"] = source_rundir
         with self.assertRaises(fv3config.ConfigError):
             get_base_forcing_directory(config)
 
     def test_write_default_run_directory(self):
         rundir = self.make_run_directory("test_rundir")
-        config = DEFAULT_CONFIG.copy()
+        config = c12_config()
         fv3config.write_run_directory(config, rundir)
         self.assert_subpaths_present(
             rundir,
@@ -181,7 +179,7 @@ class ForcingTests(unittest.TestCase):
     def test_write_run_directory_with_patch_file(self):
         sourcedir = self.make_run_directory("sourcedir")
         rundir = self.make_run_directory("test_rundir")
-        config = DEFAULT_CONFIG.copy()
+        config = c12_config()
         open(os.path.join(sourcedir, "empty_file"), "a").close()
         config["patch_files"] = {
             "source_location": sourcedir,
@@ -204,13 +202,13 @@ class ForcingTests(unittest.TestCase):
     def test_restart_directory_exists_and_empty(self):
         rundir = self.make_run_directory("test_rundir")
         restart_directory = os.path.join(rundir, "RESTART")
-        config = DEFAULT_CONFIG.copy()
+        config = c12_config()
         fv3config.write_run_directory(config, rundir)
         self.assertTrue(os.path.isdir(restart_directory))
         self.assertEqual(len(os.listdir(restart_directory)), 0)
 
     def test_default_config_has_required_keys(self):
-        config = DEFAULT_CONFIG.copy()
+        config = c12_config()
         self.assertTrue(set(required_config_keys) <= set(config.keys()))
 
     def assert_subpaths_present(self, dirname, subpath_list):

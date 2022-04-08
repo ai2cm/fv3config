@@ -160,7 +160,7 @@ def test_write_run_directory_succeeds_with_diag_table_class():
 def test_rundir_contains_nudging_asset_if_enabled():
     config = c12_config()
     config["gfs_analysis_data"] = {
-        "url": "gs://vcm-fv3config/data/gfs_nudging_data/v1.0",
+        "url": "memory://vcm-fv3config/data/gfs_nudging_data/v1.0",
         "filename_pattern": "%Y%m%d_%H.nc",
     }
     config["namelist"]["fv_core_nml"]["nudge"] = True
@@ -176,7 +176,8 @@ def test_rundir_contains_nudging_asset_if_enabled():
         {},
         {
             "gfs_analysis_data": {
-                "url": "gs://vcm-fv3config/data/gfs_nudging_data/v1.0",
+                # these urls are hardcoded in tests/conftest.py and tests/mocks.py
+                "url": "memory://vcm-fv3config/data/gfs_nudging_data/v1.0",
                 "filename_pattern": "%Y%m%d_%H.nc",
             },
             "namelist": {"fv_core_nml": {"nudge": True}},
@@ -184,7 +185,8 @@ def test_rundir_contains_nudging_asset_if_enabled():
         {
             "initial_conditions": [
                 fv3config.get_asset_dict(
-                    "gs://vcm-fv3config/data/initial_conditions/gfs_c12_example/v1.0",
+                    # these urls are hardcoded in tests/conftest.py and tests/mocks.py
+                    "memory://vcm-fv3config/data/initial_conditions/gfs_c12_example/v1.0",
                     "initial_conditions_file",
                     target_location="explicit",
                 )

@@ -1,14 +1,14 @@
 from fsspec.implementations.memory import MemoryFileSystem
 
 
-def c12_config():
+def c12_config(proto="memory://"):
     return {
         "data_table": "default",
         "diag_table": "default",
         "experiment_name": "default",
-        "forcing": "gs://vcm-fv3config/data/base_forcing/v1.1/",
-        "orographic_forcing": "gs://vcm-fv3config/data/orographic_data/v1.0",
-        "initial_conditions": "gs://vcm-fv3config/data/initial_conditions/gfs_c12_example/v1.0",
+        "forcing": f"{proto}vcm-fv3config/data/base_forcing/v1.1/",
+        "orographic_forcing": f"{proto}vcm-fv3config/data/orographic_data/v1.0",
+        "initial_conditions": f"{proto}vcm-fv3config/data/initial_conditions/gfs_c12_example/v1.0",
         "namelist": {
             "amip_interp_nml": {
                 "data_set": "reynolds_oi",
@@ -271,28 +271,3 @@ def c12_config():
             },
         },
     }
-
-
-class MockGCSFileSystem(MemoryFileSystem):
-
-    protocol = "gcs", "gs"
-
-    def ls(self, path, recursive=False, **kwargs):
-        path = self._strip_protocol(path)
-        return super().ls(path, **kwargs)
-
-    def mkdir(self, path, create_parents=True, **kwargs):
-        path = self._strip_protocol(path)
-        return super().mkdir(path, create_parents, **kwargs)
-
-    def rmdir(self, path, *args, **kwargs):
-        path = self._strip_protocol(path)
-        return super().rmdir(path, *args, **kwargs)
-
-    def exists(self, path):
-        path = self._strip_protocol(path)
-        return path in self.store or path in self.pseudo_dirs
-
-    def open(self, path, *args, **kwargs):
-        path = self._strip_protocol(path)
-        return super().open(path, *args, **kwargs)
