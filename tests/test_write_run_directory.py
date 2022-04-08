@@ -4,7 +4,6 @@ import tempfile
 import pytest
 import fv3config
 import os
-import shutil
 import copy
 import datetime
 
@@ -28,8 +27,9 @@ def update_recursive(base, update):
 @pytest.mark.parametrize(
     "source_filename, cache_subpath",
     [
-        ("gs://my-bucket/my_filename.txt", "gs/my-bucket/my_filename.txt"),
-        ("http://www.mysite.com/dir/file.nc", "http/www.mysite.com/dir/file.nc"),
+        ("gs://my-bucket/my_filename.txt", "rel/gs/my-bucket/my_filename.txt"),
+        ("http://www.mysite.com/dir/file.nc", "rel/http/www.mysite.com/dir/file.nc"),
+        ("memory:///some/path", "abs/memory/some/path"),
     ],
 )
 def test_cache_filename(source_filename, cache_subpath):
@@ -62,84 +62,13 @@ class ChangeCacheDirectoryTests(unittest.TestCase):
                 fv3config.caching.set_cache_dir(original)
 
 
-class CacheDirectoryTests(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.cache_dir = tempfile.TemporaryDirectory()
-        cls.original_cache_dir = fv3config.caching.get_cache_dir()
-        fv3config.caching.set_cache_dir(cls.cache_dir.name)
-
-    @classmethod
-    def tearDownClass(cls):
-        fv3config.caching.set_cache_dir(cls.original_cache_dir)
-        cls.cache_dir.cleanup()
-
-    def tearDown(self):
-        gs_cache_dir = os.path.join(self.cache_dir.name, "fv3config-cache/gs/")
-        if os.path.isdir(gs_cache_dir):
-            shutil.rmtree(gs_cache_dir)
-
-    def test_cache_diag_table(self):
-        config = copy.deepcopy(DEFAULT_CONFIG)
-        config[
-            "diag_table"
-        ] = "gs://vcm-fv3config/config/diag_table/default/v1.0/diag_table"
-        cache_filename = os.path.join(
-            fv3config.get_cache_dir(),
-            "fv3config-cache/gs/vcm-fv3config/config/diag_table/default/v1.0/diag_table",
-        )
-        assert not os.path.isfile(cache_filename)
-        with tempfile.TemporaryDirectory() as rundir:
-            fv3config.write_run_directory(config, rundir)
-        assert os.path.isfile(cache_filename)
-
-    def test_disable_caching(self):
-        config = copy.deepcopy(DEFAULT_CONFIG)
-        config[
-            "diag_table"
-        ] = "gs://vcm-fv3config/config/diag_table/default/v1.0/diag_table"
-        cache_filename = os.path.join(
-            fv3config.get_cache_dir(),
-            "fv3config-cache/gs/vcm-fv3config/config/diag_table/default/v1.0/diag_table",
-        )
-        assert not os.path.isfile(cache_filename)
-        fv3config.do_remote_caching(False)
-        with tempfile.TemporaryDirectory() as rundir:
-            fv3config.write_run_directory(config, rundir)
-        assert not os.path.isfile(cache_filename)
-
-    def test_reenable_caching(self):
-        config = copy.deepcopy(DEFAULT_CONFIG)
-        config[
-            "diag_table"
-        ] = "gs://vcm-fv3config/config/diag_table/default/v1.0/diag_table"
-        cache_filename = os.path.join(
-            fv3config.get_cache_dir(),
-            "fv3config-cache/gs/vcm-fv3config/config/diag_table/default/v1.0/diag_table",
-        )
-        assert not os.path.isfile(cache_filename)
-        fv3config.do_remote_caching(False)
-        fv3config.do_remote_caching(True)
-        with tempfile.TemporaryDirectory() as rundir:
-            fv3config.write_run_directory(config, rundir)
-        assert os.path.isfile(cache_filename)
-
-    def test_cached_diag_table_is_not_redownloaded(self):
-        config = copy.deepcopy(DEFAULT_CONFIG)
-        config[
-            "diag_table"
-        ] = "gs://vcm-fv3config/config/diag_table/default/v1.0/diag_table"
-        with tempfile.TemporaryDirectory() as rundir:
-            fv3config.write_run_directory(config, rundir)
-        cache_filename = os.path.join(
-            fv3config.get_cache_dir(),
-            "fv3config-cache/gs/vcm-fv3config/config/diag_table/default/v1.0/diag_table",
-        )
-        assert os.path.isfile(cache_filename)
-        modification_time = os.path.getmtime(cache_filename)
-        with tempfile.TemporaryDirectory() as rundir:
-            fv3config.write_run_directory(config, rundir)
-        assert os.path.getmtime(cache_filename) == modification_time
+def test_do_remote_caching():
+    fv3config.do_remote_caching(True)
+    assert fv3config.caching.CACHE_REMOTE_FILES
+    fv3config.do_remote_caching(False)
+    assert not fv3config.caching.CACHE_REMOTE_FILES
+    fv3config.do_remote_caching(True)
+    assert fv3config.caching.CACHE_REMOTE_FILES
 
 
 def test_rundir_contains_fv3config_yml():
@@ -160,7 +89,7 @@ def test_write_run_directory_succeeds_with_diag_table_class():
 def test_rundir_contains_nudging_asset_if_enabled():
     config = c12_config()
     config["gfs_analysis_data"] = {
-        "url": "gs://vcm-fv3config/data/gfs_nudging_data/v1.0",
+        "url": "memory://vcm-fv3config/data/gfs_nudging_data/v1.0",
         "filename_pattern": "%Y%m%d_%H.nc",
     }
     config["namelist"]["fv_core_nml"]["nudge"] = True
@@ -176,7 +105,8 @@ def test_rundir_contains_nudging_asset_if_enabled():
         {},
         {
             "gfs_analysis_data": {
-                "url": "gs://vcm-fv3config/data/gfs_nudging_data/v1.0",
+                # these urls are hardcoded in tests/conftest.py and tests/mocks.py
+                "url": "memory://vcm-fv3config/data/gfs_nudging_data/v1.0",
                 "filename_pattern": "%Y%m%d_%H.nc",
             },
             "namelist": {"fv_core_nml": {"nudge": True}},
@@ -184,7 +114,8 @@ def test_rundir_contains_nudging_asset_if_enabled():
         {
             "initial_conditions": [
                 fv3config.get_asset_dict(
-                    "gs://vcm-fv3config/data/initial_conditions/gfs_c12_example/v1.0",
+                    # these urls are hardcoded in tests/conftest.py and tests/mocks.py
+                    "memory://vcm-fv3config/data/initial_conditions/gfs_c12_example/v1.0",
                     "initial_conditions_file",
                     target_location="explicit",
                 )

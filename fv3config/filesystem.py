@@ -1,4 +1,5 @@
 import os
+import pathlib
 import fsspec
 from ._exceptions import DelayedImportError
 from . import caching
@@ -145,11 +146,22 @@ def put_file(source_filename, dest_filename):
 
 def _get_cache_filename(source_filename):
     prefix = _get_protocol_prefix(source_filename).strip("://")
-    path = _get_path(source_filename)
-    if len(path) == 0:
+    path_str: str = _get_path(source_filename)
+    if len(path_str) == 0:
         raise ValueError(f"no file path given in source filename {source_filename}")
-    cache_dir = caching.get_internal_cache_dir()
-    return os.path.join(cache_dir, prefix, path)
+    # if path starts with / then it will break the cache:
+    # cache_path//a becomes /a with posix paths
+    path = pathlib.Path(path_str)
+    cache_dir = pathlib.Path(caching.get_internal_cache_dir()).absolute()
+
+    if path.is_absolute():
+        path_no_root = path.relative_to(path.root)
+        cache_label = "abs"
+    else:
+        path_no_root = path
+        cache_label = "rel"
+    path_in_cache = cache_dir / cache_label / prefix / path_no_root
+    return path_in_cache.as_posix()
 
 
 open = fsspec.open
