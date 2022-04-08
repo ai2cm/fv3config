@@ -156,11 +156,11 @@ def _get_cache_filename(source_filename):
 
     if path.is_absolute():
         path_no_root = path.relative_to(path.root)
-        rel_or_abs = "ABS"
+        cache_label = "abs"
     else:
         path_no_root = path
-        rel_or_abs = "REL"
-    path_in_cache = cache_dir / rel_or_abs / prefix / path_no_root
+        cache_label = "rel"
+    path_in_cache = cache_dir / cache_label / prefix / path_no_root
     return path_in_cache.as_posix()
 
 
