@@ -2,6 +2,7 @@ import argparse
 import fsspec
 
 import fv3config
+import logging
 
 
 def _parse_write_run_directory_args():
@@ -11,6 +12,9 @@ def _parse_write_run_directory_args():
     )
     parser.add_argument(
         "rundir", help="Desired output directory. Must be a local directory"
+    )
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="Enable verbose output."
     )
     return parser.parse_args()
 
@@ -40,6 +44,8 @@ def _parse_enable_nudging_args():
 
 def write_run_directory():
     args = _parse_write_run_directory_args()
+    if args.verbose:
+        logging.basicConfig(level=logging.DEBUG)
 
     with fsspec.open(args.config) as f:
         config = fv3config.load(f)
