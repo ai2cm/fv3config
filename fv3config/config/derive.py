@@ -42,14 +42,14 @@ def get_run_duration(config):
     )
 
 
-def _get_date(config, coupler_res_parser):
+def _get_date(config, coupler_res_date_parser):
     """Return date from configuration dictionary.  This function may read from
     the remote initial_conditions path in the given configuration dictionary.
 
     Args:
         config (dict): a configuration dictionary
-        coupler_res_parser (func): a function that parses a coupler.res file
-            for a date
+        coupler_res_date_parser (func): a function that parses a coupler.res file
+            for a specific date
 
     Returns:
         list: date as list of ints [year, month, day, hour, min, sec]
@@ -63,7 +63,7 @@ def _get_date(config, coupler_res_parser):
     else:
         coupler_res_filename = _get_coupler_res_filename(config)
         if coupler_res_filename is not None:
-            date = coupler_res_parser(coupler_res_filename)
+            date = coupler_res_date_parser(coupler_res_filename)
         else:
             date = config["namelist"]["coupler_nml"].get(
                 "current_date", [0, 0, 0, 0, 0, 0]
@@ -88,6 +88,20 @@ def get_diag_table_base_date(config):
     """Return base_date from configuration dictionary. This function may read from
     the remote initial_conditions path in the given configuration dictionary.
 
+    In the event that force_date_from_namelist is specified in the config, this
+    function returns the current_date or a null date if that does not exist.  If the
+    date is not set to be forced from the namelist, this function first looks for the
+    existence of a coupler.res file, and if it exists, returns the initialization_date
+    written within it. If a coupler.res files does not exist, the current_date
+    specified in the namelist or a null date is used.  To FV3GFS, a null date and
+    the current date are equivalent.
+
+    Returning the initialization_date instead of the current_date if a coupler.res
+    file exists is important for obtaining reproducible restarts in segmented runs.
+    Another advantage is that is harmonizes the units used to encode times in 
+    fotran-generated diagnostics files across segments. See more discussion in
+    GH 147.
+
     Args:
         config (dict): a configuration dictionary
 
@@ -97,37 +111,34 @@ def get_diag_table_base_date(config):
     return _get_date(config, _get_initialization_date_from_coupler_res)
 
 
-def _parse_coupler_res_date(coupler_res_filename, line_index):
-    """Parse a date from a line in a coupler.res file
-    
-    Args:
-        coupler_res_filename (str): a coupler.res filename
-        line_number (int): line index to parse date from in file (zero indexed)
-
-    Returns:
-        list: date as list of ints (year, month, day, hour, min, sec)
-    """
-    fs = get_fs(coupler_res_filename)
-    with fs.open(coupler_res_filename, mode="r") as f:
-        line = f.readlines()[line_index]
-        date = [int(d) for d in re.findall(r"\d+", line)]
-        if len(date) != 6:
-            raise ConfigError(
-                f"{coupler_res_filename} does not have a valid time at line {line_index} (line must contain six integers)"
-            )
+def _parse_date_from_coupler_res_line(line, coupler_res_filename):
+    date = [int(d) for d in re.findall(r"\d+", line)]
+    if len(date) != 6:
+        raise ConfigError(
+            f"{coupler_res_filename} does not have a valid date in the given line "
+            f"(line must contain six integers)"
+        )
     return date
 
 
-def _get_current_date_from_coupler_res(coupler_res_filename):
-    """Return current_date specified in coupler.res file
-
+def _parse_coupler_res_dates(coupler_res_filename):
+    """Parse the dates contained in a coupler.res file
+    
     Args:
         coupler_res_filename (str): a coupler.res filename
 
     Returns:
-        list: current_date as list of ints [year, month, day, hour, min, sec]
+        initialization_date (list): date as list of ints [year, month, day, hour, min, sec]
+        current_date (list): date as list of ints [year, month, day, hour, min, sec]
     """
-    return _parse_coupler_res_date(coupler_res_filename, 2)
+    fs = get_fs(coupler_res_filename)
+    with fs.open(coupler_res_filename, mode="r") as f:
+        lines = f.readlines()
+        initialization_date = _parse_date_from_coupler_res_line(
+            lines[1], coupler_res_filename
+        )
+        current_date = _parse_date_from_coupler_res_line(lines[2], coupler_res_filename)
+    return initialization_date, current_date
 
 
 def _get_initialization_date_from_coupler_res(coupler_res_filename):
@@ -139,7 +150,21 @@ def _get_initialization_date_from_coupler_res(coupler_res_filename):
     Returns:
         list: initialization_date as list of ints [year, month, day, hour, min, sec]
     """
-    return _parse_coupler_res_date(coupler_res_filename, 1)
+    iniitalization_date, _ = _parse_coupler_res_dates(coupler_res_filename)
+    return iniitalization_date
+
+
+def _get_current_date_from_coupler_res(coupler_res_filename):
+    """Return current_date specified in coupler.res file
+
+    Args:
+        coupler_res_filename (str): a coupler.res filename
+
+    Returns:
+        list: current_date as list of ints [year, month, day, hour, min, sec]
+    """
+    _, current_date = _parse_coupler_res_dates(coupler_res_filename)
+    return current_date
 
 
 def _get_coupler_res_filename(config):
