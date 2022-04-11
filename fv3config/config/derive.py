@@ -98,7 +98,7 @@ def get_diag_table_base_date(config):
 
     Returning the initialization_date instead of the current_date if a coupler.res
     file exists is important for obtaining reproducible restarts in segmented runs.
-    Another advantage is that is harmonizes the units used to encode times in
+    Another advantage is that it harmonizes the units used to encode times in
     fotran-generated diagnostics files across segments. See more discussion in
     GH 147.
 
@@ -122,8 +122,8 @@ def _parse_date_from_line(line, coupler_res_filename):
     return date
 
 
-def _parse_coupler_res_dates(coupler_res_filename):
-    """Parse the dates contained in a coupler.res file
+def _read_coupler_res_dates(coupler_res_filename):
+    """Read the dates contained in a coupler.res file
     
     Args:
         coupler_res_filename (str): a coupler.res filename
@@ -149,7 +149,7 @@ def _get_initialization_date_from_coupler_res(coupler_res_filename):
     Returns:
         list: initialization_date as list of ints [year, month, day, hour, min, sec]
     """
-    iniitalization_date, _ = _parse_coupler_res_dates(coupler_res_filename)
+    iniitalization_date, _ = _read_coupler_res_dates(coupler_res_filename)
     return iniitalization_date
 
 
@@ -162,7 +162,7 @@ def _get_current_date_from_coupler_res(coupler_res_filename):
     Returns:
         list: current_date as list of ints [year, month, day, hour, min, sec]
     """
-    _, current_date = _parse_coupler_res_dates(coupler_res_filename)
+    _, current_date = _read_coupler_res_dates(coupler_res_filename)
     return current_date
 
 
