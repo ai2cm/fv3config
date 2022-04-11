@@ -111,7 +111,8 @@ def get_diag_table_base_date(config):
     return _get_date(config, _get_initialization_date_from_coupler_res)
 
 
-def _parse_date_from_coupler_res_line(line, coupler_res_filename):
+def _parse_date_from_line(line, coupler_res_filename):
+    """Parses a date from a line in a coupler.res file"""
     date = [int(d) for d in re.findall(r"\d+", line)]
     if len(date) != 6:
         raise ConfigError(
@@ -134,10 +135,8 @@ def _parse_coupler_res_dates(coupler_res_filename):
     fs = get_fs(coupler_res_filename)
     with fs.open(coupler_res_filename, mode="r") as f:
         lines = f.readlines()
-        initialization_date = _parse_date_from_coupler_res_line(
-            lines[1], coupler_res_filename
-        )
-        current_date = _parse_date_from_coupler_res_line(lines[2], coupler_res_filename)
+        initialization_date = _parse_date_from_line(lines[1], coupler_res_filename)
+        current_date = _parse_date_from_line(lines[2], coupler_res_filename)
     return initialization_date, current_date
 
 
