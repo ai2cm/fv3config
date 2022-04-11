@@ -42,14 +42,14 @@ def get_run_duration(config):
     )
 
 
-def _get_date(config, coupler_res_date_parser):
+def _get_date(config, coupler_res_date_getter):
     """Return date from configuration dictionary.  This function may read from
     the remote initial_conditions path in the given configuration dictionary.
 
     Args:
         config (dict): a configuration dictionary
-        coupler_res_date_parser (func): a function that parses a coupler.res file
-            for a specific date
+        coupler_res_date_getter (func): a function that reads either the
+            initialization_date or the current date from a coupler.res file
 
     Returns:
         list: date as list of ints [year, month, day, hour, min, sec]
@@ -63,7 +63,7 @@ def _get_date(config, coupler_res_date_parser):
     else:
         coupler_res_filename = _get_coupler_res_filename(config)
         if coupler_res_filename is not None:
-            date = coupler_res_date_parser(coupler_res_filename)
+            date = coupler_res_date_getter(coupler_res_filename)
         else:
             date = config["namelist"]["coupler_nml"].get(
                 "current_date", [0, 0, 0, 0, 0, 0]
