@@ -1,6 +1,14 @@
 History
 =======
 
+Latest
+------
+
+Bug fixes:
+~~~~~~~~~~
+- ensure that empty assets "" are not downloaded
+- work around an an upstream bug where fsspec.walk yields empty strings as filenames
+
 v0.8.0 (2021-05-07)
 -------------------
 
