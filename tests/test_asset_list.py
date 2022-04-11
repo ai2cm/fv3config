@@ -223,6 +223,10 @@ class AssetListTests(unittest.TestCase):
         )
         self.assertEqual(test_asset, SAMPLE_ASSET_WITH_KWARGS)
 
+    def test_get_asset_dict_errors(self):
+        with self.assertRaises(ValueError):
+            get_asset_dict("some/path", "", target_location="", target_name="")
+
     def test_asset_list_from_local_dir_empty(self):
         workdir = self.make_work_directory("workdir_empty")
         self.make_empty_files(workdir, FILELIST_EMPTY)

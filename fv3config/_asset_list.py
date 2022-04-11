@@ -125,6 +125,9 @@ def get_asset_dict(
     Returns:
         dict: an asset dictionary
     """
+    if not source_name:
+        raise ValueError(f"'{source_name}' cannot be an empty string.")
+
     if target_name is None:
         target_name = source_name
     asset = {
@@ -201,8 +204,7 @@ def asset_list_from_path(from_location, target_location="", copy_method="copy"):
 def _asset_walk(location):
     fs = filesystem.get_fs(location)
     protocol_prefix = filesystem._get_protocol_prefix(location)
-    path_list = fs.walk(location)
-    for dirname, _, files in path_list:
+    for dirname, _, files in filesystem.walk_safe(fs, location):
         dirname = protocol_prefix + dirname
         subdir_target_location = os.path.relpath(dirname, start=location)
         for basename in files:

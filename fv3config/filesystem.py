@@ -76,6 +76,15 @@ def is_local_path(location):
     return _get_protocol_prefix(location) == ""
 
 
+def walk_safe(fs, location):
+    """Some fsspec implementations have a bug where they return an empty string
+    as one of the files
+    """
+    for dirpath, dirnames, files in fs.walk(location):
+        files = [f for f in files if f]
+        yield dirpath, dirnames, files
+
+
 def put_directory(
     local_source_dir: str,
     dest_dir: str,
