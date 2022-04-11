@@ -98,7 +98,7 @@ def get_diag_table_base_date(config):
 
     Returning the initialization_date instead of the current_date if a coupler.res
     file exists is important for obtaining reproducible restarts in segmented runs.
-    Another advantage is that is harmonizes the units used to encode times in 
+    Another advantage is that is harmonizes the units used to encode times in
     fotran-generated diagnostics files across segments. See more discussion in
     GH 147.
 
