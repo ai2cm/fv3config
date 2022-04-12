@@ -149,8 +149,8 @@ def _get_initialization_date_from_coupler_res(coupler_res_filename):
     Returns:
         list: initialization_date as list of ints [year, month, day, hour, min, sec]
     """
-    iniitalization_date, _ = _read_coupler_res_dates(coupler_res_filename)
-    return iniitalization_date
+    initialization_date, _ = _read_coupler_res_dates(coupler_res_filename)
+    return initialization_date
 
 
 def _get_current_date_from_coupler_res(coupler_res_filename):
