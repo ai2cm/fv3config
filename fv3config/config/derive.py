@@ -42,73 +42,35 @@ def get_run_duration(config):
     )
 
 
-def _get_date(config, coupler_res_date_getter):
-    """Return date from configuration dictionary.  This function may read from
-    the remote initial_conditions path in the given configuration dictionary.
+def get_time_metadata(config):
+    """Return an initialization date and current date from a configuration
+    dictionary.
+
+    This function may read from the remote initial_conditions path given in
+    the configuration dicitionary.
 
     Args:
-        config (dict): a configuration dictionary
-        coupler_res_date_getter (func): a function that reads either the
-            initialization_date or the current date from a coupler.res file
+        config(dict): a configuration dictionary
 
     Returns:
-        list: date as list of ints [year, month, day, hour, min, sec]
+        initialization_date (list): date as list of ints [year, month, day, hour, min, sec]
+        current_date (list): date as list of ints [year, month, day, hour, min, sec]
     """
-    force_date_from_namelist = config["namelist"]["coupler_nml"].get(
-        "force_date_from_namelist", False
-    )
+    coupler_nml = config["namelist"]["coupler_nml"]
+    force_date_from_namelist = coupler_nml.get("force_date_from_namelist", False)
+
     # following code replicates the logic that the fv3gfs model uses to determine the current_date
     if force_date_from_namelist:
-        date = config["namelist"]["coupler_nml"].get("current_date", [0, 0, 0, 0, 0, 0])
+        current_date = coupler_nml.get("current_date", [0, 0, 0, 0, 0, 0])
+        time_metadata = (current_date, current_date)
     else:
         coupler_res_filename = _get_coupler_res_filename(config)
         if coupler_res_filename is not None:
-            date = coupler_res_date_getter(coupler_res_filename)
+            time_metadata = _read_time_metadata_from_coupler_res(coupler_res_filename)
         else:
-            date = config["namelist"]["coupler_nml"].get(
-                "current_date", [0, 0, 0, 0, 0, 0]
-            )
-    return date
-
-
-def get_current_date(config):
-    """Return current_date from configuration dictionary. This function may read from
-    the remote initial_conditions path in the given configuration dictionary.
-
-    Args:
-        config (dict): a configuration dictionary
-
-    Returns:
-        list: current_date as list of ints [year, month, day, hour, min, sec]
-    """
-    return _get_date(config, _get_current_date_from_coupler_res)
-
-
-def get_diag_table_base_date(config):
-    """Return base_date from configuration dictionary. This function may read from
-    the remote initial_conditions path in the given configuration dictionary.
-
-    In the event that force_date_from_namelist is specified in the config, this
-    function returns the current_date or a null date if that does not exist.  If the
-    date is not set to be forced from the namelist, this function first looks for the
-    existence of a coupler.res file, and if it exists, returns the initialization_date
-    written within it. If a coupler.res files does not exist, the current_date
-    specified in the namelist or a null date is used.  To FV3GFS, a null date and
-    the current date are equivalent.
-
-    Returning the initialization_date instead of the current_date if a coupler.res
-    file exists is important for obtaining reproducible restarts in segmented runs.
-    Another advantage is that it harmonizes the units used to encode times in
-    fotran-generated diagnostics files across segments. See more discussion in
-    GH 147.
-
-    Args:
-        config (dict): a configuration dictionary
-
-    Returns:
-        list: base_date as list of ints [year, month, day, hour, min, sec]
-    """
-    return _get_date(config, _get_initialization_date_from_coupler_res)
+            current_date = coupler_nml.get("current_date", [0, 0, 0, 0, 0, 0])
+            time_metadata = (current_date, current_date)
+    return time_metadata
 
 
 def _parse_date_from_line(line, coupler_res_filename):
@@ -122,7 +84,7 @@ def _parse_date_from_line(line, coupler_res_filename):
     return date
 
 
-def _read_coupler_res_dates(coupler_res_filename):
+def _read_time_metadata_from_coupler_res(coupler_res_filename):
     """Read the dates contained in a coupler.res file
     
     Args:
@@ -138,32 +100,6 @@ def _read_coupler_res_dates(coupler_res_filename):
         initialization_date = _parse_date_from_line(lines[1], coupler_res_filename)
         current_date = _parse_date_from_line(lines[2], coupler_res_filename)
     return initialization_date, current_date
-
-
-def _get_initialization_date_from_coupler_res(coupler_res_filename):
-    """Return initialization_date specified in coupler.res file
-
-    Args:
-        coupler_res_filename (str): a coupler.res filename
-
-    Returns:
-        list: initialization_date as list of ints [year, month, day, hour, min, sec]
-    """
-    initialization_date, _ = _read_coupler_res_dates(coupler_res_filename)
-    return initialization_date
-
-
-def _get_current_date_from_coupler_res(coupler_res_filename):
-    """Return current_date specified in coupler.res file
-
-    Args:
-        coupler_res_filename (str): a coupler.res filename
-
-    Returns:
-        list: current_date as list of ints [year, month, day, hour, min, sec]
-    """
-    _, current_date = _read_coupler_res_dates(coupler_res_filename)
-    return current_date
 
 
 def _get_coupler_res_filename(config):

@@ -5,11 +5,9 @@ import shutil
 from fv3config import ConfigError
 from fv3config._tables import update_diag_table_for_config
 from fv3config.config.derive import (
-    get_current_date,
-    _get_current_date_from_coupler_res,
     _get_coupler_res_filename,
-    _get_initialization_date_from_coupler_res,
-    get_diag_table_base_date,
+    _read_time_metadata_from_coupler_res,
+    get_time_metadata,
 )
 from fv3config._datastore import (
     get_microphysics_name,
@@ -150,99 +148,54 @@ class TableTests(unittest.TestCase):
                 empty_config, valid_current_date, os.path.join(rundir, "source")
             )
 
-    def test_get_current_date_from_coupler_res(self):
+    def test__read_time_metadata_from_coupler_res(self):
         rundir = self.make_run_directory("test_rundir")
         coupler_res_filename = os.path.join(rundir, "coupler.res")
         with open(coupler_res_filename, "w") as f:
             f.write(valid_coupler_res)
-        current_date = _get_current_date_from_coupler_res(coupler_res_filename)
-        self.assertEqual(current_date, valid_current_date)
+        result = _read_time_metadata_from_coupler_res(coupler_res_filename)
+        expected = (valid_initialization_date, valid_current_date)
+        self.assertEqual(result, expected)
 
-    def test_get_current_date_from_bad_coupler_res(self):
+    def test__read_time_metadata_from_coupler_res_bad_coupler_res(self):
         rundir = self.make_run_directory("test_rundir")
         coupler_res_filename = os.path.join(rundir, "coupler.res")
         with open(coupler_res_filename, "w") as f:
             f.write(bad_coupler_res)
         with self.assertRaises(ConfigError):
-            _get_current_date_from_coupler_res(coupler_res_filename)
+            _read_time_metadata_from_coupler_res(coupler_res_filename)
 
-    def test_get_initialization_date_from_coupler_res(self):
-        rundir = self.make_run_directory("test_rundir")
-        coupler_res_filename = os.path.join(rundir, "coupler.res")
-        with open(coupler_res_filename, "w") as f:
+    def test_get_time_metadata_from_config_force_date_true(self):
+        config = copy.deepcopy(DEFAULT_CONFIG)
+        config["namelist"]["coupler_nml"]["force_date_from_namelist"] = True
+        config["namelist"]["coupler_nml"]["current_date"] = valid_current_date
+        initialization_date, current_date = get_time_metadata(config)
+        self.assertEqual(initialization_date, valid_current_date)
+        self.assertEqual(current_date, valid_current_date)
+
+    def test_get_time_metadata_from_config_force_date_false(self):
+        config = copy.deepcopy(DEFAULT_CONFIG)
+        config["namelist"]["coupler_nml"]["force_date_from_namelist"] = False
+        config["namelist"]["coupler_nml"]["current_date"] = valid_current_date
+        initialization_date, current_date = get_time_metadata(config)
+        self.assertEqual(initialization_date, valid_current_date)
+        self.assertEqual(current_date, valid_current_date)
+
+    def test_get_time_metadata_from_config_which_includes_coupler_res_asset(self):
+        config = copy.deepcopy(DEFAULT_CONFIG)
+        tmpdir = self.make_run_directory("test_dir")
+        config["patch_files"] = {
+            "source_location": tmpdir,
+            "source_name": "coupler.res",
+            "target_location": "INPUT",
+            "target_name": "coupler.res",
+            "copy_method": "copy",
+        }
+        with open(os.path.join(tmpdir, "coupler.res"), "w") as f:
             f.write(valid_coupler_res)
-        initialization_date = _get_initialization_date_from_coupler_res(
-            coupler_res_filename
-        )
+        initialization_date, current_date = get_time_metadata(config)
         self.assertEqual(initialization_date, valid_initialization_date)
-
-    def test_get_initialization_date_from_bad_coupler_res(self):
-        rundir = self.make_run_directory("test_rundir")
-        coupler_res_filename = os.path.join(rundir, "coupler.res")
-        with open(coupler_res_filename, "w") as f:
-            f.write(bad_coupler_res)
-        with self.assertRaises(ConfigError):
-            _get_initialization_date_from_coupler_res(coupler_res_filename)
-
-    def test_get_current_date_from_config_force_date_true(self):
-        config = copy.deepcopy(DEFAULT_CONFIG)
-        config["namelist"]["coupler_nml"]["force_date_from_namelist"] = True
-        config["namelist"]["coupler_nml"]["current_date"] = valid_current_date
-        current_date = get_current_date(config)
         self.assertEqual(current_date, valid_current_date)
-
-    def test_get_current_date_from_config_force_date_false(self):
-        config = copy.deepcopy(DEFAULT_CONFIG)
-        config["namelist"]["coupler_nml"]["force_date_from_namelist"] = False
-        config["namelist"]["coupler_nml"]["current_date"] = valid_current_date
-        current_date = get_current_date(config)
-        self.assertEqual(current_date, valid_current_date)
-
-    def test_get_current_date_from_config_which_includes_coupler_res_asset(self):
-        config = copy.deepcopy(DEFAULT_CONFIG)
-        tmpdir = self.make_run_directory("test_dir")
-        config["patch_files"] = {
-            "source_location": tmpdir,
-            "source_name": "coupler.res",
-            "target_location": "INPUT",
-            "target_name": "coupler.res",
-            "copy_method": "copy",
-        }
-        with open(os.path.join(tmpdir, "coupler.res"), "w") as f:
-            f.write(valid_coupler_res)
-        current_date = get_current_date(config)
-        self.assertEqual(current_date, valid_current_date)
-
-    def test_get_diag_table_base_date_from_config_force_date_true(self):
-        config = copy.deepcopy(DEFAULT_CONFIG)
-        config["namelist"]["coupler_nml"]["force_date_from_namelist"] = True
-        config["namelist"]["coupler_nml"]["current_date"] = valid_current_date
-        base_date = get_diag_table_base_date(config)
-        self.assertEqual(base_date, valid_current_date)
-
-    def test_get_diag_table_base_date_from_config_force_date_false(self):
-        config = copy.deepcopy(DEFAULT_CONFIG)
-        config["namelist"]["coupler_nml"]["force_date_from_namelist"] = False
-        config["namelist"]["coupler_nml"]["current_date"] = valid_current_date
-        base_date = get_diag_table_base_date(config)
-        self.assertEqual(base_date, valid_current_date)
-
-    def test_get_diag_table_base_date_from_config_which_includes_coupler_res_asset(
-        self,
-    ):
-        config = copy.deepcopy(DEFAULT_CONFIG)
-        tmpdir = self.make_run_directory("test_dir")
-        config["patch_files"] = {
-            "source_location": tmpdir,
-            "source_name": "coupler.res",
-            "target_location": "INPUT",
-            "target_name": "coupler.res",
-            "copy_method": "copy",
-        }
-        with open(os.path.join(tmpdir, "coupler.res"), "w") as f:
-            f.write(valid_coupler_res)
-        base_date = get_diag_table_base_date(config)
-        self.assertEqual(base_date, valid_initialization_date)
 
     def test_get_coupler_res_filename_from_bytes_coupler_res_asset(self):
         config = copy.deepcopy(DEFAULT_CONFIG)
@@ -254,11 +207,12 @@ class TableTests(unittest.TestCase):
         with self.assertRaises(NotImplementedError):
             _get_coupler_res_filename(config)
 
-    def test_get_current_date_from_config_empty_initial_conditions(self):
+    def test_get_time_metadata_from_config_empty_initial_conditions(self):
         config = copy.deepcopy(DEFAULT_CONFIG)
         config["initial_conditions"] = []
         config["namelist"]["coupler_nml"]["current_date"] = valid_current_date
-        current_date = get_current_date(config)
+        initialization_date, current_date = get_time_metadata(config)
+        self.assertEqual(initialization_date, valid_current_date)
         self.assertEqual(current_date, valid_current_date)
 
     def test_update_diag_table_for_config(self):
@@ -266,9 +220,9 @@ class TableTests(unittest.TestCase):
         diag_table_filename = os.path.join(rundir, "diag_table")
         with open(diag_table_filename, "w") as f:
             f.write(diag_table_test_in)
-        current_date = get_current_date(config_for_update_diag_table_test)
+        base_date, _ = get_time_metadata(config_for_update_diag_table_test)
         update_diag_table_for_config(
-            config_for_update_diag_table_test, current_date, diag_table_filename
+            config_for_update_diag_table_test, base_date, diag_table_filename
         )
         with open(diag_table_filename) as f:
             self.assertEqual(diag_table_test_out, f.read())
