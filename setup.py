@@ -25,7 +25,7 @@ setup_requirements = []
 test_requirements = ["pytest"]
 
 setup(
-    author="Allen Insitute of Artificial Intelligence",
+    author="Allen Institute of Artificial Intelligence",
     author_email="jeremym@allenai.org",
     python_requires=">=3.6",
     classifiers=[
