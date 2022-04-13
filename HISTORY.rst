@@ -4,6 +4,9 @@ History
 Latest
 ------
 
+v0.9.0 (2022-04-13)
+-------------------
+
 Bug fixes:
 ~~~~~~~~~~
 - ensure that empty assets "" are not downloaded
