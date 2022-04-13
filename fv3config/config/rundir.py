@@ -3,7 +3,7 @@ import os
 from .namelist import config_to_namelist
 from .._asset_list import write_assets_to_directory
 from .._tables import update_diag_table_for_config
-from .derive import get_current_date
+from .derive import get_time_configuration
 from .nudging import enable_nudging
 
 logger = logging.getLogger("fv3config")
@@ -21,8 +21,8 @@ def write_run_directory(config, target_directory):
         config = enable_nudging(config)
     write_assets_to_directory(config, target_directory)
     os.makedirs(os.path.join(target_directory, "RESTART"), exist_ok=True)
-    current_date = get_current_date(config)
+    base_date, _ = get_time_configuration(config)
     update_diag_table_for_config(
-        config, current_date, os.path.join(target_directory, "diag_table")
+        config, base_date, os.path.join(target_directory, "diag_table")
     )
     config_to_namelist(config, os.path.join(target_directory, "input.nml"))

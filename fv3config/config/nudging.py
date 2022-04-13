@@ -8,7 +8,7 @@ import fsspec
 from .._asset_list import get_asset_dict
 from .._exceptions import ConfigError
 from ..filesystem import get_fs
-from .derive import get_current_date, get_run_duration
+from .derive import get_run_duration, get_time_configuration
 
 SECONDS_IN_HOUR = 60 * 60
 
@@ -144,10 +144,10 @@ def enable_nudging(config: Mapping) -> Mapping:
 
     config_copy = deepcopy(config)
     _clear_nudging_assets(config_copy)
-
+    _, current_date = get_time_configuration(config_copy)
     nudging_file_assets = get_nudging_assets(
         get_run_duration(config_copy),
-        get_current_date(config_copy),
+        current_date,
         gfs_analysis_data["url"],
         nudge_filename_pattern=gfs_analysis_data["filename_pattern"],
         copy_method=gfs_analysis_data.get("copy_method", "copy"),
