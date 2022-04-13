@@ -4,8 +4,8 @@ FV3Config
 .. image:: https://readthedocs.org/projects/fv3config/badge/?version=latest
    :target: https://fv3config.readthedocs.io/en/latest/?badge=latest
    
-.. image:: https://circleci.com/gh/VulcanClimateModeling/fv3config.svg?style=svg
-   :target: https://circleci.com/gh/VulcanClimateModeling/fv3config
+.. image:: https://circleci.com/gh/ai2cm/fv3config.svg?style=svg
+   :target: https://circleci.com/gh/ai2cm/fv3config
 
 FV3Config is used to configure and manipulate run directories for FV3GFS.
 

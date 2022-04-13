@@ -31,7 +31,7 @@ setup(
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
         "Intended Audience :: Developers",
-        "License :: OSI Approved :: BSD License",
+        "License :: OSI Approved :: Apache 2.0 License",
         "Natural Language :: English",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.6",
@@ -52,7 +52,7 @@ setup(
         "fv3run": "fv3gfs-python",
         "run_kubernetes": "kubernetes",
     },
-    license="BSD license",
+    license="Apache 2.0 license",
     long_description=readme + "\n\n" + history,
     include_package_data=True,
     keywords="fv3config",
