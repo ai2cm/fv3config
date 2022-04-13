@@ -1,5 +1,4 @@
 import unittest
-import copy
 import os
 import shutil
 from fv3config import ConfigError
