@@ -54,9 +54,9 @@ def get_time_configuration(config):
 
     Returns:
         initialization_date (list): date as list of ints [year, month, day, hour, min, sec]
-            This is the start of the first segment of the simulation.
+            This is the start date of the first segment of the simulation.
         current_date (list): date as list of ints [year, month, day, hour, min, sec]
-            This is the start of the current segment of the simulation, which will
+            This is the start date of the current segment of the simulation, which will
             be identical to the initialization_date if it is the first segment of the
             run.
     """
@@ -89,7 +89,9 @@ def _read_dates_from_coupler_res(coupler_res_filename):
 
     Returns:
         initialization_date (list): date as list of ints [year, month, day, hour, min, sec]
+            This is the start date of the first segment of the simulation.
         current_date (list): date as list of ints [year, month, day, hour, min, sec]
+            This is the date at which the set of restart files was written.
     """
     fs = get_fs(coupler_res_filename)
     with fs.open(coupler_res_filename, mode="r") as f:
