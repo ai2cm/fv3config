@@ -8,6 +8,16 @@ Bug fixes:
 ~~~~~~~~~~
 - ensure that empty assets "" are not downloaded
 - work around an an upstream bug where fsspec.walk yields empty strings as filenames
+- when a coupler.res file is present in the initial conditions, the base date in the
+  diagnostics table is now set to the initialization date rather than the current date,
+  ensuring reproducible restarts in segmented runs.
+
+Breaking changes:
+~~~~~~~~~~~~~~~~~
+- when using a directory of restart files as an initial condition -- as opposed to a
+  bridge between segments -- it is now required to set the ``coupler_nml.force_date_from_namelist``
+  parameter to true, and set the ``coupler_nml.current_date`` parameter to the intended
+  start date of the simulation.
 
 v0.8.0 (2021-05-07)
 -------------------
