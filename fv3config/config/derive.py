@@ -54,7 +54,11 @@ def get_time_configuration(config):
 
     Returns:
         initialization_date (list): date as list of ints [year, month, day, hour, min, sec]
+            This is the start of the first segment of the simulation.
         current_date (list): date as list of ints [year, month, day, hour, min, sec]
+            This is the start of the current segment of the simulation, which will
+            be identical to the initialization_date if it is the first segment of the
+            run.
     """
     coupler_nml = config["namelist"]["coupler_nml"]
     force_date_from_namelist = coupler_nml.get("force_date_from_namelist", False)
