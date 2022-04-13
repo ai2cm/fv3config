@@ -82,9 +82,6 @@ def _parse_date_from_line(line, coupler_res_filename):
 
 def _read_dates_from_coupler_res(coupler_res_filename):
     """Read the dates contained in a coupler.res file
-    
-    Args:
-        coupler_res_filename (str): a coupler.res filename
 
     Returns:
         initialization_date (list): date as list of ints [year, month, day, hour, min, sec]
