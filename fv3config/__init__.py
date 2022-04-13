@@ -28,8 +28,8 @@ from ._asset_list import get_asset_dict, get_bytes_asset_dict, asset_list_from_p
 from .caching import CACHE_REMOTE_FILES, do_remote_caching, set_cache_dir, get_cache_dir
 
 
-__author__ = """Vulcan Technologies LLC"""
-__email__ = "jeremym@vulcan.com"
+__author__ = """Allen Insitute of Artificial Intelligence"""
+__email__ = "jeremym@allenai.org"
 __version__ = "0.9.0"
 
 # necessary for auto-doc generation of API for public methods
