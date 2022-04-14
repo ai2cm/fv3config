@@ -49,8 +49,8 @@ master_doc = "index"
 
 # General information about the project.
 project = u"FV3Config"
-copyright = u"2019, Vulcan Technologies, LLC"
-author = u"Vulcan Technologies, LLC"
+copyright = u"2022, Allen Institute for Artificial Intelligence"
+author = u"Allen Institute for Artificial Intelligence"
 
 # The version info for the project you're documenting, acts as replacement
 # for |version| and |release|, also used in various other places throughout
@@ -130,7 +130,7 @@ latex_documents = [
         master_doc,
         "fv3config.tex",
         u"FV3Config Documentation",
-        u"Vulcan Technologies, LLC",
+        u"Allen Institute for Artificial Intelligence",
         "manual",
     ),
 ]

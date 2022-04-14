@@ -25,13 +25,13 @@ setup_requirements = []
 test_requirements = ["pytest"]
 
 setup(
-    author="Vulcan Technologies LLC",
-    author_email="jeremym@vulcan.com",
+    author="Allen Institute of Artificial Intelligence",
+    author_email="jeremym@allenai.org",
     python_requires=">=3.6",
     classifiers=[
         "Development Status :: 2 - Pre-Alpha",
         "Intended Audience :: Developers",
-        "License :: OSI Approved :: BSD License",
+        "License :: OSI Approved :: Apache 2.0 License",
         "Natural Language :: English",
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.6",
@@ -52,7 +52,7 @@ setup(
         "fv3run": "fv3gfs-python",
         "run_kubernetes": "kubernetes",
     },
-    license="BSD license",
+    license="Apache 2.0 license",
     long_description=readme + "\n\n" + history,
     include_package_data=True,
     keywords="fv3config",
@@ -61,7 +61,7 @@ setup(
     setup_requires=setup_requirements,
     test_suite="tests",
     tests_require=test_requirements,
-    url="https://github.com/VulcanClimateModeling/fv3config",
-    version="0.8.0",
+    url="https://github.com/ai2cm/fv3config",
+    version="0.9.0",
     zip_safe=False,
 )

@@ -4,6 +4,9 @@ History
 Latest
 ------
 
+v0.9.0 (2022-04-14)
+-------------------
+
 Bug fixes:
 ~~~~~~~~~~
 - ensure that empty assets "" are not downloaded
@@ -18,6 +21,13 @@ Breaking changes:
   bridge between segments -- it is now required to set the ``coupler_nml.force_date_from_namelist``
   parameter to true, and set the ``coupler_nml.current_date`` parameter to the intended
   start date of the simulation.
+
+License changes:
+~~~~~~~~~~~~~~~~
+- fv3config is now released under an Apache 2.0 license rather than a BSD license,
+  as this is the preferred license for software released by the Allen Institute for
+  Artificial Intelligence.
+
 
 v0.8.0 (2021-05-07)
 -------------------
