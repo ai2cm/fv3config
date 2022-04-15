@@ -29,4 +29,5 @@ def write_run_directory(config, target_directory):
         config, base_date, diag_table.read_text()
     )
     diag_table.write_text(new_contents)
-    config_to_namelist(config, os.path.join(target_directory, "input.nml"))
+    namelist_contents = config_to_namelist(config)
+    pathlib.Path(target_directory, "input.nml").write_text(namelist_contents)
