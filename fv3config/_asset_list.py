@@ -96,7 +96,14 @@ def get_directory_asset_dict(path: str):
     Args:
        path: the directory to create relative to the rundir root
     """
-    return {"target_name": "", "target_location": path, "directory": True}
+    return {
+        # empty values need to satisfy later validation checks
+        "source_location": "",
+        "source_name": "",
+        "target_location": path,
+        "target_name": "",
+        "copy_method": "directory",
+    }
 
 
 def _without_dot(path):
@@ -165,8 +172,6 @@ def write_asset(asset, target_directory):
         logger.debug(f"Writing asset bytes to {target_path}.")
         with open(target_path, "wb") as f:
             f.write(asset["bytes"])
-    elif "directory" in asset:
-        return os.makedirs(target_path, exist_ok=True)
     else:
         raise ConfigError(
             "Cannot write asset. Asset must have either a `copy_method` or `bytes` key."
@@ -183,6 +188,8 @@ def copy_file_asset(asset, target_path):
     elif copy_method == "link":
         logger.debug(f"Linking asset from {source_path} to {target_path}.")
         link_file(source_path, target_path)
+    elif copy_method == "directory":
+        return os.makedirs(target_path, exist_ok=True)
     else:
         raise ConfigError(
             f"Behavior of copy_method {copy_method} not defined for {source_path} asset"
