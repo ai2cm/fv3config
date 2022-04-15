@@ -1,18 +1,18 @@
-import os
+import io
 import f90nml
 from .._exceptions import InvalidFileError
 
 
-def config_to_namelist(config, namelist_filename):
+def config_to_namelist(config) -> str:
     """Write the namelist of a configuration dictionary to a namelist file.
 
     Args:
         config (dict): a configuration dictionary
         namelist_filename (str): filename to write, will be overwritten if present
     """
-    if os.path.isfile(namelist_filename):
-        os.remove(namelist_filename)
-    f90nml.write(config["namelist"], namelist_filename)
+    f = io.StringIO()
+    f90nml.write(config["namelist"], f)
+    return f.getvalue()
 
 
 def config_from_namelist(namelist_filename):
