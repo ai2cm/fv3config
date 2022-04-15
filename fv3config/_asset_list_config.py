@@ -86,20 +86,22 @@ def get_fv3config_yaml_asset(config):
     )
 
 
+def _config_to_asset_generator(config):
+    yield from get_initial_conditions_asset_list(config)
+    yield from get_base_forcing_asset_list(config)
+    yield from get_orographic_forcing_asset_list(config)
+    yield from get_patch_file_assets(config)
+    yield get_field_table_asset(config)
+    yield get_diag_table_asset(config)
+    yield get_data_table_asset(config)
+    yield get_fv3config_yaml_asset(config)
+    yield get_namelist_asset(config)
+
+
 def config_to_asset_list(config):
     """Convert a configuration dictionary to an asset list. The asset list
     will contain all files for the run directory except the namelist."""
-    asset_list = []
-    asset_list += get_initial_conditions_asset_list(config)
-    asset_list += get_base_forcing_asset_list(config)
-    asset_list += get_orographic_forcing_asset_list(config)
-    asset_list.append(get_field_table_asset(config))
-    asset_list.append(get_diag_table_asset(config))
-    asset_list.append(get_data_table_asset(config))
-    asset_list.append(get_fv3config_yaml_asset(config))
-    asset_list.append(get_namelist_asset(config))
-    asset_list.extend(get_patch_file_assets(config))
-    return asset_list
+    return list(_config_to_asset_generator(config))
 
 
 def get_namelist_asset(config):
