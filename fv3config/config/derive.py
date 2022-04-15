@@ -3,7 +3,8 @@ import re
 from datetime import timedelta
 from .._exceptions import ConfigError
 from .default import NAMELIST_DEFAULTS
-from .._asset_list import config_to_asset_list
+from .._asset_list import get_patch_file_assets
+from .initial_conditions import get_initial_conditions_asset_list
 from ..filesystem import get_fs
 
 
@@ -103,7 +104,9 @@ def _read_dates_from_coupler_res(coupler_res_filename):
 
 def _get_coupler_res_filename(config):
     """Return source path for coupler.res file, if it exists in config assets."""
-    asset_list = config_to_asset_list(config)
+    asset_list = get_initial_conditions_asset_list(config) + list(
+        get_patch_file_assets(config)
+    )
     source_path = None
     for item in asset_list:
         target_path = os.path.join(item["target_location"], item["target_name"])

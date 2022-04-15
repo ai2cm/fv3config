@@ -1,21 +1,27 @@
 import datetime
+import pathlib
 import unittest
 import os
 import shutil
 import tempfile
+
+
 import fv3config
 from fv3config._asset_list import (
     is_dict_or_list,
-    get_data_table_asset,
-    get_diag_table_asset,
-    get_field_table_asset,
-    get_fv3config_yaml_asset,
     get_asset_dict,
     get_bytes_asset_dict,
+    get_directory_asset_dict,
     ensure_is_list,
     asset_list_from_path,
     check_asset_has_required_keys,
     write_asset,
+)
+from fv3config._asset_list_config import (
+    get_data_table_asset,
+    get_diag_table_asset,
+    get_field_table_asset,
+    get_fv3config_yaml_asset,
 )
 import yaml
 import pytest
@@ -144,17 +150,12 @@ class AssetListTests(unittest.TestCase):
         self.assertFalse(is_dict_or_list(1))
 
     def test_get_data_table_asset_default(self):
-        config = DEFAULT_CONFIG.copy()
+        config = c12_config()
         data_table_asset = get_data_table_asset(config)
         self.assertEqual(data_table_asset, DEFAULT_DATA_TABLE_ASSET)
 
-    def test_get_diag_table_asset_default(self):
-        config = DEFAULT_CONFIG.copy()
-        diag_table_asset = get_diag_table_asset(config)
-        self.assertEqual(diag_table_asset, DEFAULT_DIAG_TABLE_ASSET)
-
     def test_get_field_table_asset_default(self):
-        config = DEFAULT_CONFIG.copy()
+        config = c12_config()
         field_table_asset = get_field_table_asset(config)
         self.assertEqual(field_table_asset, DEFAULT_FIELD_TABLE_ASSET)
 
@@ -345,6 +346,24 @@ def test_get_diag_table_asset_from_class(tmpdir):
         loaded = f.read()
 
     assert loaded == str(diag_table)
+
+
+def test_get_diag_table_asset_from_file(tmp_path: pathlib.Path):
+    config = c12_config()
+    diag_table_path = tmp_path / "diag_table"
+    contents = b"hahahahahahahahah no one cares what this is"
+    expected = get_bytes_asset_dict(contents, ".", "diag_table")
+    diag_table_path.write_bytes(contents)
+    config["diag_table"] = diag_table_path.as_posix()
+    diag_table_asset = get_diag_table_asset(config)
+    assert diag_table_asset == expected
+
+
+def test_directory_asset(tmp_path: pathlib.Path):
+    asset = get_directory_asset_dict("some_dir")
+    write_asset(asset, str(tmp_path))
+    expected_directory = tmp_path / "some_dir"
+    assert expected_directory.is_dir()
 
 
 if __name__ == "__main__":

@@ -4,6 +4,7 @@ from .caching import get_internal_cache_dir
 from .data import DATA_DIR
 from ._exceptions import ConfigError
 from . import filesystem
+from .filesystem import ensure_exists
 
 
 DATA_TABLE_OPTIONS = {
@@ -71,21 +72,6 @@ def get_base_forcing_directory(config):
         raise ConfigError("config dictionary must have a 'forcing' key")
     ensure_exists(config["forcing"], "forcing")
     return config["forcing"]
-
-
-def get_initial_conditions_directory(config):
-    """Return the string path of the initial conditions directory
-    specified by a config dictionary.
-    """
-    if "initial_conditions" not in config:
-        raise ConfigError("config dictionary must have an 'initial_conditions' key")
-    ensure_exists(config["initial_conditions"], "initial_conditions")
-    return config["initial_conditions"]
-
-
-def ensure_exists(location: str, location_name: str):
-    if not filesystem.get_fs(location).exists(location):
-        raise ConfigError(f"{location_name} location {location} does not exist")
 
 
 def check_if_data_is_downloaded():

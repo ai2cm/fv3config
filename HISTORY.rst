@@ -4,6 +4,13 @@ History
 Latest
 ------
 
+API Changes
+~~~~~~~~~~~
+- add ``fv3config.config_to_asset_list``
+- add ``fv3config.write_asset``
+
+
+
 v0.9.0 (2022-04-14)
 -------------------
 
