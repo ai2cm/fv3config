@@ -66,8 +66,9 @@ def get_diag_table_asset(config):
     if isinstance(config["diag_table"], DiagTable):
         data = bytes(str(config["diag_table"]), "UTF-8")
     else:
-        # TODO remove I/O from to top level
         diag_table_filename = get_diag_table_filename(config)
+        # would be nice to avoid I/O here, but this I/O (e.g. for listing
+        # directories) is relative common in these routines
         data = filesystem.cat(diag_table_filename)
     return get_bytes_asset_dict(data, ".", "diag_table")
 
