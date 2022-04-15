@@ -15,7 +15,9 @@ from fv3config._datastore import (
 )
 from .config.diag_table import DiagTable
 from .config.namelist import config_to_namelist
+from .config.derive import get_time_configuration
 from .config._serialization import dump
+from .config.nudging import enable_nudging
 from fv3config.config.initial_conditions import get_initial_conditions_asset_list
 from . import filesystem
 from ._asset_list import (
@@ -26,6 +28,7 @@ from ._asset_list import (
     get_patch_file_assets,
     asset_list_from_path,
 )
+from ._tables import update_diag_table_for_config
 
 FV3CONFIG_YML_NAME = "fv3config.yml"
 
@@ -87,12 +90,22 @@ def get_fv3config_yaml_asset(config):
 
 
 def _config_to_asset_generator(config):
+
+    if config["namelist"]["fv_core_nml"].get("nudge", False):
+        config = enable_nudging(config)
+
     yield from get_initial_conditions_asset_list(config)
     yield from get_base_forcing_asset_list(config)
     yield from get_orographic_forcing_asset_list(config)
     yield from get_patch_file_assets(config)
     yield get_field_table_asset(config)
-    yield get_diag_table_asset(config)
+
+    contents_b = get_diag_table_asset(config)["bytes"]
+    base_date, _ = get_time_configuration(config)
+    new_contents = update_diag_table_for_config(config, base_date, contents_b.decode())
+    yield get_bytes_asset_dict(
+        new_contents.encode(), target_location=".", target_name="diag_table"
+    )
     yield get_data_table_asset(config)
     yield get_fv3config_yaml_asset(config)
     yield get_namelist_asset(config)
