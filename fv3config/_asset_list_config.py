@@ -26,6 +26,7 @@ from ._asset_list import (
     get_asset_dict,
     get_bytes_asset_dict,
     get_patch_file_assets,
+    get_directory_asset_dict,
     asset_list_from_path,
 )
 from ._tables import update_diag_table_for_config
@@ -109,6 +110,9 @@ def _config_to_asset_generator(config):
     yield get_data_table_asset(config)
     yield get_fv3config_yaml_asset(config)
     yield get_namelist_asset(config)
+
+    # need to make restart directory
+    yield get_directory_asset_dict("RESTART")
 
 
 def config_to_asset_list(config):

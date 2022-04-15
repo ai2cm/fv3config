@@ -4,11 +4,14 @@ import unittest
 import os
 import shutil
 import tempfile
+
+
 import fv3config
 from fv3config._asset_list import (
     is_dict_or_list,
     get_asset_dict,
     get_bytes_asset_dict,
+    get_directory_asset_dict,
     ensure_is_list,
     asset_list_from_path,
     check_asset_has_required_keys,
@@ -354,6 +357,13 @@ def test_get_diag_table_asset_from_file(tmp_path: pathlib.Path):
     config["diag_table"] = diag_table_path.as_posix()
     diag_table_asset = get_diag_table_asset(config)
     assert diag_table_asset == expected
+
+
+def test_directory_asset(tmp_path: pathlib.Path):
+    asset = get_directory_asset_dict("some_dir")
+    write_asset(asset, str(tmp_path))
+    expected_directory = tmp_path / "some_dir"
+    assert expected_directory.is_dir()
 
 
 if __name__ == "__main__":

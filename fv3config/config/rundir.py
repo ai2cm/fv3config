@@ -1,5 +1,4 @@
 import logging
-import os
 from .._asset_list import write_asset
 from .._asset_list_config import config_to_asset_list
 
@@ -15,8 +14,5 @@ def write_run_directory(config, target_directory):
     """
     logger.debug(f"Writing run directory to {target_directory}")
     asset_list = config_to_asset_list(config)
-
     for asset in asset_list:
         write_asset(asset, target_directory)
-
-    os.makedirs(os.path.join(target_directory, "RESTART"), exist_ok=True)
