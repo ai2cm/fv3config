@@ -134,6 +134,12 @@ def get_file(source_filename: str, dest_filename: str, cache: bool = None):
         _get_file_cached(source_filename, dest_filename)
 
 
+def cat(url: str) -> bytes:
+    """read a remote file as bytes"""
+    fs = _get_fs(url)
+    return fs.cat(url)
+
+
 def _get_file_uncached(source_filename, dest_filename):
     fs = get_fs(source_filename)
     fs.get(source_filename, dest_filename)
