@@ -129,10 +129,9 @@ class TableTests(unittest.TestCase):
             get_data_table_filename(empty_config)
 
     def test_update_diag_table_from_empty_config(self):
-        rundir = self.make_run_directory("rundir")
         with self.assertRaises(ConfigError):
             update_diag_table_for_config(
-                empty_config, valid_current_date, os.path.join(rundir, "source")
+                empty_config, valid_current_date, "doesn't matter"
             )
 
     def test__read_dates_from_coupler_res(self):
@@ -207,14 +206,11 @@ class TableTests(unittest.TestCase):
         config["experiment_name"] = "diag_table_test"
         config["namelist"]["coupler_nml"]["force_date_from_namelist"] = True
         config["namelist"]["coupler_nml"]["current_date"] = valid_current_date
-        rundir = self.make_run_directory("test_rundir")
-        diag_table_filename = os.path.join(rundir, "diag_table")
-        with open(diag_table_filename, "w") as f:
-            f.write(diag_table_test_in)
         base_date, _ = get_time_configuration(config)
-        update_diag_table_for_config(config, base_date, diag_table_filename)
-        with open(diag_table_filename) as f:
-            self.assertEqual(diag_table_test_out, f.read())
+        assert (
+            update_diag_table_for_config(config, base_date, diag_table_test_in)
+            == diag_table_test_out
+        )
 
 
 def test_get_coupler_res_filename_from_dir():

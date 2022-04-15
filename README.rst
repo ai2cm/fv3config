@@ -40,7 +40,7 @@ documentation`_ for details. If you do not typically access AI2 google cloud
 storage, you may need to enable requester pays, which you can do by setting the
 following environment variables::
 
-    export FSSPEC_GS_REQUESTER_PAYS=True
+    export FSSPEC_GS_REQUESTER_PAYS=<the project id to be charged>
     # the following will be set with `gcloud auth login`
     export GOOGLE_CLOUD_PROJECT=<the project id to be charged>
 

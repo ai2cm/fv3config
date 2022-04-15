@@ -4,6 +4,7 @@ import fsspec
 import re
 from ._exceptions import DelayedImportError
 from . import caching
+from ._exceptions import ConfigError
 from concurrent.futures import ThreadPoolExecutor, Executor
 
 
@@ -134,6 +135,12 @@ def get_file(source_filename: str, dest_filename: str, cache: bool = None):
         _get_file_cached(source_filename, dest_filename)
 
 
+def cat(url: str) -> bytes:
+    """read a remote file as bytes"""
+    fs = _get_fs(url)
+    return fs.cat(url)
+
+
 def _get_file_uncached(source_filename, dest_filename):
     fs = get_fs(source_filename)
     fs.get(source_filename, dest_filename)
@@ -179,6 +186,11 @@ def _get_cache_filename(source_filename):
         cache_label = "rel"
     path_in_cache = cache_dir / cache_label / prefix / path_no_root
     return path_in_cache.as_posix()
+
+
+def ensure_exists(location: str, location_name: str):
+    if not get_fs(location).exists(location):
+        raise ConfigError(f"{location_name} location {location} does not exist")
 
 
 open = fsspec.open
