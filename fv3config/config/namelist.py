@@ -1,4 +1,3 @@
-import os
 import io
 import f90nml
 from .._exceptions import InvalidFileError

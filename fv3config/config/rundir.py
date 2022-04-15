@@ -1,6 +1,7 @@
 import logging
 import os
-from .._asset_list import write_assets_to_directory
+from .._asset_list import write_asset
+from .._asset_list_config import config_to_asset_list
 from .._tables import update_diag_table_for_config
 from .derive import get_time_configuration
 from .nudging import enable_nudging
@@ -19,7 +20,11 @@ def write_run_directory(config, target_directory):
     logger.debug(f"Writing run directory to {target_directory}")
     if config["namelist"]["fv_core_nml"].get("nudge", False):
         config = enable_nudging(config)
-    write_assets_to_directory(config, target_directory)
+
+    asset_list = config_to_asset_list(config)
+    for asset in asset_list:
+        write_asset(asset, target_directory)
+
     os.makedirs(os.path.join(target_directory, "RESTART"), exist_ok=True)
 
     diag_table = pathlib.Path(target_directory, "diag_table")

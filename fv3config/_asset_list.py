@@ -1,25 +1,15 @@
-import io
+"""Assets
+
+Assets represent either remote, local, or in memory data that can be written to
+a local disk
+"""
 import logging
 import os
 
-from ._datastore import (
-    get_initial_conditions_directory,
-    get_orographic_forcing_directory,
-    get_base_forcing_directory,
-)
-from fv3config._datastore import (
-    get_field_table_filename,
-    get_diag_table_filename,
-    get_data_table_filename,
-)
-from .config.diag_table import DiagTable
-from .config.namelist import config_to_namelist
-from .config._serialization import dump
 from ._exceptions import ConfigError
 from . import filesystem
 
 
-FV3CONFIG_YML_NAME = "fv3config.yml"
 logger = logging.getLogger("fv3config")
 
 
@@ -35,79 +25,6 @@ def ensure_is_list(asset):
         return asset
     else:
         raise ConfigError("Asset must be a dict or list of dicts")
-
-
-def get_namelist_asset(config):
-    text = config_to_namelist(config)
-    data = text.encode()
-    return get_bytes_asset_dict(data, target_location="", target_name="input.nml")
-
-
-def get_orographic_forcing_asset_list(config):
-    """Return asset_list for orographic forcing"""
-    if is_dict_or_list(config["orographic_forcing"]):
-        return ensure_is_list(config["orographic_forcing"])
-    else:
-        source_directory = get_orographic_forcing_directory(config)
-        return asset_list_from_path(
-            source_directory, target_location="INPUT", copy_method="link"
-        )
-
-
-def get_base_forcing_asset_list(config):
-    """Return asset_list for base forcing"""
-    if is_dict_or_list(config["forcing"]):
-        return ensure_is_list(config["forcing"])
-    else:
-        source_directory = get_base_forcing_directory(config)
-        return asset_list_from_path(source_directory, copy_method="link")
-
-
-def get_initial_conditions_asset_list(config):
-    """Return asset_list for initial conditions. """
-    if is_dict_or_list(config["initial_conditions"]):
-        return ensure_is_list(config["initial_conditions"])
-    else:
-        source_directory = get_initial_conditions_directory(config)
-        return asset_list_from_path(source_directory, target_location="INPUT")
-
-
-def get_data_table_asset(config):
-    """Return asset for data_table"""
-    data_table_filename = get_data_table_filename(config)
-    location, name = os.path.split(data_table_filename)
-    return get_asset_dict(location, name, target_name="data_table")
-
-
-def get_diag_table_asset(config):
-    """Return asset for diag_table"""
-    if isinstance(config["diag_table"], DiagTable):
-        data = bytes(str(config["diag_table"]), "UTF-8")
-    else:
-        # TODO remove I/O from to top level
-        diag_table_filename = get_diag_table_filename(config)
-        data = filesystem.cat(diag_table_filename)
-    return get_bytes_asset_dict(
-        data, ".", "diag_table"
-    )
-
-
-def get_field_table_asset(config):
-    """Return asset for field_table"""
-    field_table_filename = get_field_table_filename(config)
-    location, name = os.path.split(field_table_filename)
-    return get_asset_dict(location, name, target_name="field_table")
-
-
-def get_fv3config_yaml_asset(config):
-    """An asset containing this configuration"""
-    f = io.StringIO()
-    dump(config, f)
-    return get_bytes_asset_dict(
-        bytes(f.getvalue(), "UTF-8"),
-        target_location=".",
-        target_name=FV3CONFIG_YML_NAME,
-    )
 
 
 def get_asset_dict(
@@ -261,17 +178,6 @@ def copy_file_asset(asset, target_path):
         )
 
 
-def write_assets_to_directory(config, target_directory):
-    asset_list = config_to_asset_list(config)
-    write_asset_list(asset_list, target_directory)
-
-
-def write_asset_list(asset_list, target_directory):
-    """Loop over list of assets and write them all"""
-    for asset in asset_list:
-        write_asset(asset, target_directory)
-
-
 def check_asset_has_required_keys(asset):
     """Check asset has all of its required keys"""
     required_asset_keys = [
@@ -286,29 +192,6 @@ def check_asset_has_required_keys(asset):
             raise ConfigError(f"Assets must have a {required_asset_key}")
 
 
-def config_to_asset_list(config):
-    """Convert a configuration dictionary to an asset list. The asset list
-    will contain all files for the run directory except the namelist."""
-    asset_list = []
-    asset_list += get_initial_conditions_asset_list(config)
-    asset_list += get_base_forcing_asset_list(config)
-    asset_list += get_orographic_forcing_asset_list(config)
-    asset_list.append(get_field_table_asset(config))
-    asset_list.append(get_diag_table_asset(config))
-    asset_list.append(get_data_table_asset(config))
-    asset_list.append(get_fv3config_yaml_asset(config))
-    asset_list.append(get_namelist_asset(config))
-    if "patch_files" in config:
-        if is_dict_or_list(config["patch_files"]):
-            asset_list += ensure_is_list(config["patch_files"])
-        else:
-            raise ConfigError(
-                "patch_files item in config dictionary must be an asset dict or "
-                "list of asset dicts"
-            )
-    return asset_list
-
-
 def link_file(source_item, target_item):
     if any(not filesystem.is_local_path(item) for item in [source_item, target_item]):
         raise NotImplementedError(
@@ -318,3 +201,14 @@ def link_file(source_item, target_item):
     if os.path.exists(target_item):
         os.remove(target_item)
     os.symlink(source_item, target_item)
+
+
+def get_patch_file_assets(config):
+    if "patch_files" in config:
+        if is_dict_or_list(config["patch_files"]):
+            yield from ensure_is_list(config["patch_files"])
+        else:
+            raise ConfigError(
+                "patch_files item in config dictionary must be an asset dict or "
+                "list of asset dicts"
+            )

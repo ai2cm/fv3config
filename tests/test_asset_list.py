@@ -7,16 +7,18 @@ import tempfile
 import fv3config
 from fv3config._asset_list import (
     is_dict_or_list,
-    get_data_table_asset,
-    get_diag_table_asset,
-    get_field_table_asset,
-    get_fv3config_yaml_asset,
     get_asset_dict,
     get_bytes_asset_dict,
     ensure_is_list,
     asset_list_from_path,
     check_asset_has_required_keys,
     write_asset,
+)
+from fv3config._asset_list_config import (
+    get_data_table_asset,
+    get_diag_table_asset,
+    get_field_table_asset,
+    get_fv3config_yaml_asset,
 )
 import yaml
 import pytest

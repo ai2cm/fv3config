@@ -6,15 +6,15 @@ import fv3config.caching
 from fv3config._datastore import (
     get_base_forcing_directory,
     get_orographic_forcing_directory,
-    get_initial_conditions_directory,
     resolve_option,
 )
-from fv3config._asset_list import (
+from fv3config.config.initial_conditions import get_initial_conditions_directory
+from fv3config._asset_list_config import (
     get_orographic_forcing_asset_list,
     get_base_forcing_asset_list,
-    get_initial_conditions_asset_list,
-    write_asset_list,
 )
+from fv3config.config.initial_conditions import get_initial_conditions_asset_list
+from fv3config._asset_list import write_asset
 from .mocks import c12_config
 
 TEST_DIRECTORY = os.path.dirname(os.path.realpath(__file__))
@@ -100,14 +100,16 @@ class ForcingTests(unittest.TestCase):
         rundir = self.make_run_directory("test_rundir")
         config = c12_config()
         asset_list = get_base_forcing_asset_list(config)
-        write_asset_list(asset_list, rundir)
+        for asset in asset_list:
+            write_asset(asset, rundir)
         self.assert_subpaths_present(rundir, required_base_forcing_filenames)
 
     def test_write_default_orographic_forcing_directory(self):
         rundir = self.make_run_directory("test_rundir")
         config = c12_config()
         asset_list = get_orographic_forcing_asset_list(config)
-        write_asset_list(asset_list, rundir)
+        for asset in asset_list:
+            write_asset(asset, rundir)
         self.assert_subpaths_present(rundir, required_orographic_forcing_filenames)
 
     def test_zero_resolution_orographic_forcing_directory(self):
@@ -130,7 +132,8 @@ class ForcingTests(unittest.TestCase):
         rundir = self.make_run_directory("test_rundir")
         config = c12_config()
         asset_list = get_initial_conditions_asset_list(config)
-        write_asset_list(asset_list, rundir)
+        for asset in asset_list:
+            write_asset(asset, rundir)
         self.assert_subpaths_present(
             rundir, required_default_initial_conditions_filenames
         )
