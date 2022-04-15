@@ -13,6 +13,7 @@ from fv3config._datastore import (
     get_data_table_filename,
 )
 from .config.diag_table import DiagTable
+from .config.namelist import config_to_namelist
 from .config._serialization import dump
 from ._exceptions import ConfigError
 from . import filesystem
@@ -34,6 +35,12 @@ def ensure_is_list(asset):
         return asset
     else:
         raise ConfigError("Asset must be a dict or list of dicts")
+
+
+def get_namelist_asset(config):
+    text = config_to_namelist(config)
+    data = text.encode()
+    return get_bytes_asset_dict(data, target_location="", target_name="input.nml")
 
 
 def get_orographic_forcing_asset_list(config):
@@ -289,6 +296,7 @@ def config_to_asset_list(config):
     asset_list.append(get_diag_table_asset(config))
     asset_list.append(get_data_table_asset(config))
     asset_list.append(get_fv3config_yaml_asset(config))
+    asset_list.append(get_namelist_asset(config))
     if "patch_files" in config:
         if is_dict_or_list(config["patch_files"]):
             asset_list += ensure_is_list(config["patch_files"])
