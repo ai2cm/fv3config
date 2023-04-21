@@ -34,12 +34,6 @@ done
 
 main() {
 
-echo "create_newcase: ${create_newcase}"
-echo "case_setup: ${case_setup}"
-echo "case_build: ${case_build}"
-echo "case_submit: ${case_submit}"
-echo "upload_to_cloud: ${upload_to_cloud}"
-echo "number_of_processers: ${number_of_processers}"
 # --- Configuration flags ----
 # Code and compilation
 readonly MACHINE="docker-scream"
@@ -66,9 +60,6 @@ mkdir -p /storage/timings
 readonly CASE_BUILD_DIR=${CASE_ROOT}/build
 readonly CASE_ARCHIVE_DIR=${CASE_ROOT}/archive
 
-# Define type of run
-#  short tests: specify PE layout and simulation length such as "16x1_1x4_ndays", "16x1_2x2_ndays", ...
-#  or "production" for full simulation
 readonly layout="${number_of_processers}x1"
 readonly run=${layout}
 readonly CASE_SCRIPTS_DIR=${CASE_ROOT}/tests/${run}/case_scripts
