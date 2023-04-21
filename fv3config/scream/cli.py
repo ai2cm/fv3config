@@ -1,7 +1,9 @@
 import argparse
-from .loader import load
-from .run_scream import run_scream, execute_run
+from .run_scream import compose_run_scream_commands, execute_run
 import fsspec
+import yaml
+from .config import ScreamConfig
+
 
 def _parse_run_scream_command_args():
     parser = argparse.ArgumentParser("run_scream_command")
@@ -12,16 +14,18 @@ def _parse_run_scream_command_args():
         "rundir", help="Desired output directory. Must be a local directory"
     )
     return parser.parse_args()
-    
-def run_scream_command():
-    args = _parse_run_scream_command_args()
-    with fsspec.open(args.config) as f:
-        config = load(f)    
-    command = run_scream(config, args.rundir)
-    return command
 
-def execute_run_scream():
+
+def _make_scream_config(config: str, output_yaml_path: str):
+    with fsspec.open(config) as f:
+        config = yaml.safe_load(f)
+        scream_config = ScreamConfig.from_dict(config)
+        scream_config.resolve_output_yaml(output_yaml_path)
+    return scream_config
+
+
+def scream_run():
     args = _parse_run_scream_command_args()
-    command = run_scream_command()
+    scream_config = _make_scream_config(args.config, args.rundir)
+    command = compose_run_scream_commands(scream_config, args.rundir)
     execute_run(command, args.rundir)
-    

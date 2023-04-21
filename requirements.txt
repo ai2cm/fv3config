@@ -12,3 +12,4 @@ pytest-cov
 google-cloud-storage
 kubernetes
 black==19.10b0
+dacite==1.6.0

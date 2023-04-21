@@ -44,8 +44,7 @@ setup(
             "write_run_directory=fv3config.cli:write_run_directory",
             "enable_restart=fv3config.cli:enable_restart",
             "enable_nudging=fv3config.cli:enable_nudging",
-            "run_scream_command=fv3config.scream.cli:run_scream_command",
-            "execute_run_scream=fv3config.scream.cli:execute_run_scream",
+            "scream_run=fv3config.scream.cli:scream_run",
         ]
     },
     install_requires=requirements,
